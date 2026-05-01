@@ -1,0 +1,363 @@
+/* =============================================================================
+   RESPONSIVE.CSS — ORGANIZADO
+   Apenas responsividade + ajustes globais leves
+   ============================================================================= */
+
+
+/* ─────────────────────────────────────────────
+   1. AJUSTES GLOBAIS (fora de media query)
+   ───────────────────────────────────────────── */
+
+/* LOGIN / USER */
+.topbar-user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.topbar-user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.user-dropdown {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  width: 220px;
+  z-index: 200;
+  overflow: hidden;
+}
+
+.user-dropdown-header {
+  padding: 14px 16px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.user-dropdown-header strong {
+  font-size: 13px;
+  display: block;
+}
+
+.user-dropdown-header small {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.user-dropdown-item {
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .2s;
+}
+
+.user-dropdown-item:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+
+/* BACKGROUND */
+.main-content {
+  background: linear-gradient(160deg,#f0f4ff 0%,#f8faff 50%,#f0f7ff 100%);
+}
+
+.page-container {
+  background: transparent;
+}
+
+
+/* CARDS */
+.depto-card {
+  transition: transform .2s, box-shadow .2s;
+}
+
+.depto-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37,99,235,0.1);
+}
+
+.dash-card {
+  border: 1px solid rgba(37,99,235,0.08);
+}
+
+
+/* SIDEBAR */
+.sidebar {
+  background: linear-gradient(180deg,#0f172a 0%,#1e2d45 100%);
+}
+
+.nav-item.active {
+  background: linear-gradient(135deg,#1e3a5f,#2563eb);
+  box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+}
+
+
+/* TOPBAR */
+.topbar {
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(37,99,235,0.08);
+}
+
+
+/* SEÇÕES */
+.depto-section {
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(37,99,235,0.06);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+
+
+/* BOTÃO UPLOAD */
+.btn-upload {
+  background: none;
+  border: 1.5px dashed var(--border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all .2s;
+  font-family: inherit;
+}
+
+.btn-upload:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+
+/* ANIMAÇÕES */
+.post-card,
+.depto-section,
+.depto-card {
+  animation: fadeUp .3s ease;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* SCROLLBAR */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+
+/* ─────────────────────────────────────────────
+   2. BREAKPOINTS
+   Ordem: do MAIOR → MENOR
+   ───────────────────────────────────────────── */
+
+
+/* ≤ 1100px */
+@media (max-width: 1100px) {
+  .feed-layout {
+    grid-template-columns: 200px 1fr 180px;
+  }
+}
+
+
+/* ≤ 900px */
+@media (max-width: 900px) {
+  .endo-home-grid { grid-template-columns: 1fr; }
+  .endo-topbar    { flex-wrap: wrap; }
+  .endo-nav       { order: 3; width: 100%; }
+
+  .recr-kanban     { grid-template-columns: repeat(3, 1fr); }
+  .recr-modal-grid { grid-template-columns: 1fr; }
+}
+
+
+/* ≤ 860px */
+@media (max-width: 860px) {
+  .feed-layout { grid-template-columns: 1fr; }
+
+  .feed-sidebar-left,
+  .feed-sidebar-right {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+
+/* ≤ 768px */
+@media (max-width: 768px) {
+
+  .depto-cards     { grid-template-columns: repeat(2, 1fr); }
+
+  .recr-grid,
+  .ind-grid,
+  .ferias-timeline,
+  .matriz-risco,
+  .mapa-perfis,
+  .endo-home-grid,
+  .feed-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .feed-sidebar-left,
+  .feed-sidebar-right {
+    display: none;
+  }
+
+  .trilha-cargo { width: 100% !important; }
+}
+
+
+/* ≤ 640px */
+@media (max-width: 640px) {
+  .recr-kanban         { grid-template-columns: repeat(2, 1fr); }
+  .recr-vagas-grid     { grid-template-columns: 1fr; }
+  .recr-banner-stats   { display: none; }
+  .recr-mapa-grid      { grid-template-columns: 1fr; }
+
+  .recr-trilha-piramide { align-items: stretch; }
+
+  .recr-trilha-row {
+    min-width: unset;
+    width: 100%;
+  }
+}
+
+
+/* ≤ 520px */
+@media (max-width: 520px) {
+  .com-page { padding: 14px 12px; }
+
+  .feed-sidebar-left,
+  .feed-sidebar-right {
+    grid-template-columns: 1fr;
+  }
+
+  .reacao-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+}
+/* =============================================================================
+   RESPONSIVE (APENAS MEDIA QUERIES)
+   ============================================================================= */
+
+
+/* ≤ 1100px */
+@media (max-width: 1100px) {
+  .feed-layout {
+    grid-template-columns: 200px 1fr 180px;
+  }
+}
+
+
+/* ≤ 900px */
+@media (max-width: 900px) {
+  .endo-home-grid { grid-template-columns: 1fr; }
+  .endo-topbar    { flex-wrap: wrap; }
+  .endo-nav       { order: 3; width: 100%; }
+
+  .recr-kanban     { grid-template-columns: repeat(3, 1fr); }
+  .recr-modal-grid { grid-template-columns: 1fr; }
+}
+
+
+/* ≤ 860px */
+@media (max-width: 860px) {
+  .feed-layout { grid-template-columns: 1fr; }
+
+  .feed-sidebar-left,
+  .feed-sidebar-right {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+
+/* ≤ 768px */
+@media (max-width: 768px) {
+
+  .depto-cards { grid-template-columns: repeat(2, 1fr); }
+
+  .recr-grid,
+  .ind-grid,
+  .ferias-timeline,
+  .matriz-risco,
+  .mapa-perfis,
+  .endo-home-grid,
+  .feed-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .feed-sidebar-left,
+  .feed-sidebar-right {
+    display: none;
+  }
+
+  .trilha-cargo { width: 100% !important; }
+}
+
+
+/* ≤ 640px */
+@media (max-width: 640px) {
+  .recr-kanban         { grid-template-columns: repeat(2, 1fr); }
+  .recr-vagas-grid     { grid-template-columns: 1fr; }
+  .recr-banner-stats   { display: none; }
+  .recr-mapa-grid      { grid-template-columns: 1fr; }
+
+  .recr-trilha-piramide { align-items: stretch; }
+
+  .recr-trilha-row {
+    min-width: unset;
+    width: 100%;
+  }
+}
+
+
+/* ≤ 520px */
+@media (max-width: 520px) {
+  .com-page { padding: 14px 12px; }
+
+  .feed-sidebar-left,
+  .feed-sidebar-right {
+    grid-template-columns: 1fr;
+  }
+
+  .reacao-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+}

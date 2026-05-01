@@ -1,0 +1,54 @@
+/* =============================================
+   MAIN.CSS — CENTRAL DE IMPORTAÇÃO
+   Organização por camadas (arquitetura CSS)
+   ============================================= */
+
+
+/* ─────────────────────────────────────────────
+   1. VARIÁVEIS (tokens do sistema)
+   ───────────────────────────────────────────── */
+@import url('./variaveis.css');
+
+
+/* ─────────────────────────────────────────────
+   2. BASE (reset + tipografia + legado)
+   ───────────────────────────────────────────── */
+@import url('./base.css');
+@import url('./base-legado.css');
+
+
+/* ─────────────────────────────────────────────
+   3. LAYOUT (estrutura global)
+   ───────────────────────────────────────────── */
+@import url('./layout.css');
+@import url('./page.css');
+
+
+/* ─────────────────────────────────────────────
+   4. COMPONENTES REUTILIZÁVEIS
+   ───────────────────────────────────────────── */
+@import url('./componentes.css');
+
+
+/* ─────────────────────────────────────────────
+   5. MÓDULOS / FEATURES
+   (cada área do sistema isolada)
+   ───────────────────────────────────────────── */
+@import url('./dashboard.css');
+@import url('./kanban.css');
+@import url('./recrutamento.css');
+@import url('./pessoas.css');
+@import url('./servicos.css');
+@import url('./jornada.css');
+@import url('./endomarketing.css');
+@import url('./ouvidoria.css');
+@import url('./notificacoes.css');
+@import url('./acessos.css');
+@import url('./nr01.css');
+
+
+/* ─────────────────────────────────────────────
+   6. RESPONSIVIDADE (SEMPRE POR ÚLTIMO)
+   ───────────────────────────────────────────── */
+@import url('./responsive.css');
+@import url('./responsivo.css');

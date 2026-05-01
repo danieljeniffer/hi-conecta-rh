@@ -1,0 +1,76 @@
+/* =============================================================================
+   CSS CUSTOM PROPERTIES — hi Conecta RH Brand Theme
+   Azul → Roxo → Pink  |  Fundo Claro  |  Cards Brancos
+   ============================================================================= */
+:root {
+  /* ── Backgrounds ───────────────────────────────── */
+  --bg:           #EEF2FB;
+  --bg-page:      #E8EDF8;
+  --bg-card:      #FFFFFF;
+  --bg-elevated:  #F8FAFF;
+  --surface:      #F4F6FD;
+  --bg-hover:     #EEF2FF;
+
+  /* ── Brand Gradient hi Conecta RH ─────────────── */
+  --primary:          #1B56D6;
+  --primary-dark:     #1446B8;
+  --primary-light:    #EEF3FF;
+  --primary-gradient: linear-gradient(135deg, #1B56D6 0%, #7C22E8 55%, #C026D3 100%);
+  --brand-blue:       #1B56D6;
+  --brand-purple:     #7C22E8;
+  --brand-pink:       #C026D3;
+
+  /* ── Feedback ──────────────────────────────────── */
+  --success:        #16A34A;
+  --success-light:  #DCFCE7;
+  --warning:        #D97706;
+  --warning-light:  #FEF3C7;
+  --danger:         #DC2626;
+  --danger-light:   #FEE2E2;
+
+  /* ── Text ──────────────────────────────────────── */
+  --text:           #1E293B;
+  --text-secondary: #374151;
+  --text-muted:     #64748B;
+  --text-light:     #94A3B8;
+  --text-primary:   #0F172A;
+
+  /* ── UI Surfaces ───────────────────────────────── */
+  --white:       #FFFFFF;
+  --border:      #E2E8F0;
+  --border-soft: #F1F5F9;
+
+  /* ── Shadows ───────────────────────────────────── */
+  --card-shadow:  0 1px 3px rgba(0,0,0,0.05), 0 4px 20px rgba(27,86,214,0.07);
+  --shadow-sm:    0 1px 4px rgba(0,0,0,0.05);
+  --shadow-md:    0 4px 20px rgba(0,0,0,0.09);
+  --shadow-brand: 0 4px 20px rgba(27,86,214,0.2);
+
+  /* ── Sidebar — Dark Navy Marca ─────────────────── */
+  --sidebar-bg:        #0C1426;
+  --sidebar-text:      #8899B8;
+  --sidebar-active:    #FFFFFF;
+  --sidebar-active-bg: rgba(27,86,214,0.22);
+  --sidebar-w:         242px;
+
+  /* ── Border Radius ─────────────────────────────── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+}
+
+/* ── BODY — Fundo clean da marca ─────────────────── */
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: #EEF2FB;
+  background-image:
+    radial-gradient(ellipse 65% 45% at 95%  0%,  rgba(27,86,214,0.10)  0%, transparent 65%),
+    radial-gradient(ellipse 50% 35% at 5%  100%, rgba(192,38,211,0.07) 0%, transparent 65%),
+    radial-gradient(ellipse 80% 30% at 50%  50%, rgba(124,34,232,0.03) 0%, transparent 70%);
+  background-attachment: fixed;
+  color: var(--text);
+  display: flex;
+  min-height: 100vh;
+  font-size: 14px;
+}

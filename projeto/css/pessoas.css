@@ -1,0 +1,62 @@
+/*=============================================================================
+   PAGE — Pessoas
+============================================================================= */
+
+/* Grid de pessoas */
+.pessoas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.pessoa-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s}
+.pessoa-card:hover{background:var(--primary-light);border-color:var(--primary);transform:translateY(-1px)}
+.pessoa-avatar{width:44px;height:44px;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.pessoa-info{flex:1}
+.pessoa-info strong{font-size:13px;display:block;font-weight:700}
+.pessoa-info span{font-size:12px;color:var(--text-muted);display:block}
+.pessoa-info small{font-size:11px;color:var(--text-muted)}
+.pessoa-badges{display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+.pessoa-nivel-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+
+/* Departamentos */
+.deptos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.depto-card-org{background:var(--bg);border-radius:12px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.depto-org-icon{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:4px}
+.depto-card-org h4{font-size:15px;font-weight:700}
+.depto-org-info{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-muted)}
+
+/* Organograma */
+.organograma{display:flex;flex-direction:column;align-items:center;gap:0;padding:20px}
+.org-nivel{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.org-card{background:var(--bg);border-radius:10px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;min-width:120px;max-width:150px;border:1px solid var(--border)}
+.admin-card{border-color:#dc2626;background:#fee2e220}
+.gestor-card{border-color:#d97706;background:#fef3c720}
+.colab-card{border-color:var(--primary);background:var(--primary-light)}
+.org-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.org-card strong{font-size:12px;font-weight:700}
+.org-card span{font-size:11px;color:var(--text-muted)}
+.org-card small{font-size:10px;color:var(--text-muted)}
+.org-linha{padding:8px 0;text-align:center}
+.org-linha-v{width:2px;height:24px;background:var(--border);margin:0 auto}
+
+/* Perfis */
+.perfis-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.perfil-card{background:var(--bg);border-radius:12px;padding:20px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px}
+.perfil-perms{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.perm-tag{background:var(--primary-light);color:var(--primary);font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+
+/* Políticas */
+.politica-card{border:1px solid var(--border);border-radius:10px;padding:16px;transition:opacity .2s}
+.politica-card.inativa{opacity:.6}
+.politica-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.param-item{display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg);border-radius:8px;font-size:13px}
+
+/* Fluxo */
+.fluxo-param{border:1px solid var(--border);border-radius:10px;padding:16px}
+.fluxo-etapas-visual{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.fluxo-etapa-pill{display:flex;align-items:center;gap:6px;background:var(--primary-light);color:var(--primary);padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600}
+.fluxo-num{width:20px;height:20px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+.fluxo-seta{color:var(--text-muted);font-size:16px}
+
+/* Responsivo */
+@media(max-width:768px){
+  .perfis-grid{grid-template-columns:1fr}
+  .pessoas-grid{grid-template-columns:1fr}
+  .org-nivel{flex-direction:column;align-items:center}
+}

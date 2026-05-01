@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(\\(Get-Item \"c:\\\\Users\\\\Danie\\\\Downloads\\\\hi-conecta-rh\\\\projeto\\\\js\\\\pages\\\\recrutamento.js\"\\).Length)"
+    ]
+  }
+}

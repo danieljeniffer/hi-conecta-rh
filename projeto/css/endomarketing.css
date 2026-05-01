@@ -1,0 +1,581 @@
+/* =============================================
+   ENDOMARKETING TV — LEVEL HARD
+   ============================================= */
+
+/* Root da TV — ocupa toda a página */
+.tv-root {
+  margin: -24px;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 64px);
+  background: #0a0f1a;
+  font-family: inherit;
+  color: white;
+  overflow: hidden;
+}
+
+/* ── TOPBAR ─────────────────────────────────── */
+.tv-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 20px;
+  height: 56px;
+  background: linear-gradient(90deg, #0d1b2a, #1a2744);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+/* Brand */
+.tv-brand { display:flex;align-items:center;gap:12px;flex-shrink:0; }
+
+.tv-live-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #dc2626;
+  color: white;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.tv-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: white;
+  animation: tvLivePulse 1s ease-in-out infinite;
+}
+
+@keyframes tvLivePulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.tv-logo  { font-size:22px;font-weight:900;letter-spacing:-1px; }
+.tv-slogan{ font-size:10px;color:rgba(255,255,255,.4);font-weight:600;white-space:nowrap; }
+
+/* Canais nav */
+.tv-canais {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  flex: 1;
+  padding: 0 8px;
+}
+
+.tv-canal-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,.5);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: all .15s;
+  letter-spacing: .3px;
+}
+
+.tv-canal-btn:hover  { background:rgba(255,255,255,.08);color:rgba(255,255,255,.85); }
+.tv-canal-btn.active { background:rgba(59,130,246,.25);color:#60a5fa;border:1px solid rgba(59,130,246,.3); }
+
+/* Relógio + controles */
+.tv-controls-right { display:flex;align-items:center;gap:12px;flex-shrink:0; }
+
+.tv-clock { text-align:right; }
+.tv-clock-time { font-size:20px;font-weight:900;font-variant-numeric:tabular-nums;color:white;line-height:1; }
+.tv-clock-date { display:flex;flex-direction:column;font-size:9px;color:rgba(255,255,255,.5);font-weight:600;text-align:right;margin-top:1px; }
+.tv-clock-date span:first-child { text-transform:capitalize; }
+.tv-clima { font-size:10px;color:rgba(255,255,255,.5);margin-top:2px; }
+
+.tv-action-btns { display:flex;gap:4px; }
+.tv-action-btn  { width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:white;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s; }
+.tv-action-btn:hover { background:rgba(255,255,255,.12); }
+
+/* ── BREAKING NEWS ───────────────────────────── */
+.tv-breaking {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  background: linear-gradient(90deg, #dc2626, #991b1b);
+  animation: tvBreakSlide .4s ease-out;
+  flex-shrink: 0;
+}
+
+@keyframes tvBreakSlide { from{transform:translateY(-100%)} to{transform:translateY(0)} }
+
+.tv-breaking-tag  { font-size:11px;font-weight:900;letter-spacing:1px;white-space:nowrap;background:rgba(255,255,255,.2);padding:3px 8px;border-radius:4px; }
+.tv-breaking-text { flex:1;font-size:14px;font-weight:700; }
+
+/* ── CORPO ───────────────────────────────────── */
+.tv-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* ── TICKER ──────────────────────────────────── */
+.tv-ticker-wrap {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  background: #1a2744;
+  border-top: 1px solid rgba(255,255,255,.08);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.tv-ticker-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0 14px;
+  background: #2563eb;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tv-ticker-track { overflow:hidden;flex:1;position:relative; }
+
+.tv-ticker-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  white-space: nowrap;
+  animation: tvTickerScroll 60s linear infinite;
+}
+
+@keyframes tvTickerScroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+.tv-ticker-item { font-size:12px;color:rgba(255,255,255,.85);padding:0 20px;font-weight:500; }
+.tv-ticker-sep  { color:rgba(255,255,255,.3);padding:0 4px; }
+
+/* ── HOME GRID ───────────────────────────────── */
+.tv-home-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr 260px;
+  gap: 12px;
+  height: calc(100vh - 64px - 56px - 36px - 32px);
+  min-height: 400px;
+}
+
+.tv-col { display:flex;flex-direction:column;gap:12px;overflow-y:auto; }
+
+/* ── CARD BASE ───────────────────────────────── */
+.tv-card {
+  background: #111827;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.07);
+  padding: 14px;
+  flex-shrink: 0;
+}
+
+.tv-card-header {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,.5);
+  margin-bottom: 10px;
+}
+
+/* Hero comunicado */
+.tv-hero-comunicado {
+  background: linear-gradient(135deg, #1e3a5f, #2563eb);
+  border-color: transparent;
+}
+
+.tv-com-tag     { display:flex;justify-content:space-between;align-items:center;margin-bottom:10px; }
+.tv-com-urgente { font-size:10px;font-weight:900;color:#fbbf24;letter-spacing:1px; }
+.tv-com-data    { font-size:10px;color:rgba(255,255,255,.5); }
+.tv-hero-titulo { font-size:18px;font-weight:900;margin:0 0 8px;line-height:1.2; }
+.tv-hero-texto  { font-size:13px;opacity:.8;line-height:1.5;margin:0 0 12px; }
+
+/* Agenda destaque */
+.tv-agenda-destaque { flex:1;border-color:transparent; }
+.tv-agenda-tipo     { font-size:9px;font-weight:800;letter-spacing:1px;padding:3px 8px;border-radius:4px;color:white; }
+
+/* Spotlight */
+.tv-spotlight { background:linear-gradient(135deg,#1a1040,#2d1b69);border-color:rgba(139,92,246,.2); }
+.tv-spotlight-inner { display:flex;gap:12px;align-items:flex-start;margin-bottom:10px; }
+.tv-spotlight-icon  { font-size:32px;flex-shrink:0; }
+.tv-spotlight-cat   { font-size:10px;font-weight:800;letter-spacing:1px;margin-bottom:4px; }
+.tv-spotlight-titulo{ font-size:15px;font-weight:800;line-height:1.3; }
+.tv-spotlight-dots  { display:flex;gap:6px; }
+.tv-dot { width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.25);transition:all .3s; }
+.tv-dot.ativo { background:#60a5fa;width:18px;border-radius:3px; }
+
+/* Cotações */
+.tv-cotacoes-row  { background:#0d1b2a; }
+.tv-cotacoes-header { font-size:10px;font-weight:800;letter-spacing:1px;color:rgba(255,255,255,.4);margin-bottom:8px; }
+.tv-cotacoes-list { display:flex;flex-direction:column;gap:4px; }
+.tv-cotacao-item  { display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05); }
+.tv-cotacao-nome  { font-size:12px;font-weight:600;color:rgba(255,255,255,.7);flex:1; }
+.tv-cotacao-val   { font-size:13px;font-weight:800; }
+.tv-cotacao-var   { font-size:11px;font-weight:700;min-width:55px;text-align:right; }
+.tv-cotacao-var.up   { color:#4ade80; }
+.tv-cotacao-var.down { color:#f87171; }
+.tv-cotacao-var.flat { color:#94a3b8; }
+
+/* Aniversariantes mini */
+.tv-aniv-lista { display:flex;flex-direction:column;gap:6px; }
+.tv-aniv-item  { display:flex;align-items:center;gap:8px; }
+.tv-aniv-avatar{ width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#7c3aed);color:white;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+.tv-aniv-info  { flex:1;min-width:0; }
+.tv-aniv-info strong { font-size:11px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.tv-aniv-info span   { font-size:10px;color:rgba(255,255,255,.5); }
+.tv-aniv-dia   { font-size:10px;color:#f472b6;font-weight:700;white-space:nowrap; }
+
+/* Pão diário */
+.tv-pao-card { background:linear-gradient(135deg,#1c1408,#2d1a00); }
+.tv-pao-versiculo { font-size:14px;font-weight:700;color:white;font-style:italic;line-height:1.4;margin:0 0 6px; }
+.tv-pao-ref       { font-size:11px;color:#fbbf24;display:block;margin-bottom:8px; }
+.tv-pao-reflexao  { font-size:12px;color:rgba(255,255,255,.65);line-height:1.5;margin:0; }
+
+.tv-dica-card { background:linear-gradient(135deg,#0c1a2e,#1e3a5f); }
+
+/* Sistemas mini */
+.tv-sistemas-mini { display:flex;flex-wrap:wrap;gap:8px;margin-top:4px; }
+.tv-sis-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.1);
+  transition: transform .2s;
+  text-decoration: none;
+}
+.tv-sis-logo:hover { transform:scale(1.1); }
+.tv-sis-logo img  { width:30px;height:30px;object-fit:contain; }
+
+/* ── BOTÕES TV ───────────────────────────────── */
+.tv-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  transition: all .15s;
+}
+.tv-btn-primary:hover { background:#1d4ed8;transform:translateY(-1px); }
+
+.tv-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.08);
+  color: rgba(255,255,255,.85);
+  border: 1px solid rgba(255,255,255,.15);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all .15s;
+}
+.tv-btn-outline:hover { background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25); }
+
+.tv-btn-interesse {
+  width: 100%;
+  padding: 7px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.7);
+  border: 1px solid rgba(255,255,255,.12);
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  transition: all .2s;
+}
+.tv-btn-interesse.ativo { background:rgba(220,38,38,.2);border-color:#dc2626;color:#f87171; }
+
+/* ── CANAL FULL (não-home) ───────────────────── */
+.tv-canal-full { display:flex;flex-direction:column;gap:16px; }
+
+.tv-canal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tv-canal-header h2 { font-size:20px;font-weight:900;margin:0; }
+
+/* Comunicados grid */
+.tv-comunicados-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.tv-comunicado-card {
+  background: #111827;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all .2s;
+}
+
+.tv-comunicado-card:hover    { border-color:rgba(59,130,246,.3);transform:translateY(-2px); }
+.tv-comunicado-card.urgente  { border-color:#dc2626;background:linear-gradient(135deg,#1f0a0a,#111827); }
+.tv-comunicado-card.novo-card{ border-style:dashed;cursor:pointer;text-align:center;justify-content:center;align-items:center;color:rgba(255,255,255,.35); }
+.tv-comunicado-card.novo-card:hover { border-color:#2563eb;color:rgba(255,255,255,.6); }
+
+.tv-com-card-header { display:flex;justify-content:space-between;align-items:center; }
+.tv-com-card-data   { font-size:10px;color:rgba(255,255,255,.4); }
+.tv-urgente-badge   { font-size:10px;font-weight:900;color:#fca5a5;background:rgba(220,38,38,.2);padding:2px 8px;border-radius:4px; }
+.tv-com-card-titulo { font-size:15px;font-weight:800;margin:0; }
+.tv-com-card-texto  { font-size:13px;color:rgba(255,255,255,.65);flex:1;margin:0;line-height:1.5; }
+.tv-com-card-actions{ display:flex;gap:8px;flex-wrap:wrap; }
+
+/* Aniversariantes grid */
+.tv-aniv-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px; }
+
+.tv-aniv-card-full {
+  background: linear-gradient(135deg, #0d1b2a, #1a2744);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.08);
+  padding: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  transition: all .2s;
+}
+
+.tv-aniv-card-full:hover       { transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.4); }
+.tv-aniv-card-full.hoje         { border-color:#f472b6;background:linear-gradient(135deg,#1a0d1f,#2d1040); }
+.tv-aniv-hoje-badge             { position:absolute;top:10px;right:10px;font-size:10px;font-weight:900;background:#ec4899;color:white;padding:3px 8px;border-radius:20px; }
+.tv-aniv-card-avatar            { width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#7c3aed);color:white;font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center; }
+.tv-aniv-confetti               { font-size:20px; }
+.tv-aniv-card-full h3           { font-size:15px;font-weight:800;margin:0; }
+.tv-aniv-setor                  { font-size:11px;color:rgba(255,255,255,.5); }
+.tv-aniv-data                   { font-size:13px;color:#f472b6;font-weight:700; }
+.tv-aniv-btns                   { display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:4px; }
+
+/* Benefícios grid */
+.tv-bens-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px; }
+
+.tv-ben-card {
+  background: #111827;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all .2s;
+}
+.tv-ben-card:hover { transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.4); }
+.tv-ben-icon { width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px; }
+.tv-ben-nome { font-size:14px;font-weight:800;margin:0; }
+.tv-ben-val  { font-size:16px;font-weight:900;color:#60a5fa; }
+.tv-ben-meta { display:flex;flex-direction:column;gap:4px;font-size:11px;color:rgba(255,255,255,.5); }
+.tv-ben-como { background:none;border:none;color:#60a5fa;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;padding:0; }
+.tv-ben-como-box { font-size:12px;color:rgba(255,255,255,.65);background:rgba(255,255,255,.06);border-radius:8px;padding:10px;line-height:1.5;margin-top:4px; }
+
+/* Agenda grid */
+.tv-agenda-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px; }
+
+.tv-agenda-card { background:#111827;border-radius:14px;border:1px solid rgba(255,255,255,.08);overflow:hidden;transition:all .2s; }
+.tv-agenda-card:hover { transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.5); }
+.tv-agenda-tipo-badge { position:absolute;top:8px;left:8px;font-size:9px;font-weight:900;letter-spacing:1px;color:white;padding:3px 8px;border-radius:4px; }
+.tv-agenda-dia-badge  { position:absolute;bottom:8px;left:8px;font-size:11px;font-weight:800;color:white;text-shadow:0 1px 4px rgba(0,0,0,.6); }
+.tv-agenda-info       { padding:14px;display:flex;flex-direction:column;gap:6px; }
+.tv-agenda-info h3    { font-size:14px;font-weight:800;margin:0; }
+.tv-agenda-meta       { display:flex;flex-direction:column;gap:3px;font-size:11px;color:rgba(255,255,255,.55); }
+
+/* Notícias layout */
+.tv-noticias-layout { display:grid;grid-template-columns:1fr 380px;gap:16px;height:100%; }
+
+.tv-noticia-destaque {
+  background: linear-gradient(145deg, #0d1b2a 0%, #1a2744 60%, #0f2447 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(59,130,246,.15);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.tv-noticia-destaque::before {
+  content:'';position:absolute;bottom:-40px;right:-40px;width:180px;height:180px;
+  background:radial-gradient(circle,rgba(59,130,246,.12) 0%,transparent 70%);
+  pointer-events:none;
+}
+
+.tv-noticia-cat-badge { font-size:10px;font-weight:900;letter-spacing:1.2px;background:rgba(59,130,246,.18);color:#60a5fa;border:1px solid rgba(59,130,246,.3);padding:3px 10px;border-radius:4px;display:inline-block;text-transform:uppercase; }
+
+.tv-noticias-lista { background:#111827;border-radius:16px;border:1px solid rgba(255,255,255,.07);padding:4px 0;overflow-y:auto;max-height:520px; }
+.tv-noticias-lista::-webkit-scrollbar { width:4px; }
+.tv-noticias-lista::-webkit-scrollbar-track { background:transparent; }
+.tv-noticias-lista::-webkit-scrollbar-thumb { background:rgba(255,255,255,.12);border-radius:2px; }
+
+.tv-noticia-item { display:flex;gap:12px;align-items:flex-start;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;transition:background .15s; }
+.tv-noticia-item:hover { background:rgba(59,130,246,.06); }
+.tv-noticia-item:last-child { border-bottom:none; }
+
+/* Sistemas grid */
+.tv-sistemas-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px; }
+
+.tv-sis-card {
+  background: #111827;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  transition: all .2s;
+  cursor: pointer;
+}
+.tv-sis-card:hover { transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.4); }
+.tv-sis-card-logo { width:60px;height:60px;border-radius:14px;background:white;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.3); }
+.tv-sis-nome  { font-size:14px;font-weight:800;color:white; }
+.tv-sis-desc  { font-size:11px;color:rgba(255,255,255,.5); }
+.tv-sis-status{ font-size:10px;font-weight:700;color:#4ade80;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);padding:3px 10px;border-radius:20px; }
+
+/* Admin cards */
+.tv-admin-card {
+  background: #111827;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  padding: 18px;
+}
+.tv-admin-card h3 { font-size:14px;font-weight:800;margin:0 0 4px; }
+.tv-admin-card-icon { font-size:28px;margin-bottom:8px; }
+
+/* ── RESPONSIVO TV ───────────────────────────── */
+@media (max-width: 900px) {
+  .tv-home-grid     { grid-template-columns:1fr; }
+  .tv-col-left, .tv-col-right { display:none; }
+  .tv-noticias-layout { grid-template-columns:1fr; }
+}
+
+@media (max-width: 640px) {
+  .tv-topbar        { padding:0 10px;gap:6px; }
+  .tv-slogan        { display:none; }
+  .tv-canais        { gap:0; }
+  .tv-canal-btn     { padding:5px 8px;font-size:10px; }
+  .tv-clock-date    { display:none; }
+  .tv-agenda-grid   { grid-template-columns:1fr; }
+  .tv-aniv-grid     { grid-template-columns:repeat(2,1fr); }
+}
+
+/* ═══════════════════════════════════════════
+   CANAL STREAMING — Dashboard Corporativo
+═══════════════════════════════════════════ */
+.tv-stream-root { display:flex;flex-direction:column;gap:18px;padding:2px 0; }
+
+.tv-stream-section-title { font-size:20px;font-weight:900;color:white;margin:0 0 10px;letter-spacing:-.3px; }
+
+.tv-stream-destaques { display:grid;grid-template-columns:repeat(5,1fr);gap:12px; }
+.tv-stream-paravoc   { display:grid;grid-template-columns:repeat(6,1fr);gap:12px; }
+
+/* Card base */
+.tv-sc {
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+  position: relative;
+  min-height: 170px;
+}
+
+/* Card color schemes */
+.tv-sc-purple  { background:linear-gradient(145deg,#4c1d95,#7c3aed); }
+.tv-sc-dark    { background:linear-gradient(145deg,#0f172a,#1e293b);border:1px solid rgba(255,255,255,.07); }
+.tv-sc-amber   { background:linear-gradient(145deg,#78350f,#b45309); }
+.tv-sc-blue    { background:linear-gradient(145deg,#1e3a5f,#1d4ed8); }
+.tv-sc-navy    { background:linear-gradient(145deg,#0c1526,#1e3a5f);border:1px solid rgba(255,255,255,.07);align-items:center;justify-content:center;text-align:center; }
+.tv-sc-navy2   { background:linear-gradient(145deg,#0c1526,#1e3a5f);border:1px solid rgba(255,255,255,.07); }
+.tv-sc-olive   { background:linear-gradient(145deg,#365314,#4d7c0f); }
+.tv-sc-crimson { background:linear-gradient(145deg,#7f1d1d,#991b1b); }
+.tv-sc-green   { background:linear-gradient(145deg,#14532d,#15803d); }
+.tv-sc-orange  { background:linear-gradient(145deg,#92400e,#b45309); }
+
+/* Card typography */
+.tv-sc-label { font-size:9px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.55); }
+.tv-sc-title { font-size:16px;font-weight:900;color:white;line-height:1.25;margin:0; }
+.tv-sc-sub   { font-size:12px;color:rgba(255,255,255,.7);line-height:1.5;margin:0; }
+.tv-sc-date  { font-size:28px;font-weight:900;color:white;line-height:1; }
+.tv-sc-month { font-size:10px;font-weight:700;color:rgba(255,255,255,.55);letter-spacing:.5px; }
+
+/* Aniversariante row */
+.tv-sc-aniv-item   { display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.85); }
+.tv-sc-aniv-avatar { width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0; }
+
+/* Circular progress */
+.tv-sc-progress-ring { position:relative;width:72px;height:72px; }
+.tv-sc-progress-ring svg { display:block; }
+.tv-sc-progress-pct  { position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:white; }
+
+/* Background photo overlay */
+.tv-sc-fotobg   { position:absolute;inset:0;background-size:cover;background-position:center;opacity:.32; }
+.tv-sc-content  { position:relative;z-index:1;display:flex;flex-direction:column;gap:6px;height:100%; }
+
+/* Colaborador photo side */
+.tv-sc-colab-side  { display:flex;flex-direction:column; }
+.tv-sc-colab-photo { width:76px;height:100%;border-radius:10px;object-fit:cover;object-position:top;flex-shrink:0; }
+.tv-sc-colab-avatar{ width:76px;min-height:90px;border-radius:10px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;flex-shrink:0; }
+
+/* Stream footer */
+.tv-stream-footer { display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid rgba(255,255,255,.07); }
+.tv-stream-footer p  { font-size:13px;color:rgba(255,255,255,.4);margin:0; }
+.tv-stream-footer em { color:#ef4444;font-style:normal;font-weight:700; }
+
+.tv-stream-social { display:flex;gap:8px; }
+.tv-stream-social a {
+  width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.55);text-decoration:none;
+  transition:background .15s,color .15s;
+}
+.tv-stream-social a:hover { background:rgba(255,255,255,.16);color:white; }
+
+/* Responsive adjustments */
+@media (max-width: 1100px) {
+  .tv-stream-destaques { grid-template-columns:repeat(3,1fr); }
+  .tv-stream-paravoc   { grid-template-columns:repeat(3,1fr); }
+}
+@media (max-width: 720px) {
+  .tv-stream-destaques { grid-template-columns:repeat(2,1fr); }
+  .tv-stream-paravoc   { grid-template-columns:repeat(2,1fr); }
+}

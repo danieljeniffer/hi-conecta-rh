@@ -1,0 +1,287 @@
+/* =============================================
+   ACESSOS.CSS — Estilos do Painel de Acessos
+   Usado por: painelacessos.js (renderStepAcessos)
+   ============================================= */
+
+/* ── ROOT ──────────────────────────────────── */
+.ac-root {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 4px 0;
+}
+
+/* ── HERO ──────────────────────────────────── */
+.ac-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #1e3a5f, #2563eb);
+  border-radius: 16px;
+  padding: 20px 24px;
+  color: white;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ac-hero-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ac-hero-icon {
+  font-size: 36px;
+  flex-shrink: 0;
+}
+
+.ac-hero-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 0 4px;
+  color: white;
+}
+
+.ac-hero-sub {
+  font-size: 13px;
+  color: rgba(255,255,255,0.8);
+  margin: 0;
+}
+
+.ac-hero-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* ── GRID DE CARDS ─────────────────────────── */
+.ac-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* ── CARD ──────────────────────────────────── */
+.ac-card {
+  background: var(--surface, #fff);
+  border-radius: 14px;
+  border: 1px solid var(--border, #e5e7eb);
+  overflow: hidden;
+  transition: box-shadow 0.2s, transform 0.2s;
+  border-top: 3px solid var(--ac-clr, #2563eb);
+}
+
+.ac-card:hover {
+  box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+.ac-card-inner {
+  display: flex;
+  gap: 14px;
+  padding: 16px 16px 12px;
+  align-items: flex-start;
+}
+
+/* ── LOGO ──────────────────────────────────── */
+.ac-logo-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: white;
+  border: 1px solid var(--border, #e5e7eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.ac-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.ac-logo-fallback {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 800;
+  color: white;
+}
+
+/* ── INFO ──────────────────────────────────── */
+.ac-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ac-card-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary, #111827);
+  margin-bottom: 3px;
+}
+
+.ac-card-desc {
+  font-size: 12px;
+  color: var(--text-muted, #6b7280);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.ac-card-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.ac-tag {
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--ac-clr, #2563eb);
+  color: white;
+  opacity: 0.85;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+/* ── AÇÕES ─────────────────────────────────── */
+.ac-card-actions {
+  padding: 0 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ac-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none;
+  font-family: inherit;
+}
+
+.ac-btn--primary {
+  background: var(--ac-btn-clr, var(--ac-clr, #2563eb));
+  color: white;
+}
+
+.ac-btn--primary:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.ac-btn--secondary {
+  background: var(--surface, #f9fafb);
+  color: var(--text-secondary, #374151);
+  border: 1px solid var(--border, #e5e7eb);
+}
+
+.ac-btn--secondary:hover {
+  background: var(--primary-light, #eff6ff);
+  border-color: var(--ac-clr, #2563eb);
+}
+
+/* ── APP STORE ROW ─────────────────────────── */
+.ac-store-row {
+  display: flex;
+  gap: 8px;
+}
+
+.ac-store-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 10px;
+  background: #111;
+  color: white;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.ac-store-btn:hover {
+  background: #333;
+}
+
+/* ── ESTADO CONECTADO ──────────────────────── */
+.ac-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #f0fdf4;
+  border-top: 1px solid #bbf7d0;
+  font-size: 11px;
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.ac-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #16a34a;
+  animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* ── FOOTER DE SEÇÃO ───────────────────────── */
+.ac-section-footer {
+  text-align: center;
+  padding: 16px;
+  font-size: 12px;
+  color: var(--text-muted, #6b7280);
+}
+
+/* ── RESPONSIVO ────────────────────────────── */
+@media (max-width: 640px) {
+  .ac-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ac-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ac-hero-badge {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .ac-store-row {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,217 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>hi Conecta RH — Meu RH Digital</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/variaveis.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/base-legado.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/page.css" />
+  <link rel="stylesheet" href="css/componentes.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/kanban.css" />
+  <link rel="stylesheet" href="css/recrutamento.css" />
+  <link rel="stylesheet" href="css/pessoas.css" />
+  <link rel="stylesheet" href="css/servicos.css" />
+  <link rel="stylesheet" href="css/jornada.css" />
+  <link rel="stylesheet" href="css/endomarketing.css" />
+  <link rel="stylesheet" href="css/ouvidoria.css" />
+  <link rel="stylesheet" href="css/notificacoes.css" />
+  <link rel="stylesheet" href="css/acessos.css" />
+  <link rel="stylesheet" href="css/nr01.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+  <!-- Departamento Pessoal — sistema completo -->
+  <link rel="stylesheet" href="css/dp.css" />
+  <!-- Módulo Bonificações & Formulários -->
+  <link rel="stylesheet" href="css/bonificacoes.css" />
+  <!-- Módulo Gestor de Equipes -->
+  <link rel="stylesheet" href="css/gestor.css" />
+  <script>
+  // Proteção de rota
+  const _user = sessionStorage.getItem('hiRH_user');
+  if (!_user) window.location.href = 'login.html';
+  const _userData = _user ? JSON.parse(_user) : {};
+</script>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">hi</div>
+      <div class="logo-text">
+        <span class="logo-hi">hi</span> Conecta RH
+        <small>Meu RH Digital</small>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+  <div class="nav-section-label">Principal</div>
+  <a href="#" class="nav-item active" data-page="dashboard"><span class="nav-icon">⊞</span> Início</a>
+  <a href="#" class="nav-item" data-page="pessoas"><span class="nav-icon">👥</span> Gestão de Pessoas</a>
+  <a href="#" class="nav-item" data-page="indicadores"><span class="nav-icon">📊</span> Indicadores</a>
+  <a href="#" class="nav-item" data-page="servicos"><span class="nav-icon">🛠</span> Serviços RH</a>
+  <a href="#" class="nav-item" data-page="comunicacao"><span class="nav-icon">📣</span> Comunicação</a>
+  <a href="#" class="nav-item" data-page="experiencia"><span class="nav-icon">✨</span> Experiência</a>
+  <a href="#" class="nav-item" data-page="jornada"><span class="nav-icon">🚀</span> Jornada do Colaborador</a>
+  <a href="#" class="nav-item" data-page="endomarketing"><span class="nav-icon">📺</span> Endomarketing.tv</a>
+
+  <div class="nav-section-label" style="margin-top:16px">Gestão de Pessoas</div>
+  <a href="#" class="nav-item" data-page="gestor"><span class="nav-icon">👥</span> Gestor de Equipes</a>
+  <a href="#" class="nav-item" data-page="recrutamento"><span class="nav-icon">🔍</span> Recrutamento</a>
+  <a href="#" class="nav-item" data-page="departamento"><span class="nav-icon">📋</span> Depto. Pessoal</a>
+  <a href="#" class="nav-item" data-page="cargos"><span class="nav-icon">🏗</span> Cargos & Estrutura</a>
+  <a href="#" class="nav-item" data-page="desenvolvimento"><span class="nav-icon">🎓</span> T&D</a>
+
+  <div class="nav-section-label" style="margin-top:12px">Operações</div>
+  <a href="#" class="nav-item" data-page="clima"><span class="nav-icon">😊</span> Clima & Engajamento</a>
+  <a href="#" class="nav-item" data-page="documentos"><span class="nav-icon">📄</span> Documentos</a>
+  <a href="#" class="nav-item" data-page="nr01"><span class="nav-icon">⚖️</span> NR-01 Segurança</a>
+  <a href="#" class="nav-item" data-page="ouvidoria"><span class="nav-icon">📢</span> Ouvidoria</a>
+  <a href="#" class="nav-item" data-page="integracoes"><span class="nav-icon">🔌</span> Integrações</a>
+
+  <div class="nav-section-label" style="margin-top:12px">Sistema</div>
+  <a href="#" class="nav-item" data-page="usuarios"><span class="nav-icon">🔐</span> Usuários & Permissões</a>
+</nav>
+
+    <div class="sidebar-user">
+  <div class="user-avatar" id="sidebar-avatar">MR</div>
+  <div class="user-info">
+    <strong id="sidebar-nome">Carregando...</strong>
+    <small id="sidebar-cargo">—</small>
+  </div>
+</div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content" id="mainContent">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-title" id="pageTitle">Dashboard</div>
+      <div class="topbar-actions">
+        <button class="btn-icon" id="btn-notif" title="Notificações" onclick="togglePainelNotif(event)">
+          🔔 <span class="badge" id="notif-badge">0</span>
+        </button>
+        <button class="btn-icon" title="Configurações" onclick="navigateTo('integracoes')">⚙️</button>
+        <div class="topbar-user-info" id="topbar-user">
+  <div class="topbar-user-name" id="topbar-nome">MR</div>
+  <div class="topbar-avatar" id="topbar-avatar" onclick="menuUsuario()">MR</div>
+</div>
+<div class="user-dropdown" id="user-dropdown" style="display:none">
+  <div class="user-dropdown-header" id="dropdown-header"></div>
+  <div class="user-dropdown-item" onclick="navigateTo('jornada')">🚀 Minha Jornada</div>
+  <div class="user-dropdown-item" onclick="navigateTo('departamento')">📋 Meu DP</div>
+  <div class="user-dropdown-item" onclick="sairSistema()">🚪 Sair</div>
+</div>
+      </div>
+    </header>
+
+    <!-- PAINEL DE NOTIFICAÇÕES -->
+    <div id="notif-panel" class="notif-panel" style="display:none">
+      <div class="notif-panel-header">
+        <strong>🔔 Notificações</strong>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="link-btn" style="font-size:11px" onclick="marcarTodasLidas()">Marcar todas como lidas</button>
+          <button onclick="togglePainelNotif()" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-muted)">✕</button>
+        </div>
+      </div>
+      <div id="notif-lista" class="notif-lista"></div>
+      <div class="notif-panel-footer">
+        <button class="link-btn" onclick="verTodasNotif()">Ver histórico completo →</button>
+      </div>
+    </div>
+
+    <!-- PAGE CONTENT -->
+    <div class="page-container" id="pageContainer">
+      <!-- Injected by JS -->
+    </div>
+
+  </main>
+
+ <!-- SCRIPTS -->
+
+  <!-- 1. Bibliotecas externas (primeiro para estar disponíveis) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+  <!-- 2. Configuração (deve ser o primeiro JS interno) -->
+  <script src="js/config.js"></script>
+
+  <!-- 3. Core — infraestrutura base (Toast antes de tudo) -->
+  <script src="js/core/Toast.js"></script>
+  <script src="js/core/EventBus.js"></script>
+  <script src="js/core/Store.js"></script>
+  <script src="js/core/Router.js"></script>
+  <script src="js/core/Auth.js"></script>
+
+  <!-- 4. Utils — helpers reutilizáveis (dependem só do core) -->
+  <script src="js/utils/formatters.js"></script>
+  <script src="js/utils/validators.js"></script>
+  <script src="js/utils/dom.js"></script>
+
+  <!-- 5. Services — regras de negócio transversais -->
+  <script src="js/services/ExportService.js"></script>
+  <script src="js/services/BitrixService.js"></script>
+
+  <!-- 6. Dados -->
+  <script src="js/data.js"></script>
+
+  <!-- 7. Módulos de página (dependem de tudo acima) -->
+  <script src="js/pages/dashboard.js"></script>
+  <script src="js/pages/recrutamento.js"></script>
+  <!-- Departamento Pessoal — serviço e módulos -->
+  <script src="js/services/DPService.js"></script>
+  <script src="js/pages/dp-dashboard.js"></script>
+  <script src="js/pages/dp-colaboradores.js"></script>
+  <script src="js/pages/dp-folha.js"></script>
+  <script src="js/pages/dp-ferias.js"></script>
+  <script src="js/pages/dp-decimo.js"></script>
+  <script src="js/pages/dp-rescisao.js"></script>
+  <script src="js/pages/dp-beneficios.js"></script>
+  <script src="js/pages/dp-notificacoes.js"></script>
+  <script src="js/pages/dp-hub.js"></script>
+  <script src="js/pages/dp-admissao.js"></script>
+  <script src="js/pages/departamento.js"></script>
+  <script src="js/pages/integracoes.js"></script>
+  <script src="js/pages/jornada.js"></script>
+  <script src="js/pages/indicadores.js"></script>
+  <script src="js/pages/pessoas.js"></script>
+  <script src="js/pages/experiencia.js"></script>
+  <script src="js/pages/engajamento-dashboard.js"></script>
+  <script src="js/pages/desenvolvimento.js"></script>
+  <script src="js/pages/clima.js"></script>
+  <script src="js/pages/endomarketing.js"></script>
+  <script src="js/pages/tv-slides.js"></script>
+  <script src="js/pages/tv-netflix.js"></script>
+  <script src="js/pages/ouvidoria.js"></script>
+  <script src="js/pages/servicos.js"></script>
+  <script src="js/pages/comunicacao.js"></script>
+  <script src="js/pages/documentos.js"></script>
+  <script src="js/pages/cargos.js"></script>
+  <script src="js/pages/nr01.js"></script>
+  <script src="js/painelacessos.js"></script>
+  <!-- Módulo Bonificações & Formulários -->
+  <script src="js/pages/bonificacoes-hub.js"></script>
+  <script src="js/pages/bonificacoes-forms.js"></script>
+  <script src="js/pages/bonificacoes-engine.js"></script>
+  <script src="js/pages/bonificacoes-relatorios.js"></script>
+  <!-- Módulo Gestor de Equipes -->
+  <script src="js/pages/gestor-hub.js"></script>
+  <script src="js/pages/gestor-avaliacoes.js"></script>
+  <script src="js/pages/gestor-ocorrencias.js"></script>
+  <script src="js/pages/gestor-documentos.js"></script>
+  <script src="js/pages/gestor-reunioes.js"></script>
+  <script src="js/pages/gestor-historico.js"></script>
+  <!-- Usuários & Permissões (admin only) -->
+  <script src="js/pages/usuarios.js"></script>
+
+  <!-- 8. App router (deve ser o último) -->
+  <script src="js/app.js"></script>
+</body>
+</html>

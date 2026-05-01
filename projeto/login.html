@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>hi Conecta RH — Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1e40af;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --white: #ffffff;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      background: #0f172a;
+      overflow: hidden;
+    }
+
+    /* LADO ESQUERDO — VISUAL */
+    .login-left {
+      flex: 1;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 60px;
+      overflow: hidden;
+    }
+
+    .login-left::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 50%, #7c3aed 100%);
+      z-index: 0;
+    }
+
+    /* Círculos decorativos */
+    .circle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      z-index: 1;
+    }
+    .c1 { width: 500px; height: 500px; top: -150px; right: -150px; }
+    .c2 { width: 300px; height: 300px; bottom: -100px; left: -80px; }
+    .c3 { width: 200px; height: 200px; top: 40%; left: 30%; background: rgba(255,255,255,0.03); }
+
+    /* Grade de pontos */
+    .dots {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background-image: radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+
+    .login-left-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      color: white;
+    }
+
+    .brand-logo {
+      width: 72px; height: 72px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 24px; color: white;
+      margin: 0 auto 24px;
+    }
+
+    .brand-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 36px; font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .brand-name span { color: #93c5fd; }
+
+    .brand-sub {
+      font-size: 16px;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 48px;
+    }
+
+    .features-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      text-align: left;
+      max-width: 360px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 14px 18px;
+    }
+
+    .feature-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .feature-text strong {
+      font-size: 14px;
+      display: block;
+      font-weight: 700;
+    }
+
+    .feature-text small {
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+    }
+
+    /* LADO DIREITO — FORMULÁRIO */
+    .login-right {
+      width: 480px;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px 48px;
+      position: relative;
+    }
+
+    .login-right::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 4px; height: 100%;
+      background: linear-gradient(180deg, #2563eb, #7c3aed);
+    }
+
+    .login-header { margin-bottom: 40px; }
+    .login-header h2 { font-size: 28px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+    .login-header p  { font-size: 14px; color: var(--text-muted); }
+
+    .login-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 28px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .login-tab {
+      flex: 1;
+      padding: 10px;
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all .2s;
+    }
+
+    .login-tab.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    .form-group { margin-bottom: 20px; }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: all .2s;
+      background: #f8fafc;
+    }
+
+    .form-group input:focus {
+      border-color: var(--primary);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+
+    .form-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      font-size: 13px;
+    }
+
+    .form-options label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .form-options a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--primary), #7c3aed);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s;
+      margin-bottom: 20px;
+    }
+
+    .btn-login:hover { opacity: 0.9; }
+
+    .divider {
+      text-align: center;
+      position: relative;
+      margin: 20px 0;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      position: absolute;
+      top: 50%; width: 42%;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .divider::before { left: 0; }
+    .divider::after  { right: 0; }
+
+    .btn-social {
+      width: 100%;
+      padding: 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      background: white;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all .2s;
+      margin-bottom: 10px;
+    }
+
+    .btn-social:hover {
+      border-color: var(--primary);
+      background: #f0f7ff;
+    }
+
+    .login-footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .login-footer a {
+      color: var(--primary);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .error-msg {
+      background: #fee2e2;
+      color: #dc2626;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .success-msg {
+      background: #dcfce7;
+      color: #16a34a;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    @media (max-width: 900px) {
+      .login-left { display: none; }
+      .login-right { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LADO ESQUERDO -->
+  <div class="login-left">
+    <div class="dots"></div>
+    <div class="circle c1"></div>
+    <div class="circle c2"></div>
+    <div class="circle c3"></div>
+    <div class="login-left-content">
+      <div class="brand-logo">hi</div>
+      <div class="brand-name">hi Conecta <span>RH</span></div>
+      <div class="brand-sub">Meu RH Digital — Plataforma completa</div>
+      <div class="features-list">
+        <div class="feature-item">
+          <span class="feature-icon">🚀</span>
+          <div class="feature-text">
+            <strong>Jornada do Colaborador</strong>
+            <small>Onboarding completo e personalizado</small>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">📊</span>
+          <div class="feature-text">
+            <strong>Indicadores em tempo real</strong>
+            <small>Dashboard com dados atualizados</small>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🔗</span>
+          <div class="feature-text">
+            <strong>Integrações completas</strong>
+            <small>Caju, RHid, Bitrix24, Nubus</small>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">📺</span>
+          <div class="feature-text">
+            <strong>Endomarketing.tv</strong>
+            <small>Comunicação interna moderna</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LADO DIREITO -->
+  <div class="login-right">
+    <div class="login-header">
+      <h2>Bem-vindo de volta 👋</h2>
+      <p>Acesse sua conta corporativa ou pessoal</p>
+    </div>
+
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="switchLoginTab(this,'corporativo')">🏢 Conta Corporativa</button>
+      <button class="login-tab" onclick="switchLoginTab(this,'pessoal')">👤 Conta Pessoal</button>
+    </div>
+
+    <div id="error-msg" class="error-msg">❌ E-mail ou senha incorretos. Tente novamente.</div>
+    <div id="success-msg" class="success-msg">✅ Login realizado! Redirecionando...</div>
+
+    <!-- FORM CORPORATIVO -->
+    <div id="form-corporativo">
+      <div class="form-group">
+        <label>E-mail corporativo</label>
+        <input type="email" id="corp-email" placeholder="seunome@empresa.com.br" />
+      </div>
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" id="corp-senha" placeholder="••••••••" />
+      </div>
+      <div class="form-options">
+        <label><input type="checkbox" /> Manter conectado</label>
+        <a href="#">Esqueci minha senha</a>
+      </div>
+      <button class="btn-login" onclick="fazerLogin('corporativo')">Entrar na plataforma →</button>
+    </div>
+
+    <!-- FORM PESSOAL -->
+    <div id="form-pessoal" style="display:none">
+      <div class="form-group">
+        <label>E-mail pessoal</label>
+        <input type="email" id="pes-email" placeholder="seuemail@gmail.com" />
+      </div>
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" id="pes-senha" placeholder="••••••••" />
+      </div>
+      <div class="form-options">
+        <label><input type="checkbox" /> Manter conectado</label>
+        <a href="#">Esqueci minha senha</a>
+      </div>
+      <button class="btn-login" onclick="fazerLogin('pessoal')">Entrar na plataforma →</button>
+    </div>
+
+    <div class="divider">ou continue com</div>
+
+    <button class="btn-social" onclick="loginGoogle()">
+      <svg width="18" height="18" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Continuar com Google
+    </button>
+
+    <button class="btn-social" onclick="loginMicrosoft()">
+      <svg width="18" height="18" viewBox="0 0 24 24">
+        <path fill="#f25022" d="M1 1h10v10H1z"/>
+        <path fill="#00a4ef" d="M13 1h10v10H13z"/>
+        <path fill="#7fba00" d="M1 13h10v10H1z"/>
+        <path fill="#ffb900" d="M13 13h10v10H13z"/>
+      </svg>
+      Continuar com Microsoft 365
+    </button>
+
+    <div class="login-footer">
+      Não tem conta? <a href="#">Solicite ao RH</a> &nbsp;·&nbsp;
+      <a href="#">Política de privacidade</a>
+    </div>
+  </div>
+
+  <script>
+    // USUÁRIOS DE DEMONSTRAÇÃO
+    // Lê do localStorage primeiro (gerenciado por usuarios.js), senão usa os defaults
+    function _getUsuarios() {
+      try {
+        const stored = localStorage.getItem('hiRH_users_v1');
+        if (stored) return JSON.parse(stored);
+      } catch { }
+      return _usuariosDefault;
+    }
+
+    const _usuariosDefault = [
+      // ── Administrador (acesso total + gestão de usuários) ──
+      { email:'admin.sistema@empresa.com.br', senha:'Admin@2025',  nome:'Admin Sistema',    cargo:'Administrador',       tipo:'corporativo', perfil:'admin',    setor:'TI'          },
+      // ── Gestor de RH (quase total) ─────────────────────────
+      { email:'admin@empresa.com.br',         senha:'admin123',    nome:'Mariana R.',        cargo:'Analista de RH',      tipo:'corporativo', perfil:'rh',       setor:'RH'          },
+      // ── Analista de RH (operacional) ───────────────────────
+      { email:'analista@empresa.com.br',      senha:'analista123', nome:'Beatriz Analista',  cargo:'Analista de RH Jr.',  tipo:'corporativo', perfil:'analista', setor:'RH'          },
+      // ── Gestor de Equipe (escopo do setor) ─────────────────
+      { email:'gestor@empresa.com.br',        senha:'gestor123',   nome:'Carlos Souza',      cargo:'Supervisor',          tipo:'corporativo', perfil:'gestor',   setor:'Comercial'   },
+      // ── Colaborador (apenas próprios dados) ────────────────
+      { email:'colab@empresa.com.br',         senha:'colab123',    nome:'João Silva',        cargo:'Vendedor',            tipo:'corporativo', perfil:'colab',    setor:'Comercial'   },
+      // ── Jurídico (legado) ───────────────────────────────────
+      { email:'juridico@empresa.com.br',      senha:'juridico123', nome:'Dra. Ana Fonseca',  cargo:'Advogada — Jurídico', tipo:'corporativo', perfil:'juridico', setor:'Jurídico'    },
+      // ── Contas pessoais ─────────────────────────────────────
+      { email:'joao@gmail.com',               senha:'joao123',     nome:'João Silva',        cargo:'Vendedor',            tipo:'pessoal',     perfil:'colab',    setor:'Comercial'   },
+      { email:'mariana@gmail.com',            senha:'mari123',     nome:'Mariana R.',        cargo:'Analista de RH',      tipo:'pessoal',     perfil:'rh',       setor:'RH'          },
+    ];
+
+    // Alias para compatibilidade com o código abaixo
+    const usuarios = _getUsuarios();
+
+    function switchLoginTab(btn, tipo) {
+      document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('form-corporativo').style.display = tipo==='corporativo' ? 'block' : 'none';
+      document.getElementById('form-pessoal').style.display     = tipo==='pessoal'     ? 'block' : 'none';
+      document.getElementById('error-msg').style.display   = 'none';
+      document.getElementById('success-msg').style.display = 'none';
+    }
+
+    function fazerLogin(tipo) {
+      const email = document.getElementById(tipo==='corporativo'?'corp-email':'pes-email').value.trim();
+      const senha = document.getElementById(tipo==='corporativo'?'corp-senha':'pes-senha').value.trim();
+      const err   = document.getElementById('error-msg');
+      const suc   = document.getElementById('success-msg');
+
+      if (!email || !senha) { err.style.display='block'; err.textContent='❌ Preencha e-mail e senha.'; return; }
+
+      const user = _getUsuarios().find(u => u.email===email && u.senha===senha);
+
+      if (!user) { err.style.display='block'; err.textContent='❌ E-mail ou senha incorretos.'; suc.style.display='none'; return; }
+
+      err.style.display  = 'none';
+      suc.style.display  = 'block';
+      suc.textContent    = `✅ Bem-vindo(a), ${user.nome}! Redirecionando...`;
+
+      // Salva sessão
+      sessionStorage.setItem('hiRH_user', JSON.stringify(user));
+
+      setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+    }
+
+    function loginGoogle()    { alert('🔗 Integração com Google OAuth.\nEm produção, conecte via Firebase Auth ou Google Identity.'); }
+    function loginMicrosoft() { alert('🔗 Integração com Microsoft 365.\nEm produção, conecte via Azure AD / MSAL.js.'); }
+
+    // Tecla Enter
+    document.addEventListener('keydown', e => {
+      if (e.key==='Enter') {
+        const aba = document.querySelector('.login-tab.active').textContent.includes('Corporativa') ? 'corporativo' : 'pessoal';
+        fazerLogin(aba);
+      }
+    });
+
+    // Se já logado, redireciona
+    if (sessionStorage.getItem('hiRH_user')) window.location.href = 'index.html';
+  </script>
+
+</body>
+</html>
