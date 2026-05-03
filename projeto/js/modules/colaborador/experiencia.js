@@ -10,6 +10,7 @@ function renderExperiencia() {
       <button class="exp-tab" onclick="switchExpTab('academy')">🎓 hi Academy</button>
       <button class="exp-tab" onclick="switchExpTab('ideias')">💡 Programa de Ideias</button>
       <button class="exp-tab" onclick="switchExpTab('engajamento')">📊 Engajamento</button>
+      <button class="exp-tab" onclick="switchExpTab('formularios')">📋 Formulários</button>
     </div>
 
     <!-- CONTEÚDO DAS ABAS -->
@@ -58,12 +59,21 @@ function switchExpTab(tab) {
   event.target.classList.add('active');
   const content = document.getElementById('exp-content');
 
-  if (tab === 'indique')    content.innerHTML = renderIndique();
-  if (tab === 'move')       content.innerHTML = renderMove();
-  if (tab === 'experience') content.innerHTML = renderExpTab();
-  if (tab === 'academy')    content.innerHTML = renderAcademy();
-  if (tab === 'ideias')       content.innerHTML = renderIdeias();
+  if (tab === 'indique')     content.innerHTML = renderIndique();
+  if (tab === 'move')        content.innerHTML = renderMove();
+  if (tab === 'experience')  content.innerHTML = renderExpTab();
+  if (tab === 'academy')     content.innerHTML = renderAcademy();
+  if (tab === 'ideias')      content.innerHTML = renderIdeias();
   if (tab === 'engajamento') content.innerHTML = renderEngajamentoDashboard();
+  if (tab === 'formularios') {
+    content.innerHTML = '<div id="exp-forms-wrap" style="min-height:300px"></div>';
+    const wrap = document.getElementById('exp-forms-wrap');
+    if (window.BonifForms) {
+      BonifForms.render(wrap);
+    } else {
+      wrap.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted)">Módulo de formulários não disponível.</div>';
+    }
+  }
 }
 function renderIndique() {
   const rows = expData.indique.map(p => `

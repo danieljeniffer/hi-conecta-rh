@@ -16,11 +16,13 @@ const pages = {
   clima:           () => renderClima(),
   documentos:      () => renderDocumentos(),
   ouvidoria:       () => renderOuvidoria(),
-  jornada:         () => renderJornada(),
+  jornada:         () => { setTimeout(() => { if (typeof ptlNav==='function') ptlNav('jornada'); }, 80); return renderPortal(); },
   integracoes:     () => renderIntegracoes(),
   endomarketing:   () => renderEndomarketing(),
   nr01:            () => renderNr01(),
   gestor:          () => renderGestor(),
+  bonificacoes:    () => renderBonificacoes(),
+  portal:          () => renderPortal(),
   usuarios:        () => renderUsuarios(),
 };
 
@@ -38,11 +40,13 @@ const pageTitles = {
   clima:           'Clima & Engajamento',
   documentos:      'Documentos',
   ouvidoria:       'Ouvidoria',
-  jornada:         'Jornada do Colaborador',
+  jornada:         'Portal do Colaborador',
   integracoes:     'Integrações',
   endomarketing:   'Endomarketing.tv',
   nr01:            'NR-01 — Segurança do Trabalho',
   gestor:          'Gestão de Equipes',
+  bonificacoes:    'Bonificações & Formulários',
+  portal:          'Portal do Colaborador',
   usuarios:        'Usuários & Permissões',
 };
 
@@ -73,20 +77,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const userData = JSON.parse(sessionStorage.getItem('hiRH_user') || '{}');
 
   if (userData.nome) {
-    const iniciais = userData.nome.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
-    const av1 = document.getElementById('topbar-avatar');
-    const av2 = document.getElementById('sidebar-avatar');
-    const nm1 = document.getElementById('topbar-nome');
-    const nm2 = document.getElementById('sidebar-nome');
-    const cg  = document.getElementById('sidebar-cargo');
-    const dh  = document.getElementById('dropdown-header');
+    // Todos os dados do usuário via textContent — nunca innerHTML
+    const _safe  = v => String(v ?? '').slice(0, 200); // limita tamanho
+    const nome   = _safe(userData.nome);
+    const cargo  = _safe(userData.cargo) || '—';
+    const email  = _safe(userData.email);
+    const iniciais = nome.split(/\s+/).filter(Boolean).slice(0, 2).map(n => n[0]).join('').toUpperCase();
 
-    if (av1) av1.textContent = iniciais;
-    if (av2) av2.textContent = iniciais;
-    if (nm1) nm1.textContent = userData.nome.split(' ')[0];
-    if (nm2) nm2.textContent = userData.nome;
-    if (cg)  cg.textContent  = userData.cargo || '—';
-    if (dh)  dh.innerHTML    = `<strong>${userData.nome}</strong><small>${userData.email||''}</small>`;
+    const _set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+    _set('topbar-avatar', iniciais);
+    _set('sidebar-avatar', iniciais);
+    _set('topbar-nome', nome.split(' ')[0]);
+    _set('sidebar-nome', nome);
+    _set('sidebar-cargo', cargo);
+
+    // Dropdown: construído via DOM, sem innerHTML com dados externos
+    const dh = document.getElementById('dropdown-header');
+    if (dh) {
+      dh.textContent = ''; // limpa conteúdo anterior
+      const strong = document.createElement('strong');
+      strong.textContent = nome;
+      const small = document.createElement('small');
+      small.textContent = email;
+      dh.append(strong, document.createElement('br'), small);
+    }
   }
 
   // ── Filtrar sidebar por perfil (Auth.js) ──────────────────

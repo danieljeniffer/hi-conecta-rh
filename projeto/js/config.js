@@ -154,18 +154,44 @@ const AppConfig = {
   },
 };
 
-// Helper: retorna URL do Bitrix formatada
+// Helper: retorna URL do Bitrix com trailing-slash normalizado
 function getBitrixUrl(path) {
-  return AppConfig.bitrix.portalUrl + (path || '');
+  const base = (AppConfig.bitrix.portalUrl || '').replace(/\/$/, '');
+  const suffix = path ? '/' + String(path).replace(/^\//, '') : '';
+  return base + suffix;
 }
 
-// Helper: retorna URL base da API
+// Helper: retorna URL da API interna — corrige duplas barras
 function getApiUrl(endpoint) {
-  return AppConfig.api.baseUrl + '/' + AppConfig.api.version + '/' + endpoint;
+  const base    = (AppConfig.api.baseUrl   || '').replace(/\/$/, '');
+  const version = (AppConfig.api.version   || 'v1').replace(/^\//, '');
+  const ep      = (endpoint               || '').replace(/^\//, '');
+  if (!base) return `/${version}/${ep}`;      // sem baseUrl configurada → relativo
+  return `${base}/${version}/${ep}`;
+}
+
+// Helper: URL completa verificando protocolo HTTPS em produção
+function getApiUrlSafe(endpoint) {
+  const url = getApiUrl(endpoint);
+  if (url.startsWith('http:') && !location.hostname.match(/localhost|127\.0\.0\.1/)) {
+    console.warn('[Config] API usando HTTP em produção. Configure HTTPS.');
+  }
+  return url;
 }
 
 // Helper: SLA em horas → label legível
 function getSlaLabel(tipo) {
   const h = AppConfig.sla[tipo] || 120;
+  if (typeof h !== 'number' || h <= 0) return '—';
   return h < 24 ? `${h}h` : `${h / 24}d úteis`;
+}
+
+// Helper: verifica se uma feature flag está ativa
+function featureAtiva(flag) {
+  return Boolean(AppConfig.features?.[flag]);
+}
+
+// Helper: nome da empresa ou fallback
+function nomeEmpresa() {
+  return AppConfig.empresa?.nome || 'hi Conecta RH';
 }

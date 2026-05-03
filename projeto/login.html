@@ -457,81 +457,186 @@
   </div>
 
   <script>
-    // USUÁRIOS DE DEMONSTRAÇÃO
-    // Lê do localStorage primeiro (gerenciado por usuarios.js), senão usa os defaults
+    'use strict';
+
+    // ── RATE LIMIT CLIENT-SIDE ──────────────────────────────
+    // Limite de 5 tentativas por 15 minutos por email
+    const _RL_MAX  = 5;
+    const _RL_MINS = 15;
+
+    function _rlKey(email)  { return `rl_login_${email.toLowerCase().trim()}`; }
+
+    function _rlVerificar(email) {
+      try {
+        const raw = sessionStorage.getItem(_rlKey(email));
+        if (!raw) return true;
+        const { tentativas, desde } = JSON.parse(raw);
+        const minutos = (Date.now() - desde) / 60000;
+        if (minutos >= _RL_MINS) { sessionStorage.removeItem(_rlKey(email)); return true; }
+        return tentativas < _RL_MAX;
+      } catch { return true; }
+    }
+
+    function _rlRegistrar(email) {
+      try {
+        const raw = sessionStorage.getItem(_rlKey(email));
+        let { tentativas = 0, desde = Date.now() } = raw ? JSON.parse(raw) : {};
+        if ((Date.now() - desde) / 60000 >= _RL_MINS) { tentativas = 0; desde = Date.now(); }
+        sessionStorage.setItem(_rlKey(email), JSON.stringify({ tentativas: tentativas + 1, desde }));
+        return { tentativas: tentativas + 1, restando: _RL_MINS - Math.floor((Date.now() - desde) / 60000) };
+      } catch { return { tentativas: 1, restando: _RL_MINS }; }
+    }
+
+    function _rlLimpar(email) {
+      try { sessionStorage.removeItem(_rlKey(email)); } catch {}
+    }
+
+    // ── USUÁRIOS DE DEMONSTRAÇÃO ────────────────────────────
+    // NOTA: Em produção, substituir por autenticação via API backend
+    // As senhas aqui são para ambiente de demonstração (modo offline/dev)
     function _getUsuarios() {
       try {
         const stored = localStorage.getItem('hiRH_users_v1');
-        if (stored) return JSON.parse(stored);
-      } catch { }
+        if (stored) {
+          const lista = JSON.parse(stored);
+          // Valida estrutura mínima antes de retornar
+          if (Array.isArray(lista) && lista.length > 0 && lista[0].email) return lista;
+        }
+      } catch { /* localStorage indisponível */ }
       return _usuariosDefault;
     }
 
+    // Perfis válidos — impede que dados corrompidos elevem privilégio
+    const _PERFIS_VALIDOS = ['admin','rh','gestor','analista','colab','juridico'];
+
     const _usuariosDefault = [
-      // ── Administrador (acesso total + gestão de usuários) ──
-      { email:'admin.sistema@empresa.com.br', senha:'Admin@2025',  nome:'Admin Sistema',    cargo:'Administrador',       tipo:'corporativo', perfil:'admin',    setor:'TI'          },
-      // ── Gestor de RH (quase total) ─────────────────────────
-      { email:'admin@empresa.com.br',         senha:'admin123',    nome:'Mariana R.',        cargo:'Analista de RH',      tipo:'corporativo', perfil:'rh',       setor:'RH'          },
-      // ── Analista de RH (operacional) ───────────────────────
-      { email:'analista@empresa.com.br',      senha:'analista123', nome:'Beatriz Analista',  cargo:'Analista de RH Jr.',  tipo:'corporativo', perfil:'analista', setor:'RH'          },
-      // ── Gestor de Equipe (escopo do setor) ─────────────────
-      { email:'gestor@empresa.com.br',        senha:'gestor123',   nome:'Carlos Souza',      cargo:'Supervisor',          tipo:'corporativo', perfil:'gestor',   setor:'Comercial'   },
-      // ── Colaborador (apenas próprios dados) ────────────────
-      { email:'colab@empresa.com.br',         senha:'colab123',    nome:'João Silva',        cargo:'Vendedor',            tipo:'corporativo', perfil:'colab',    setor:'Comercial'   },
-      // ── Jurídico (legado) ───────────────────────────────────
-      { email:'juridico@empresa.com.br',      senha:'juridico123', nome:'Dra. Ana Fonseca',  cargo:'Advogada — Jurídico', tipo:'corporativo', perfil:'juridico', setor:'Jurídico'    },
-      // ── Contas pessoais ─────────────────────────────────────
-      { email:'joao@gmail.com',               senha:'joao123',     nome:'João Silva',        cargo:'Vendedor',            tipo:'pessoal',     perfil:'colab',    setor:'Comercial'   },
-      { email:'mariana@gmail.com',            senha:'mari123',     nome:'Mariana R.',        cargo:'Analista de RH',      tipo:'pessoal',     perfil:'rh',       setor:'RH'          },
+      { email:'admin.sistema@empresa.com.br', senha:'Admin@2025',  nome:'Admin Sistema',   cargo:'Administrador',      tipo:'corporativo', perfil:'admin',    setor:'TI'       },
+      { email:'admin@empresa.com.br',         senha:'admin123',    nome:'Mariana R.',       cargo:'Analista de RH',     tipo:'corporativo', perfil:'rh',       setor:'RH'       },
+      { email:'analista@empresa.com.br',      senha:'analista123', nome:'Beatriz Analista', cargo:'Analista de RH Jr.', tipo:'corporativo', perfil:'analista', setor:'RH'       },
+      { email:'gestor@empresa.com.br',        senha:'gestor123',   nome:'Carlos Souza',     cargo:'Supervisor',         tipo:'corporativo', perfil:'gestor',   setor:'Comercial'},
+      { email:'colab@empresa.com.br',         senha:'colab123',    nome:'João Silva',       cargo:'Vendedor',           tipo:'corporativo', perfil:'colab',    setor:'Comercial'},
+      { email:'juridico@empresa.com.br',      senha:'juridico123', nome:'Dra. Ana Fonseca', cargo:'Advogada',           tipo:'corporativo', perfil:'juridico', setor:'Jurídico' },
+      { email:'joao@gmail.com',               senha:'joao123',     nome:'João Silva',       cargo:'Vendedor',           tipo:'pessoal',     perfil:'colab',    setor:'Comercial'},
+      { email:'mariana@gmail.com',            senha:'mari123',     nome:'Mariana R.',       cargo:'Analista de RH',     tipo:'pessoal',     perfil:'rh',       setor:'RH'       },
     ];
 
-    // Alias para compatibilidade com o código abaixo
-    const usuarios = _getUsuarios();
-
+    // ── ABAS ────────────────────────────────────────────────
     function switchLoginTab(btn, tipo) {
       document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
       btn.classList.add('active');
-      document.getElementById('form-corporativo').style.display = tipo==='corporativo' ? 'block' : 'none';
-      document.getElementById('form-pessoal').style.display     = tipo==='pessoal'     ? 'block' : 'none';
+      document.getElementById('form-corporativo').style.display = tipo === 'corporativo' ? 'block' : 'none';
+      document.getElementById('form-pessoal').style.display     = tipo === 'pessoal'     ? 'block' : 'none';
+      _limparMensagens();
+    }
+
+    function _limparMensagens() {
       document.getElementById('error-msg').style.display   = 'none';
       document.getElementById('success-msg').style.display = 'none';
     }
 
+    function _mostrarErro(msg) {
+      const el = document.getElementById('error-msg');
+      el.textContent = msg; // textContent — nunca innerHTML com msg externa
+      el.style.display = 'block';
+      document.getElementById('success-msg').style.display = 'none';
+    }
+
+    function _mostrarSucesso(msg) {
+      const el = document.getElementById('success-msg');
+      el.textContent = msg;
+      el.style.display = 'block';
+      document.getElementById('error-msg').style.display = 'none';
+    }
+
+    // ── LOGIN ────────────────────────────────────────────────
     function fazerLogin(tipo) {
-      const email = document.getElementById(tipo==='corporativo'?'corp-email':'pes-email').value.trim();
-      const senha = document.getElementById(tipo==='corporativo'?'corp-senha':'pes-senha').value.trim();
-      const err   = document.getElementById('error-msg');
-      const suc   = document.getElementById('success-msg');
+      const emailId = tipo === 'corporativo' ? 'corp-email' : 'pes-email';
+      const senhaId = tipo === 'corporativo' ? 'corp-senha' : 'pes-senha';
 
-      if (!email || !senha) { err.style.display='block'; err.textContent='❌ Preencha e-mail e senha.'; return; }
+      const email = (document.getElementById(emailId)?.value || '').trim().toLowerCase();
+      const senha = (document.getElementById(senhaId)?.value || '').trim();
 
-      const user = _getUsuarios().find(u => u.email===email && u.senha===senha);
+      // 1. Campos obrigatórios
+      if (!email || !senha) {
+        _mostrarErro('❌ Preencha e-mail e senha.');
+        return;
+      }
 
-      if (!user) { err.style.display='block'; err.textContent='❌ E-mail ou senha incorretos.'; suc.style.display='none'; return; }
+      // 2. Formato básico de e-mail
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+        _mostrarErro('❌ E-mail inválido.');
+        return;
+      }
 
-      err.style.display  = 'none';
-      suc.style.display  = 'block';
-      suc.textContent    = `✅ Bem-vindo(a), ${user.nome}! Redirecionando...`;
+      // 3. Rate limit: bloqueia após 5 tentativas em 15 min
+      if (!_rlVerificar(email)) {
+        _mostrarErro('⏳ Muitas tentativas. Aguarde alguns minutos e tente novamente.');
+        return;
+      }
 
-      // Salva sessão
-      sessionStorage.setItem('hiRH_user', JSON.stringify(user));
+      // 4. Busca o usuário (comparação case-insensitive no email)
+      const lista   = _getUsuarios();
+      const usuario = lista.find(u =>
+        u.email.toLowerCase() === email && u.senha === senha
+      );
 
+      if (!usuario) {
+        const info = _rlRegistrar(email);
+        const restam = _RL_MAX - info.tentativas;
+        _mostrarErro(restam > 0
+          ? `❌ E-mail ou senha incorretos. ${restam} tentativa${restam !== 1 ? 's' : ''} restante${restam !== 1 ? 's' : ''}.`
+          : '⏳ Conta bloqueada temporariamente por excesso de tentativas.'
+        );
+        return;
+      }
+
+      // 5. Valida perfil (impede elevação de privilégio por dado corrompido)
+      if (!_PERFIS_VALIDOS.includes(usuario.perfil)) {
+        console.warn('[Login] Perfil inválido, usando colab:', usuario.perfil);
+        usuario.perfil = 'colab';
+      }
+
+      // 6. Login OK — limpa rate limit e salva sessão sem senha
+      _rlLimpar(email);
+
+      const sessao = {
+        nome:    String(usuario.nome  || '').slice(0, 200),
+        email:   String(usuario.email || '').slice(0, 200),
+        cargo:   String(usuario.cargo || '').slice(0, 200),
+        setor:   String(usuario.setor || '').slice(0, 100),
+        perfil:  usuario.perfil,
+        tipo:    usuario.tipo === 'pessoal' ? 'pessoal' : 'corporativo',
+        // senha nunca entra na sessão
+      };
+
+      sessionStorage.setItem('hiRH_user', JSON.stringify(sessao));
+
+      _mostrarSucesso(`✅ Bem-vindo(a), ${sessao.nome.split(' ')[0]}! Redirecionando...`);
       setTimeout(() => { window.location.href = 'index.html'; }, 1500);
     }
 
-    function loginGoogle()    { alert('🔗 Integração com Google OAuth.\nEm produção, conecte via Firebase Auth ou Google Identity.'); }
-    function loginMicrosoft() { alert('🔗 Integração com Microsoft 365.\nEm produção, conecte via Azure AD / MSAL.js.'); }
+    // ── INTEGRAÇÕES EXTERNAS (placeholders) ─────────────────
+    function loginGoogle() {
+      alert('Integração com Google OAuth.\nEm produção, conecte via Firebase Auth ou Google Identity Services.');
+    }
+    function loginMicrosoft() {
+      alert('Integração com Microsoft 365.\nEm produção, conecte via Azure AD / MSAL.js.');
+    }
 
-    // Tecla Enter
+    // ── INICIALIZAÇÃO ────────────────────────────────────────
+
+    // Tecla Enter — detecta aba ativa e faz login
     document.addEventListener('keydown', e => {
-      if (e.key==='Enter') {
-        const aba = document.querySelector('.login-tab.active').textContent.includes('Corporativa') ? 'corporativo' : 'pessoal';
-        fazerLogin(aba);
-      }
+      if (e.key !== 'Enter') return;
+      const abaAtiva = document.querySelector('.login-tab.active');
+      const tipo = abaAtiva?.textContent?.includes('Corporativa') ? 'corporativo' : 'pessoal';
+      fazerLogin(tipo);
     });
 
-    // Se já logado, redireciona
-    if (sessionStorage.getItem('hiRH_user')) window.location.href = 'index.html';
+    // Já logado → redireciona direto
+    if (sessionStorage.getItem('hiRH_user')) {
+      window.location.href = 'index.html';
+    }
   </script>
 
 </body>

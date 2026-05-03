@@ -12,11 +12,37 @@
  */
 const Auth = (() => {
 
+  // Perfis válidos do sistema (imutável)
+  const PERFIS_VALIDOS = Object.freeze(['admin','rh','gestor','analista','colab','juridico']);
+
+  // Permissões válidas (imutável)
+  const PERMS_VALIDAS  = Object.freeze(['edit','view','own','responder']);
+
   // ─── PERFIL DO USUÁRIO LOGADO ─────────────────────────────
-  function user()   { try { return JSON.parse(sessionStorage.getItem('hiRH_user') || '{}'); } catch { return {}; } }
-  function perfil() { return user().perfil || 'colab'; }
-  function nome()   { return user().nome   || 'Usuário'; }
-  function setor()  { return user().setor  || ''; }
+  function user() {
+    try {
+      const raw = sessionStorage.getItem('hiRH_user');
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      // Garante que o perfil lido seja um dos valores válidos do sistema
+      // Impede elevação de privilégio via manipulação manual do sessionStorage
+      if (parsed.perfil && !PERFIS_VALIDOS.includes(parsed.perfil)) {
+        console.warn(`[Auth] Perfil inválido detectado: "${parsed.perfil}". Usando "colab".`);
+        parsed.perfil = 'colab';
+      }
+      return parsed;
+    } catch {
+      return {};
+    }
+  }
+
+  function perfil() {
+    const p = user().perfil;
+    return PERFIS_VALIDOS.includes(p) ? p : 'colab';
+  }
+
+  function nome()  { return String(user().nome  || 'Usuário').slice(0, 200); }
+  function setor() { return String(user().setor || ''); }
 
   // ─── MATRIX DE PERMISSÕES ─────────────────────────────────
   // Valores: 'edit' | 'view' | 'own' | 'responder' | false
@@ -28,7 +54,7 @@ const Auth = (() => {
       jornada: 'edit',   endomarketing: 'edit', recrutamento: 'edit',
       departamento: 'edit', integracoes: 'edit', cargos: 'edit',
       desenvolvimento: 'edit', clima: 'edit', documentos: 'edit',
-      nr01: 'edit', ouvidoria: 'edit', gestor: 'edit', usuarios: 'edit',
+      nr01: 'edit', ouvidoria: 'edit', gestor: 'edit', bonificacoes: 'edit', portal: 'edit', usuarios: 'edit',
     },
 
     // ── GESTOR DE RH ──────────────────────────────────────
@@ -38,7 +64,7 @@ const Auth = (() => {
       jornada: 'view',      endomarketing: 'edit', recrutamento: 'edit',
       departamento: 'edit', integracoes: false, cargos: 'edit',
       desenvolvimento: 'edit', clima: 'edit', documentos: 'edit',
-      nr01: 'edit', ouvidoria: 'edit', gestor: 'edit', usuarios: false,
+      nr01: 'edit', ouvidoria: 'edit', gestor: 'edit', bonificacoes: 'edit', portal: 'view', usuarios: false,
     },
 
     // ── GESTOR DE EQUIPE ──────────────────────────────────
@@ -48,7 +74,7 @@ const Auth = (() => {
       jornada: 'view',    endomarketing: false, recrutamento: 'view',
       departamento: false, integracoes: false, cargos: 'view',
       desenvolvimento: 'view', clima: 'view', documentos: 'view',
-      nr01: 'view', ouvidoria: 'view', gestor: 'edit', usuarios: false,
+      nr01: 'view', ouvidoria: 'view', gestor: 'edit', bonificacoes: 'view', portal: 'view', usuarios: false,
     },
 
     // ── ANALISTA DE RH ────────────────────────────────────
@@ -58,7 +84,7 @@ const Auth = (() => {
       jornada: 'view',      endomarketing: 'view', recrutamento: 'edit',
       departamento: 'edit', integracoes: false, cargos: 'view',
       desenvolvimento: 'edit', clima: 'view', documentos: 'edit',
-      nr01: 'view', ouvidoria: 'edit', gestor: 'view', usuarios: false,
+      nr01: 'view', ouvidoria: 'edit', gestor: 'view', bonificacoes: 'edit', portal: 'view', usuarios: false,
     },
 
     // ── COLABORADOR ───────────────────────────────────────
@@ -68,7 +94,7 @@ const Auth = (() => {
       jornada: 'view',    endomarketing: 'view', recrutamento: false,
       departamento: false, integracoes: false, cargos: false,
       desenvolvimento: 'view', clima: 'responder', documentos: 'view',
-      nr01: 'view', ouvidoria: 'view', gestor: false, usuarios: false,
+      nr01: 'view', ouvidoria: 'view', gestor: false, bonificacoes: false, portal: 'view', usuarios: false,
     },
 
     // ── JURÍDICO (legado) ─────────────────────────────────
@@ -78,42 +104,42 @@ const Auth = (() => {
       jornada: false,     endomarketing: false, recrutamento: false,
       departamento: 'view', integracoes: false, cargos: false,
       desenvolvimento: false, clima: false, documentos: 'edit',
-      nr01: 'view', ouvidoria: 'edit', gestor: false, usuarios: false,
+      nr01: 'view', ouvidoria: 'edit', gestor: false, bonificacoes: false, portal: false, usuarios: false,
     },
   };
 
   // ─── PÁGINAS VISÍVEIS NO SIDEBAR POR PERFIL ──────────────
   const SIDEBAR_PAGES = {
     admin: [
-      'dashboard','pessoas','indicadores','servicos','comunicacao',
-      'experiencia','jornada','endomarketing',
-      'recrutamento','departamento','integracoes','cargos',
+      'dashboard','portal','pessoas','indicadores','servicos','comunicacao',
+      'experiencia','endomarketing',
+      'recrutamento','departamento','integracoes','cargos','bonificacoes',
       'desenvolvimento','clima','documentos','nr01','ouvidoria',
       'gestor','usuarios',
     ],
     rh: [
-      'dashboard','pessoas','indicadores','servicos','comunicacao',
-      'experiencia','jornada','endomarketing',
-      'recrutamento','departamento','cargos',
+      'dashboard','portal','pessoas','indicadores','servicos','comunicacao',
+      'experiencia','endomarketing',
+      'recrutamento','departamento','cargos','bonificacoes',
       'desenvolvimento','clima','documentos','nr01','ouvidoria',
       'gestor',
     ],
     gestor: [
-      'dashboard','pessoas','servicos','comunicacao',
-      'experiencia','jornada',
-      'cargos','desenvolvimento','clima','documentos','nr01','ouvidoria',
+      'dashboard','portal','pessoas','servicos','comunicacao',
+      'experiencia',
+      'cargos','bonificacoes','desenvolvimento','clima','documentos','nr01','ouvidoria',
       'gestor',
     ],
     analista: [
-      'dashboard','pessoas','servicos','comunicacao',
-      'experiencia','jornada','endomarketing',
-      'recrutamento','departamento','cargos',
+      'dashboard','portal','pessoas','servicos','comunicacao',
+      'experiencia','endomarketing',
+      'recrutamento','departamento','cargos','bonificacoes',
       'desenvolvimento','clima','documentos','nr01','ouvidoria',
       'gestor',
     ],
     colab: [
-      'dashboard','pessoas','servicos','comunicacao',
-      'experiencia','jornada','clima','documentos','nr01',
+      'dashboard','portal','pessoas','servicos','comunicacao',
+      'experiencia','clima','documentos','nr01',
     ],
     juridico: [
       'dashboard','pessoas','servicos','comunicacao',

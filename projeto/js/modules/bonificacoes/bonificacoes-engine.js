@@ -105,10 +105,21 @@ window.BonifEngine = (() => {
         ${_statusIcon(s)} ${s.charAt(0).toUpperCase()+s.slice(1)}
         ${s !== 'todos' ? `<span class="bnf-plan-cnt">${cnt[s]||0}</span>` : ''}
       </button>`).join('')}
-    <div style="margin-left:auto;display:flex;gap:8px">
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
       ${lista.length > 0 && (window.Auth?.isRH() ?? true) ? `
         <button class="dp-btn dp-btn-secondary" style="font-size:11px" onclick="bnfPlanAprovarTodos()">✅ Aprovar todos pendentes</button>` : ''}
-      <button class="dp-btn dp-btn-secondary" style="font-size:11px" onclick="bnfPlanExportar()">📊 Exportar CSV</button>
+      <div style="position:relative">
+        <button class="dp-btn dp-btn-secondary" style="font-size:11px;display:flex;align-items:center;gap:5px" onclick="bnfToggleExportMenu('bnf-plan-emenu')">
+          ⬇️ Exportar <span style="font-size:9px;opacity:.7">▾</span>
+        </button>
+        <div id="bnf-plan-emenu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--border-color,#e2e8f0);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:200;min-width:170px;overflow:hidden">
+          <button onclick="bnfPlanExportarExcel();bnfToggleExportMenu('bnf-plan-emenu')" style="display:flex;align-items:center;gap:9px;padding:10px 16px;width:100%;border:none;background:transparent;cursor:pointer;font-size:12px;font-weight:600;text-align:left;transition:background .12s" onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='transparent'">🟢 Excel (.xlsx)</button>
+          <button onclick="bnfPlanExportarPDF();bnfToggleExportMenu('bnf-plan-emenu')" style="display:flex;align-items:center;gap:9px;padding:10px 16px;width:100%;border:none;background:transparent;cursor:pointer;font-size:12px;font-weight:600;text-align:left;transition:background .12s" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'">🔴 PDF (.pdf)</button>
+          <button onclick="bnfPlanExportarWord();bnfToggleExportMenu('bnf-plan-emenu')" style="display:flex;align-items:center;gap:9px;padding:10px 16px;width:100%;border:none;background:transparent;cursor:pointer;font-size:12px;font-weight:600;text-align:left;transition:background .12s" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='transparent'">🔵 Word (.doc)</button>
+          <div style="height:1px;background:var(--border-color,#e2e8f0);margin:2px 0"></div>
+          <button onclick="bnfPlanExportar();bnfToggleExportMenu('bnf-plan-emenu')" style="display:flex;align-items:center;gap:9px;padding:10px 16px;width:100%;border:none;background:transparent;cursor:pointer;font-size:12px;font-weight:600;text-align:left;color:var(--text-muted,#64748b);transition:background .12s" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">⬜ CSV</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -689,7 +700,6 @@ window.BonifEngine = (() => {
       l.calculo_tipo, l.percentual||'—', l.valor_final?.toFixed(2)||0,
       l.status, `"${l.descricao||''}"`, `"${l.criado_por||''}"`,
     ].join(','))];
-    // Linha de total
     const total = lista.reduce((s,l)=>s+(l.valor_final||0),0);
     linhas.push(`"","","","","","","","","TOTAL: ${total.toFixed(2)}","","",""`);
     const blob = new Blob(['﻿'+linhas.join('\n')], { type:'text/csv;charset=utf-8;' });
@@ -697,6 +707,223 @@ window.BonifEngine = (() => {
     const a    = document.createElement('a'); a.href=url; a.download=`bonificacoes_${_mes}.csv`; a.click();
     URL.revokeObjectURL(url);
     _toast('📊 CSV exportado com sucesso!');
+  };
+
+  // ─── EXPORTAR EXCEL ───────────────────────────────────────
+  window.bnfPlanExportarExcel = function() {
+    const db    = BonifDB.get();
+    const lista = db.lancamentos.filter(l => l.mes === _mes && (_filtro === 'todos' || l.status === _filtro));
+    if (!lista.length) { _toast('Nenhum dado para exportar.', 'warn'); return; }
+    if (typeof XLSX === 'undefined') { _toast('Biblioteca XLSX não carregada.', 'warn'); return; }
+
+    const mes   = BonifFmt.mesNome(_mes);
+    const total = lista.reduce((s, l) => s + (l.valor_final || 0), 0);
+    const cols  = ['#', 'Colaborador', 'Cargo', 'Setor', 'Salário Base (R$)', 'Tipo de Bônus', 'Motivo', 'Cálculo', '% Aplicado', 'Bônus (R$)', 'Status', 'Criado por'];
+    const rows  = lista.map((l, i) => [
+      i + 1,
+      l.colaborador_nome || '',
+      l.cargo            || '',
+      l.setor            || '',
+      l.salario_base     || 0,
+      l.tipo_nome        || '',
+      l.descricao        || '',
+      l.calculo_tipo     || '',
+      l.percentual       || '',
+      l.valor_final      || 0,
+      l.status           || '',
+      l.criado_por       || '',
+    ]);
+    rows.push(['', 'TOTAL GERAL', '', '', '', '', '', '', '', total, `${lista.length} lançamento(s)`, '']);
+
+    try {
+      const wsData = [cols, ...rows];
+      const ws     = XLSX.utils.aoa_to_sheet(wsData);
+      // Largura das colunas
+      ws['!cols'] = [5,30,20,18,18,22,30,12,12,16,14,16].map(w => ({ wch: w }));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, mes);
+      XLSX.writeFile(wb, `bonificacoes_${_mes}.xlsx`);
+      _toast('🟢 Excel gerado com sucesso!');
+    } catch (e) {
+      _toast('Erro ao gerar Excel: ' + e.message, 'warn');
+    }
+  };
+
+  // ─── EXPORTAR PDF ─────────────────────────────────────────
+  window.bnfPlanExportarPDF = function() {
+    const db    = BonifDB.get();
+    const lista = db.lancamentos.filter(l => l.mes === _mes && (_filtro === 'todos' || l.status === _filtro));
+    if (!lista.length) { _toast('Nenhum dado para exportar.', 'warn'); return; }
+    if (typeof window.jspdf === 'undefined') { _toast('Biblioteca jsPDF não carregada.', 'warn'); return; }
+
+    const { jsPDF } = window.jspdf;
+    const doc       = new jsPDF({ orientation: 'landscape' });
+    const mes       = BonifFmt.mesNome(_mes);
+    const total     = lista.reduce((s, l) => s + (l.valor_final || 0), 0);
+    const trunc     = (s, n) => s && s.length > n ? s.slice(0, n - 2) + '..' : (s || '—');
+
+    // Cabeçalho azul
+    doc.setFillColor(37, 99, 235);
+    doc.rect(0, 0, 297, 14, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text('hi Conecta RH — Relatório de Bonificações', 10, 9);
+    doc.text(new Date().toLocaleDateString('pt-BR'), 287, 9, { align: 'right' });
+
+    // Título
+    doc.setTextColor(30, 41, 59);
+    doc.setFontSize(15);
+    doc.text(`Bonificações — ${mes}`, 10, 24);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 116, 139);
+    doc.text(`Total: ${BonifFmt.moeda(total)}  ·  ${lista.length} lançamento(s)  ·  Período: ${mes}`, 10, 31);
+
+    // Definição das colunas
+    const cols = [
+      { label: '#',            w:  8, x: 10  },
+      { label: 'Colaborador',  w: 52, x: 18  },
+      { label: 'Cargo',        w: 32, x: 70  },
+      { label: 'Setor',        w: 28, x: 102 },
+      { label: 'Sal. Base',    w: 26, x: 130 },
+      { label: 'Tipo de Bônus',w: 36, x: 156 },
+      { label: 'Motivo',       w: 36, x: 192 },
+      { label: 'Bônus (R$)',   w: 26, x: 228 },
+      { label: 'Status',       w: 20, x: 254 },
+    ];
+    const tableW = 264;
+
+    let y = 37;
+
+    const _drawHeader = () => {
+      doc.setFillColor(37, 99, 235);
+      doc.rect(10, y, tableW, 8, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'bold');
+      cols.forEach(c => doc.text(c.label, c.x + 1, y + 5.5));
+      y += 8;
+    };
+
+    _drawHeader();
+    doc.setFont('helvetica', 'normal');
+
+    lista.forEach((l, i) => {
+      if (y > 193) {
+        doc.addPage();
+        y = 16;
+        _drawHeader();
+        doc.setFont('helvetica', 'normal');
+      }
+
+      doc.setFillColor(i % 2 === 0 ? 248 : 255, i % 2 === 0 ? 250 : 255, i % 2 === 0 ? 252 : 255);
+      doc.rect(10, y, tableW, 7, 'F');
+      doc.setDrawColor(226, 232, 240);
+      doc.rect(10, y, tableW, 7, 'D');
+
+      doc.setTextColor(30, 41, 59);
+      doc.setFontSize(7);
+      doc.text(String(i + 1),                           cols[0].x + 1, y + 5);
+      doc.text(trunc(l.colaborador_nome, 24),            cols[1].x + 1, y + 5);
+      doc.text(trunc(l.cargo, 16),                       cols[2].x + 1, y + 5);
+      doc.text(trunc(l.setor, 14),                       cols[3].x + 1, y + 5);
+      doc.text(BonifFmt.moeda(l.salario_base || 0),      cols[4].x + 1, y + 5);
+      doc.text(trunc(l.tipo_nome, 18),                   cols[5].x + 1, y + 5);
+      doc.text(trunc(l.descricao, 18),                   cols[6].x + 1, y + 5);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(22, 163, 74);
+      doc.text(BonifFmt.moeda(l.valor_final || 0),       cols[7].x + 1, y + 5);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(30, 41, 59);
+      doc.text(l.status || '—',                          cols[8].x + 1, y + 5);
+      y += 7;
+    });
+
+    // Linha de total
+    doc.setFillColor(37, 99, 235);
+    doc.rect(10, y, tableW, 8, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.text('TOTAL GERAL', cols[1].x + 1, y + 5.5);
+    doc.text(BonifFmt.moeda(total),    cols[7].x + 1, y + 5.5);
+    doc.text(`${lista.length} lançs.`, cols[8].x + 1, y + 5.5);
+
+    // Rodapé em todas as páginas
+    const nPags = doc.internal.getNumberOfPages();
+    for (let p = 1; p <= nPags; p++) {
+      doc.setPage(p);
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(148, 163, 184);
+      doc.text(`Gerado em ${new Date().toLocaleString('pt-BR')}`, 10, 205);
+      doc.text(`Página ${p} de ${nPags}`, 287, 205, { align: 'right' });
+    }
+
+    doc.save(`bonificacoes_${_mes}.pdf`);
+    _toast('🔴 PDF gerado com sucesso!');
+  };
+
+  // ─── EXPORTAR WORD ────────────────────────────────────────
+  window.bnfPlanExportarWord = function() {
+    const db    = BonifDB.get();
+    const lista = db.lancamentos.filter(l => l.mes === _mes && (_filtro === 'todos' || l.status === _filtro));
+    if (!lista.length) { _toast('Nenhum dado para exportar.', 'warn'); return; }
+
+    const mes   = BonifFmt.mesNome(_mes);
+    const total = lista.reduce((s, l) => s + (l.valor_final || 0), 0);
+
+    const html = `
+      <h2 style="color:#1e3a5f">Relatório de Bonificações — ${mes}</h2>
+      <p><b>Período:</b> ${mes} &nbsp;|&nbsp; <b>Lançamentos:</b> ${lista.length} &nbsp;|&nbsp; <b>Total:</b> ${BonifFmt.moeda(total)}</p>
+      <p style="color:#64748b;font-size:10pt">Gerado em ${new Date().toLocaleString('pt-BR')} · hi Conecta RH</p>
+      <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;font-size:10pt">
+        <thead>
+          <tr style="background:#2563eb;color:#fff">
+            <th>#</th><th>Colaborador</th><th>Cargo</th><th>Setor</th>
+            <th>Salário Base</th><th>Tipo de Bônus</th><th>Motivo</th>
+            <th>Bônus (R$)</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${lista.map((l, i) => `
+          <tr style="background:${i % 2 === 0 ? '#f8fafc' : '#fff'}">
+            <td style="text-align:center">${i + 1}</td>
+            <td><b>${l.colaborador_nome || '—'}</b></td>
+            <td>${l.cargo || '—'}</td>
+            <td>${l.setor || '—'}</td>
+            <td style="text-align:right">${BonifFmt.moeda(l.salario_base || 0)}</td>
+            <td>${l.tipo_nome || '—'}</td>
+            <td>${l.descricao || '—'}</td>
+            <td style="text-align:right;color:#16a34a;font-weight:bold">${BonifFmt.moeda(l.valor_final || 0)}</td>
+            <td style="text-align:center">${l.status || '—'}</td>
+          </tr>`).join('')}
+          <tr style="background:#dbeafe;font-weight:bold">
+            <td colspan="7" style="text-align:right;padding-right:12px">TOTAL GERAL</td>
+            <td style="text-align:right;color:#1e40af">${BonifFmt.moeda(total)}</td>
+            <td style="text-align:center">${lista.length} lançs.</td>
+          </tr>
+        </tbody>
+      </table>`;
+
+    ExportService.word(`Bonificacoes_${_mes}`, html);
+    _toast('🔵 Word gerado com sucesso!');
+  };
+
+  // ─── TOGGLE MENU EXPORTAR ─────────────────────────────────
+  window.bnfToggleExportMenu = function(id) {
+    const menu = document.getElementById(id);
+    if (!menu) return;
+    const visible = menu.style.display !== 'none';
+    document.querySelectorAll('[id$="-emenu"]').forEach(m => m.style.display = 'none');
+    if (!visible) {
+      menu.style.display = 'block';
+      setTimeout(() => {
+        const off = e => { if (!menu.contains(e.target)) { menu.style.display = 'none'; document.removeEventListener('click', off); } };
+        document.addEventListener('click', off);
+      }, 0);
+    }
   };
 
   function _toast(msg, tipo='ok') {

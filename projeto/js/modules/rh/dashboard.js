@@ -140,7 +140,7 @@ function renderDashboard() {
   // Atualiza badge de notificações
   setTimeout(atualizarBadgeNotif, 100);
 
-  if (perfil === 'rh')     return renderDashboardADM(u);
+  if (['admin','rh','analista'].includes(perfil)) return renderDashboardADM(u);
   if (perfil === 'gestor') return renderDashboardGestor(u);
   return renderDashboardColab(u);
 }

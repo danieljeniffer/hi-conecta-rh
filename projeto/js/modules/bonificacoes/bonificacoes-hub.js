@@ -165,7 +165,6 @@ let _bnfAba = 'dashboard';
 
 const _ABAS = [
   { id:'dashboard',    label:'Dashboard',    icon:'📊' },
-  { id:'formularios',  label:'Formulários',  icon:'📋' },
   { id:'bonificacoes', label:'Bonificações', icon:'💰' },
   { id:'relatorios',   label:'Relatórios',   icon:'📈' },
 ];
@@ -175,7 +174,7 @@ window.bnfIrPara = function(id) {
   document.querySelectorAll('.bnf-subnav-btn').forEach(b => b.classList.toggle('ativo', b.dataset.aba === id));
   const cont = document.getElementById('bnf-conteudo');
   if (!cont) return;
-  const fn = { dashboard: _renderDashboard, formularios: () => window.BonifForms?.render(cont), bonificacoes: () => window.BonifEngine?.render(cont), relatorios: () => window.BonifRelatorios?.render(cont) };
+  const fn = { dashboard: _renderDashboard, bonificacoes: () => window.BonifEngine?.render(cont), relatorios: () => window.BonifRelatorios?.render(cont) };
   const result = fn[id]?.(cont);
   if (typeof result === 'string') cont.innerHTML = result;
 };

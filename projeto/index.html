@@ -30,6 +30,8 @@
   <link rel="stylesheet" href="css/bonificacoes.css" />
   <!-- Módulo Gestor de Equipes -->
   <link rel="stylesheet" href="css/gestor.css" />
+  <!-- Portal do Colaborador -->
+  <link rel="stylesheet" href="css/portal.css" />
   <script>
   // Proteção de rota
   const _user = sessionStorage.getItem('hiRH_user');
@@ -52,12 +54,12 @@
     <nav class="sidebar-nav">
   <div class="nav-section-label">Principal</div>
   <a href="#" class="nav-item active" data-page="dashboard"><span class="nav-icon">⊞</span> Início</a>
+  <a href="#" class="nav-item" data-page="portal"><span class="nav-icon">🏠</span> Portal do Colaborador</a>
   <a href="#" class="nav-item" data-page="pessoas"><span class="nav-icon">👥</span> Gestão de Pessoas</a>
   <a href="#" class="nav-item" data-page="indicadores"><span class="nav-icon">📊</span> Indicadores</a>
   <a href="#" class="nav-item" data-page="servicos"><span class="nav-icon">🛠</span> Serviços RH</a>
   <a href="#" class="nav-item" data-page="comunicacao"><span class="nav-icon">📣</span> Comunicação</a>
   <a href="#" class="nav-item" data-page="experiencia"><span class="nav-icon">✨</span> Experiência</a>
-  <a href="#" class="nav-item" data-page="jornada"><span class="nav-icon">🚀</span> Jornada do Colaborador</a>
   <a href="#" class="nav-item" data-page="endomarketing"><span class="nav-icon">📺</span> Endomarketing.tv</a>
 
   <div class="nav-section-label" style="margin-top:16px">Gestão de Pessoas</div>
@@ -65,6 +67,7 @@
   <a href="#" class="nav-item" data-page="recrutamento"><span class="nav-icon">🔍</span> Recrutamento</a>
   <a href="#" class="nav-item" data-page="departamento"><span class="nav-icon">📋</span> Depto. Pessoal</a>
   <a href="#" class="nav-item" data-page="cargos"><span class="nav-icon">🏗</span> Cargos & Estrutura</a>
+  <a href="#" class="nav-item" data-page="bonificacoes"><span class="nav-icon">🎯</span> Bonificações</a>
   <a href="#" class="nav-item" data-page="desenvolvimento"><span class="nav-icon">🎓</span> T&D</a>
 
   <div class="nav-section-label" style="margin-top:12px">Operações</div>
@@ -105,7 +108,7 @@
 </div>
 <div class="user-dropdown" id="user-dropdown" style="display:none">
   <div class="user-dropdown-header" id="dropdown-header"></div>
-  <div class="user-dropdown-item" onclick="navigateTo('jornada')">🚀 Minha Jornada</div>
+  <div class="user-dropdown-item" onclick="navigateTo('portal');setTimeout(()=>ptlNav('jornada'),100)">🚀 Minha Jornada</div>
   <div class="user-dropdown-item" onclick="navigateTo('departamento')">📋 Meu DP</div>
   <div class="user-dropdown-item" onclick="sairSistema()">🚪 Sair</div>
 </div>
@@ -163,53 +166,68 @@
   <script src="js/data.js"></script>
 
   <!-- 7. Módulos de página (dependem de tudo acima) -->
-  <script src="js/pages/dashboard.js"></script>
-  <script src="js/pages/recrutamento.js"></script>
-  <!-- Departamento Pessoal — serviço e módulos -->
+
+  <!-- ── Módulo RH ────────────────────────────────────────── -->
+  <script src="js/modules/rh/dashboard.js"></script>
+  <script src="js/modules/rh/pessoas.js"></script>
+  <script src="js/modules/rh/indicadores.js"></script>
+  <script src="js/modules/rh/servicos.js"></script>
+  <script src="js/modules/rh/comunicacao.js"></script>
+  <script src="js/modules/rh/documentos.js"></script>
+  <script src="js/modules/rh/cargos.js"></script>
+  <script src="js/modules/rh/desenvolvimento.js"></script>
+  <script src="js/modules/rh/clima.js"></script>
+  <script src="js/modules/rh/ouvidoria.js"></script>
+  <script src="js/modules/rh/nr01.js"></script>
+  <script src="js/modules/rh/engajamento-dashboard.js"></script>
+
+  <!-- ── Módulo Recrutamento ─────────────────────────────── -->
+  <script src="js/modules/recrutamento/recrutamento.js"></script>
+
+  <!-- ── Módulo Departamento Pessoal ────────────────────── -->
   <script src="js/services/DPService.js"></script>
-  <script src="js/pages/dp-dashboard.js"></script>
-  <script src="js/pages/dp-colaboradores.js"></script>
-  <script src="js/pages/dp-folha.js"></script>
-  <script src="js/pages/dp-ferias.js"></script>
-  <script src="js/pages/dp-decimo.js"></script>
-  <script src="js/pages/dp-rescisao.js"></script>
-  <script src="js/pages/dp-beneficios.js"></script>
-  <script src="js/pages/dp-notificacoes.js"></script>
-  <script src="js/pages/dp-hub.js"></script>
-  <script src="js/pages/dp-admissao.js"></script>
-  <script src="js/pages/departamento.js"></script>
-  <script src="js/pages/integracoes.js"></script>
-  <script src="js/pages/jornada.js"></script>
-  <script src="js/pages/indicadores.js"></script>
-  <script src="js/pages/pessoas.js"></script>
-  <script src="js/pages/experiencia.js"></script>
-  <script src="js/pages/engajamento-dashboard.js"></script>
-  <script src="js/pages/desenvolvimento.js"></script>
-  <script src="js/pages/clima.js"></script>
-  <script src="js/pages/endomarketing.js"></script>
-  <script src="js/pages/tv-slides.js"></script>
-  <script src="js/pages/tv-netflix.js"></script>
-  <script src="js/pages/ouvidoria.js"></script>
-  <script src="js/pages/servicos.js"></script>
-  <script src="js/pages/comunicacao.js"></script>
-  <script src="js/pages/documentos.js"></script>
-  <script src="js/pages/cargos.js"></script>
-  <script src="js/pages/nr01.js"></script>
+  <script src="js/modules/dp/dp-dashboard.js"></script>
+  <script src="js/modules/dp/dp-colaboradores.js"></script>
+  <script src="js/modules/dp/dp-admissao.js"></script>
+  <script src="js/modules/dp/dp-folha.js"></script>
+  <script src="js/modules/dp/dp-ferias.js"></script>
+  <script src="js/modules/dp/dp-decimo.js"></script>
+  <script src="js/modules/dp/dp-rescisao.js"></script>
+  <script src="js/modules/dp/dp-beneficios.js"></script>
+  <script src="js/modules/dp/dp-notificacoes.js"></script>
+  <script src="js/modules/dp/dp-hub.js"></script>
+  <script src="js/modules/dp/departamento.js"></script>
+
+  <!-- ── Módulo Colaborador (Portal, Jornada, Experiência) ─ -->
+  <script src="js/modules/colaborador/jornada.js"></script>
+  <script src="js/modules/colaborador/experiencia.js"></script>
+  <script src="js/modules/colaborador/portal.js"></script>
+
+  <!-- ── Módulo Endomarketing ────────────────────────────── -->
+  <script src="js/modules/endomarketing/endomarketing.js"></script>
+  <script src="js/modules/endomarketing/tv-slides.js"></script>
+  <script src="js/modules/endomarketing/tv-netflix.js"></script>
+
+  <!-- ── Módulo Bonificações & Formulários ───────────────── -->
+  <script src="js/modules/bonificacoes/bonificacoes-hub.js"></script>
+  <script src="js/modules/bonificacoes/bonificacoes-forms.js"></script>
+  <script src="js/modules/bonificacoes/bonificacoes-engine.js"></script>
+  <script src="js/modules/bonificacoes/bonificacoes-relatorios.js"></script>
+
+  <!-- ── Módulo Gestor de Equipes ────────────────────────── -->
+  <script src="js/modules/gestor/gestor-hub.js"></script>
+  <script src="js/modules/gestor/gestor-avaliacoes.js"></script>
+  <script src="js/modules/gestor/gestor-ocorrencias.js"></script>
+  <script src="js/modules/gestor/gestor-documentos.js"></script>
+  <script src="js/modules/gestor/gestor-reunioes.js"></script>
+  <script src="js/modules/gestor/gestor-historico.js"></script>
+
+  <!-- ── Módulo Admin ─────────────────────────────────────── -->
+  <script src="js/modules/admin/integracoes.js"></script>
+  <script src="js/modules/admin/usuarios.js"></script>
+
+  <!-- ── Painel de Acessos (helper global) ───────────────── -->
   <script src="js/painelacessos.js"></script>
-  <!-- Módulo Bonificações & Formulários -->
-  <script src="js/pages/bonificacoes-hub.js"></script>
-  <script src="js/pages/bonificacoes-forms.js"></script>
-  <script src="js/pages/bonificacoes-engine.js"></script>
-  <script src="js/pages/bonificacoes-relatorios.js"></script>
-  <!-- Módulo Gestor de Equipes -->
-  <script src="js/pages/gestor-hub.js"></script>
-  <script src="js/pages/gestor-avaliacoes.js"></script>
-  <script src="js/pages/gestor-ocorrencias.js"></script>
-  <script src="js/pages/gestor-documentos.js"></script>
-  <script src="js/pages/gestor-reunioes.js"></script>
-  <script src="js/pages/gestor-historico.js"></script>
-  <!-- Usuários & Permissões (admin only) -->
-  <script src="js/pages/usuarios.js"></script>
 
   <!-- 8. App router (deve ser o último) -->
   <script src="js/app.js"></script>

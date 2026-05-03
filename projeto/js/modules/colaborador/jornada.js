@@ -1033,9 +1033,13 @@ function jv2EnviarFeedback() {
   jv2Celebrar();
 }
 
+function _jv2Container() {
+  return document.getElementById('ptl-conteudo') || document.getElementById('pageContainer');
+}
+
 function jv2Celebrar() {
   const col = jornadaConfig.colaboradorAtual;
-  document.getElementById('pageContainer').innerHTML = `
+  _jv2Container().innerHTML = `
   <div class="jv2-celebracao">
     <div class="jv2-cel-bg"></div>
     <div class="jv2-cel-content">
@@ -1066,8 +1070,8 @@ function jv2Concluir(id) {
 
   if (id === 8) { jv2Celebrar(); return; }
 
-  // Re-renderiza a página inteira para atualizar o progresso
-  document.getElementById('pageContainer').innerHTML = renderJornada();
+  // Re-renderiza para atualizar o progresso (portal ou standalone)
+  _jv2Container().innerHTML = renderJornada();
   setTimeout(() => jv2IrEtapa(col.etapaAtual), 80);
 }
 
