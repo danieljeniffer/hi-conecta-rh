@@ -480,11 +480,454 @@
 .tv-admin-card h3 { font-size:14px;font-weight:800;margin:0 0 4px; }
 .tv-admin-card-icon { font-size:28px;margin-bottom:8px; }
 
+/* ══════════════════════════════════════════════
+   HOME REDESIGN — novo layout Premium
+══════════════════════════════════════════════ */
+
+/* Wrapper geral */
+.tv-home-redesign {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+}
+
+/* ── HERO BANNER ─────────────────────────────── */
+.tvh-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  min-height: 140px;
+  padding: 20px 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.tvh-hero::after {
+  content: '';
+  position: absolute;
+  right: -80px; top: -80px;
+  width: 280px; height: 280px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.04);
+  pointer-events: none;
+}
+
+.tvh-hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  z-index: 1;
+}
+
+.tvh-hero-tag {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+
+.tvh-urgente-badge {
+  background: rgba(255,255,255,.2);
+  color: white;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .6px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.3);
+}
+
+.tvh-com-badge {
+  background: rgba(255,255,255,.15);
+  color: rgba(255,255,255,.9);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .6px;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.tvh-hero-data { font-size: 11px; color: rgba(255,255,255,.5); }
+
+.tvh-hero-titulo {
+  font-size: 22px;
+  font-weight: 900;
+  color: white;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.tvh-hero-sub {
+  font-size: 13px;
+  color: rgba(255,255,255,.7);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.tvh-hero-btn { align-self: flex-start; margin-top: 4px; }
+
+.tvh-hero-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-left: 24px;
+  border-left: 1px solid rgba(255,255,255,.12);
+  position: relative;
+  z-index: 1;
+}
+
+/* ── GRID PRINCIPAL ──────────────────────────── */
+.tvh-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr 0.9fr;
+  gap: 0;
+  flex: 1;
+  overflow: hidden;
+  border-top: 1px solid rgba(255,255,255,.07);
+}
+
+.tvh-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow-y: auto;
+  padding: 14px 16px;
+  border-right: 1px solid rgba(255,255,255,.06);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.1) transparent;
+}
+
+.tvh-col:last-child { border-right: none; }
+
+/* ── LABEL DE SEÇÃO ──────────────────────────── */
+.tvh-section-label {
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+  padding: 0 0 8px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  margin-bottom: 10px;
+}
+
+/* ── AGENDA CULTURAL ─────────────────────────── */
+.tvh-agenda-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+
+.tvh-agenda-item {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 10px;
+  background: rgba(255,255,255,.04);
+  border-radius: 10px;
+  padding: 8px;
+  transition: background .15s;
+}
+
+.tvh-agenda-item:hover { background: rgba(255,255,255,.07); }
+
+.tvh-agenda-foto {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255,255,255,.08);
+  flex-shrink: 0;
+}
+
+.tvh-agenda-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+
+.tvh-agenda-tipo {
+  display: inline-block;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .5px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  color: white;
+  align-self: flex-start;
+  margin-bottom: 2px;
+}
+
+.tvh-agenda-titulo {
+  font-size: 13px;
+  font-weight: 800;
+  color: white;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tvh-agenda-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 10px;
+  color: rgba(255,255,255,.5);
+}
+
+.tvh-agenda-local {
+  font-size: 10px;
+  color: rgba(255,255,255,.4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── COLABORADOR DESTAQUE ────────────────────── */
+.tvh-destaque-card {
+  background: linear-gradient(135deg, #1a1040, #2d1f6e);
+  border: 1px solid rgba(124,58,237,.3);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.tvh-destaque-label {
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #a78bfa;
+  margin-bottom: 10px;
+}
+
+.tvh-destaque-body { display: flex; gap: 10px; align-items: center; }
+
+.tvh-destaque-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 900;
+  color: white;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.tvh-destaque-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+.tvh-destaque-nome  { font-size: 13px; font-weight: 800; color: white; }
+.tvh-destaque-dept  { font-size: 10px; color: #a78bfa; margin-top: 1px; }
+.tvh-destaque-motivo { font-size: 10px; color: rgba(255,255,255,.55); margin-top: 3px; line-height: 1.4; }
+
+/* ── COTAÇÕES ────────────────────────────────── */
+.tvh-cotacoes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.tvh-cotacao-card {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  transition: background .15s;
+}
+
+.tvh-cotacao-card:hover { background: rgba(255,255,255,.08); }
+.tvh-cotacao-card.up    { border-left: 3px solid #4ade80; }
+.tvh-cotacao-card.down  { border-left: 3px solid #f87171; }
+.tvh-cotacao-card.flat  { border-left: 3px solid #94a3b8; }
+
+.tvh-cotacao-nome  { font-size: 10px; font-weight: 600; color: rgba(255,255,255,.5); }
+.tvh-cotacao-valor {
+  font-size: 17px;
+  font-weight: 900;
+  color: white;
+  line-height: 1;
+}
+
+.tvh-cotacao-var   { font-size: 11px; font-weight: 700; }
+.tvh-cotacao-card.up   .tvh-cotacao-var  { color: #4ade80; }
+.tvh-cotacao-card.down .tvh-cotacao-var  { color: #f87171; }
+.tvh-cotacao-card.flat .tvh-cotacao-var  { color: #94a3b8; }
+
+/* ── NOTÍCIAS ────────────────────────────────── */
+.tvh-noticias-list { display: flex; flex-direction: column; gap: 2px; }
+
+.tvh-noticia-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 9px 8px;
+  border-radius: 8px;
+  cursor: default;
+  transition: background .12s;
+}
+
+.tvh-noticia-item:hover { background: rgba(255,255,255,.05); }
+
+.tvh-noticia-item.destaque {
+  background: rgba(59,130,246,.1);
+  border: 1px solid rgba(59,130,246,.2);
+  border-radius: 10px;
+}
+
+.tvh-noticia-emoji { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+
+.tvh-noticia-body { flex: 1; min-width: 0; }
+
+.tvh-noticia-cat {
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: #60a5fa;
+  margin-bottom: 3px;
+}
+
+.tvh-noticia-titulo {
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  line-height: 1.3;
+  margin-bottom: 3px;
+}
+
+.tvh-noticia-desc {
+  font-size: 11px;
+  color: rgba(255,255,255,.5);
+  line-height: 1.4;
+  margin-bottom: 3px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tvh-noticia-tempo { font-size: 10px; color: rgba(255,255,255,.3); }
+
+/* ── ANIVERSARIANTES ─────────────────────────── */
+.tvh-aniv-cards { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+
+.tvh-aniv-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,.04);
+  border-radius: 8px;
+  padding: 8px 10px;
+  transition: background .12s;
+}
+
+.tvh-aniv-card:hover { background: rgba(255,255,255,.07); }
+
+.tvh-aniv-av {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  color: white;
+  font-size: 10px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tvh-aniv-info { flex: 1; min-width: 0; }
+.tvh-aniv-nome  { font-size: 12px; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tvh-aniv-setor { font-size: 10px; color: rgba(255,255,255,.45); }
+.tvh-aniv-dia   { font-size: 11px; font-weight: 800; color: #f472b6; white-space: nowrap; }
+
+/* ── PÃO DIÁRIO ──────────────────────────────── */
+.tvh-pao {
+  background: linear-gradient(135deg, #1c1408, #2d1a00);
+  border: 1px solid rgba(251,191,36,.15);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.tvh-pao-label { font-size: 9px; font-weight: 900; letter-spacing: 1.2px; color: #fbbf24; text-transform: uppercase; margin-bottom: 4px; }
+.tvh-pao-aspas { font-size: 36px; font-weight: 900; color: rgba(251,191,36,.2); line-height: .5; margin-bottom: 4px; }
+.tvh-pao-texto { font-size: 12px; color: rgba(255,255,255,.8); font-style: italic; line-height: 1.55; margin: 0 0 6px; }
+.tvh-pao-ref   { font-size: 10px; font-weight: 700; color: #fbbf24; }
+
+/* ── DICA BEM-ESTAR ──────────────────────────── */
+.tvh-dica {
+  background: rgba(37,99,235,.12);
+  border: 1px solid rgba(37,99,235,.2);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+}
+
+.tvh-dica-label { font-size: 9px; font-weight: 900; letter-spacing: 1.2px; color: #93c5fd; text-transform: uppercase; margin-bottom: 5px; }
+.tvh-dica-texto { font-size: 12px; color: #bfdbfe; line-height: 1.55; margin: 0; }
+
+/* ── META DO MÊS ─────────────────────────────── */
+.tvh-meta {
+  background: rgba(255,255,255,.04);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+}
+
+.tvh-meta-label { font-size: 9px; font-weight: 900; letter-spacing: 1.2px; color: rgba(255,255,255,.4); text-transform: uppercase; margin-bottom: 8px; }
+.tvh-meta-bar-wrap { height: 8px; background: rgba(255,255,255,.1); border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
+.tvh-meta-bar { height: 100%; border-radius: 4px; transition: width .6s; }
+.tvh-meta-nums { display: flex; align-items: baseline; justify-content: space-between; }
+
+/* ── SISTEMAS GRID ───────────────────────────── */
+.tvh-sistemas-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.tvh-sis-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  text-decoration: none;
+  transition: all .15s;
+  cursor: pointer;
+}
+
+.tvh-sis-btn:hover { background: rgba(255,255,255,.08) !important; transform: translateY(-2px); }
+
+.tvh-sis-btn img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.tvh-sis-nome {
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(255,255,255,.6);
+  text-align: center;
+  line-height: 1.2;
+}
+
 /* ── RESPONSIVO TV ───────────────────────────── */
 @media (max-width: 900px) {
   .tv-home-grid     { grid-template-columns:1fr; }
   .tv-col-left, .tv-col-right { display:none; }
   .tv-noticias-layout { grid-template-columns:1fr; }
+  .tvh-hero { grid-template-columns: 1fr; }
+  .tvh-hero-right { display: none; }
+  .tvh-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 640px) {

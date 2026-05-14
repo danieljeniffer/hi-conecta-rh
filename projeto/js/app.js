@@ -23,6 +23,14 @@ const pages = {
   gestor:          () => renderGestor(),
   bonificacoes:    () => renderBonificacoes(),
   portal:          () => renderPortal(),
+  // ── Enterprise ────────────────────────────────────────────
+  analytics:       () => renderAnalytics(),
+  timeline:        () => renderTimeline('demo', 'Timeline do Colaborador'),
+  automacao:       () => renderAutomacao(),
+  // ── DP Inteligente ────────────────────────────────────────
+  dpc:             () => renderDPCentral(),
+  dpdashboard:     () => renderDPDashboardOps(),
+  'dp-massa':      () => renderDPMassa(),
   usuarios:        () => renderUsuarios(),
 };
 
@@ -47,6 +55,12 @@ const pageTitles = {
   gestor:          'Gestão de Equipes',
   bonificacoes:    'Bonificações & Formulários',
   portal:          'Portal do Colaborador',
+  analytics:       'People Analytics',
+  timeline:        'Timeline do Colaborador',
+  automacao:       'Automation Engine',
+  dpc:             'Central Trabalhista Inteligente',
+  dpdashboard:     'DP — Dashboard Operacional',
+  'dp-massa':      'DP — Cálculo em Massa',
   usuarios:        'Usuários & Permissões',
 };
 

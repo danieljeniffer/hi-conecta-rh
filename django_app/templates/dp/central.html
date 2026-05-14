@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+{% load hi_tags static %}
+
+{% block title %}Central Trabalhista{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dp-central.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dpc-root">
+
+  <div class="dpc-hero">
+    <div class="dpc-hero-left">
+      <div class="dpc-hero-icon">⚡</div>
+      <div>
+        <h2>Central Trabalhista Inteligente</h2>
+        <p>Selecione o colaborador e o tipo de cálculo — resultado imediato</p>
+      </div>
+    </div>
+    <div class="dpc-hero-actions">
+      <a href="{% url 'dp:hub' %}" class="dpc-btn-ghost">← DP Hub</a>
+      <button class="dpc-btn-ghost" onclick="limparCalculo()">🔄 Limpar</button>
+    </div>
+  </div>
+
+  <div class="dpc-painel">
+
+    <!-- COLUNA ESQUERDA: Seleção -->
+    <div class="dpc-coluna-sel">
+
+      <div class="dpc-secao">
+        <div class="dpc-secao-titulo">👤 Colaborador</div>
+        <div class="dpc-search-wrap">
+          <span class="dpc-search-icon">🔍</span>
+          <input type="text" id="dpc-busca-colab" class="dpc-search-input"
+                 placeholder="Buscar por nome..."
+                 oninput="filtrarColabs(this.value)" />
+        </div>
+        <div class="dpc-colab-lista" id="dpc-colab-lista">
+          {% for colab in colabs %}
+          <div class="dpc-colab-item"
+               data-nome="{{ colab.nome|lower }}"
+               data-cpf="{{ colab.cpf }}"
+               data-id="{{ colab.id }}"
+               data-sal="{{ colab.salario_base }}"
+               data-admissao="{{ colab.data_admissao|date:'Y-m-d' }}"
+               onclick="selecionarColab(this)">
+            <div class="dpc-colab-av">{{ colab.iniciais }}</div>
+            <div class="dpc-colab-info">
+              <div class="dpc-colab-nome">{{ colab.nome }}</div>
+              <div class="dpc-colab-sub">{{ colab.cargo }} · {{ colab.salario_base|moeda }}</div>
+            </div>
+            <div class="dpc-colab-status dpc-st-{{ colab.status }}">{{ colab.get_status_display }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="dpc-secao" style="margin-top:16px">
+        <div class="dpc-secao-titulo">🧮 Tipo de Cálculo</div>
+        <div class="dpc-tipo-grid">
+          <button class="dpc-tipo-btn" data-tipo="ferias" onclick="selecionarTipo('ferias')"><span>🏖️</span>Férias</button>
+          <button class="dpc-tipo-btn" data-tipo="rescisao" onclick="selecionarTipo('rescisao')"><span>👋</span>Rescisão</button>
+          <button class="dpc-tipo-btn" data-tipo="decimo" onclick="selecionarTipo('decimo')"><span>🎁</span>13º</button>
+          <button class="dpc-tipo-btn" data-tipo="folha" onclick="selecionarTipo('folha')"><span>💰</span>Folha</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- COLUNA DIREITA: Formulário + Resultado -->
+    <div class="dpc-coluna-calc" id="dpc-coluna-calc">
+      <div class="dpc-placeholder">
+        <div class="dpc-placeholder-icon">⚡</div>
+        <h3>Pronto para calcular</h3>
+        <p>Selecione um colaborador e o tipo de cálculo.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+const CALCULAR_URL = "{% url 'dp:calcular' %}";
+const CSRF = "{{ csrf_token }}";
+
+let colabSel = null;
+let tipoSel  = null;
+
+function filtrarColabs(busca) {
+  document.querySelectorAll('.dpc-colab-item').forEach(el => {
+    const match = !busca || el.dataset.nome.includes(busca.toLowerCase()) || el.dataset.cpf.includes(busca);
+    el.style.display = match ? '' : 'none';
+  });
+}
+
+function selecionarColab(el) {
+  document.querySelectorAll('.dpc-colab-item').forEach(e => e.classList.remove('ativo'));
+  el.classList.add('ativo');
+  colabSel = {
+    id:       el.dataset.id,
+    nome:     el.querySelector('.dpc-colab-nome').textContent,
+    salario:  el.dataset.sal,
+    admissao: el.dataset.admissao,
+  };
+  if (tipoSel) renderFormulario();
+}
+
+function selecionarTipo(tipo) {
+  tipoSel = tipo;
+  document.querySelectorAll('.dpc-tipo-btn').forEach(b => b.classList.toggle('ativo', b.dataset.tipo === tipo));
+  if (colabSel) renderFormulario();
+}
+
+function renderFormulario() {
+  const cont = document.getElementById('dpc-coluna-calc');
+  const titulos = {ferias:'🏖️ Férias', rescisao:'👋 Rescisão', decimo:'🎁 13º Salário', folha:'💰 Folha'};
+
+  let campos = '';
+  if (tipoSel === 'ferias') {
+    campos = `
+      <div class="dpc-campo"><label class="dpc-label">Dias de Gozo</label><input type="number" id="dias" class="dpc-input" value="30" min="5" max="30" oninput="autoCalc()"></div>
+      <div class="dpc-campo"><label class="dpc-label">Dias de Abono</label><input type="number" id="abono" class="dpc-input" value="0" min="0" max="10" oninput="autoCalc()"></div>
+      <div class="dpc-campo"><label class="dpc-label">Dependentes IRRF</label><input type="number" id="dependentes" class="dpc-input" value="0" min="0" oninput="autoCalc()"></div>`;
+  } else if (tipoSel === 'decimo') {
+    campos = `
+      <div class="dpc-campo"><label class="dpc-label">Meses trabalhados</label><input type="number" id="meses" class="dpc-input" value="12" min="1" max="12" oninput="autoCalc()"></div>`;
+  } else if (tipoSel === 'rescisao') {
+    campos = `
+      <div class="dpc-campo"><label class="dpc-label">Tipo de Rescisão</label>
+        <select id="tipo_rescisao" class="dpc-select" onchange="autoCalc()">
+          <option value="sem_justa_causa">Sem Justa Causa</option>
+          <option value="pedido_demissao">Pedido de Demissão</option>
+          <option value="justa_causa">Justa Causa</option>
+          <option value="acordo_mutuo">Acordo Mútuo</option>
+        </select></div>
+      <div class="dpc-campo"><label class="dpc-label">Data Rescisão</label><input type="date" id="data_rescisao" class="dpc-input" value="${new Date().toISOString().slice(0,10)}" onchange="autoCalc()"></div>
+      <div class="dpc-campo dpc-campo-check"><label class="dpc-label-check"><input type="checkbox" id="aviso_indenizado" onchange="autoCalc()"> Aviso Prévio Indenizado</label></div>`;
+  }
+
+  cont.innerHTML = `
+<div class="dpc-formulario">
+  <div class="dpc-form-header">
+    <div class="dpc-form-header-left">
+      <div class="dpc-form-titulo">${titulos[tipoSel]} — ${colabSel.nome}</div>
+    </div>
+  </div>
+  <div class="dpc-colab-card">
+    <div class="dpc-colab-card-av">${colabSel.nome.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase()}</div>
+    <div class="dpc-colab-card-info">
+      <strong>${colabSel.nome}</strong>
+      <span>Admissão: ${new Date(colabSel.admissao+'T12:00').toLocaleDateString('pt-BR')}</span>
+    </div>
+    <div class="dpc-colab-card-sal">
+      <div class="dpc-colab-sal-val">R$ ${parseFloat(colabSel.salario).toLocaleString('pt-BR',{minimumFractionDigits:2})}</div>
+      <div class="dpc-colab-sal-label">Salário Bruto</div>
+    </div>
+  </div>
+  <div class="dpc-campos-grid">${campos}</div>
+  <button class="dpc-btn-calcular" onclick="calcular()" id="dpc-btn-calc">⚡ Calcular Agora</button>
+  <div id="dpc-resultado"></div>
+</div>`;
+
+  setTimeout(calcular, 200);
+}
+
+let debounceTimer;
+function autoCalc() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(calcular, 600);
+}
+
+async function calcular() {
+  if (!colabSel || !tipoSel) return;
+  const btn = document.getElementById('dpc-btn-calc');
+  if (btn) { btn.disabled = true; btn.textContent = '⌛ Calculando...'; }
+
+  const formData = new FormData();
+  formData.append('tipo', tipoSel);
+  formData.append('colaborador_id', colabSel.id);
+  formData.append('csrfmiddlewaretoken', CSRF);
+
+  // Coleta campos do formulário
+  ['dias','abono','dependentes','meses','tipo_rescisao','data_rescisao'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) formData.append(id, el.type==='checkbox'?el.checked:el.value);
+  });
+  const avisoCb = document.getElementById('aviso_indenizado');
+  if (avisoCb) formData.append('aviso_indenizado', avisoCb.checked);
+
+  try {
+    const resp = await fetch(CALCULAR_URL, { method:'POST', body: formData });
+    const json = await resp.json();
+
+    if (json.success) {
+      renderResultado(json.resultado);
+    } else {
+      document.getElementById('dpc-resultado').innerHTML =
+        `<div class="dpc-alertas-box"><div class="dpc-alerta-item dpc-alerta-erro">❌ ${json.message}</div></div>`;
+    }
+  } catch(e) {
+    console.error(e);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '⚡ Recalcular'; }
+  }
+}
+
+function renderResultado(r) {
+  const fmt = v => 'R$ ' + parseFloat(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const liquido = r.liquido ?? r.total ?? 0;
+
+  const linhas = Object.entries(r).filter(([k]) => !['colaborador_id'].includes(k)).map(([k,v]) => {
+    if (typeof v !== 'number') return '';
+    const labels = {bruto:'Bruto',inss:'INSS',irrf:'IRRF',fgts:'FGTS',liquido:'💰 LÍQUIDO',total:'💰 TOTAL',saldo_salario:'Saldo Salário',ferias_vencidas:'Férias Vencidas',multa_fgts:'Multa FGTS',total_bruto:'Total Bruto',total_liquido:'💰 LÍQUIDO',parcela1:'1ª Parcela',parcela2:'2ª Parcela',valor_ferias:'Férias',terco:'⅓ Constitucional',valor_abono:'Abono'};
+    const label = labels[k] || k.replace(/_/g,' ');
+    const tipo  = k.includes('inss')||k.includes('irrf')?'desconto':k.includes('liquido')||k.includes('total')?'total':'';
+    return `<div class="dpc-mem-linha ${tipo}"><span>${label}</span><span class="dpc-mem-val ${tipo==='desconto'?'neg':tipo==='total'?'total':'pos'}">${fmt(v)}</span></div>`;
+  }).join('');
+
+  document.getElementById('dpc-resultado').innerHTML = `
+<div class="dpc-resultado">
+  <div class="dpc-resultado-hero" style="background:linear-gradient(135deg,#16a34a,#22c55e)">
+    <div class="dpc-res-label">Valor Líquido</div>
+    <div class="dpc-res-valor">${fmt(liquido)}</div>
+  </div>
+  <div class="dpc-memoria">
+    <div class="dpc-memoria-titulo">📐 Memória de Cálculo</div>
+    <div class="dpc-memoria-linhas">${linhas}</div>
+  </div>
+  <div class="dpc-acoes-pos">
+    <button class="dpc-btn-acao" onclick="window.print()">🖨️ Imprimir</button>
+    <button class="dpc-btn-acao" onclick="copiarResultado(${JSON.stringify(r)})">📋 Copiar</button>
+  </div>
+</div>`;
+}
+
+function copiarResultado(r) {
+  const fmt = v => 'R$ ' + parseFloat(v||0).toFixed(2);
+  const txt = Object.entries(r).filter(([,v])=>typeof v==='number').map(([k,v])=>`${k}: ${fmt(v)}`).join('\n');
+  navigator.clipboard?.writeText(txt);
+  alert('Resultado copiado!');
+}
+
+function limparCalculo() {
+  colabSel = null; tipoSel = null;
+  document.querySelectorAll('.dpc-colab-item').forEach(e=>e.classList.remove('ativo'));
+  document.querySelectorAll('.dpc-tipo-btn').forEach(e=>e.classList.remove('ativo'));
+  document.getElementById('dpc-coluna-calc').innerHTML = '<div class="dpc-placeholder"><div class="dpc-placeholder-icon">⚡</div><h3>Pronto para calcular</h3></div>';
+}
+</script>
+{% endblock %}
+{% endblock %}

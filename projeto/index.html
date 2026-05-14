@@ -32,6 +32,12 @@
   <link rel="stylesheet" href="css/gestor.css" />
   <!-- Portal do Colaborador -->
   <link rel="stylesheet" href="css/portal.css" />
+  <!-- Módulos novos (Enterprise) -->
+  <link rel="stylesheet" href="css/timeline.css" />
+  <link rel="stylesheet" href="css/analytics.css" />
+  <link rel="stylesheet" href="css/automation.css" />
+  <!-- DP Inteligente Enterprise -->
+  <link rel="stylesheet" href="css/dp-central.css" />
   <script>
   // Proteção de rota
   const _user = sessionStorage.getItem('hiRH_user');
@@ -66,6 +72,8 @@
   <a href="#" class="nav-item" data-page="gestor"><span class="nav-icon">👥</span> Gestor de Equipes</a>
   <a href="#" class="nav-item" data-page="recrutamento"><span class="nav-icon">🔍</span> Recrutamento</a>
   <a href="#" class="nav-item" data-page="departamento"><span class="nav-icon">📋</span> Depto. Pessoal</a>
+  <a href="#" class="nav-item" data-page="dpc"><span class="nav-icon">⚡</span> Central Trabalhista</a>
+  <a href="#" class="nav-item" data-page="dpdashboard"><span class="nav-icon">🏢</span> DP — Operacional</a>
   <a href="#" class="nav-item" data-page="cargos"><span class="nav-icon">🏗</span> Cargos & Estrutura</a>
   <a href="#" class="nav-item" data-page="bonificacoes"><span class="nav-icon">🎯</span> Bonificações</a>
   <a href="#" class="nav-item" data-page="desenvolvimento"><span class="nav-icon">🎓</span> T&D</a>
@@ -76,6 +84,11 @@
   <a href="#" class="nav-item" data-page="nr01"><span class="nav-icon">⚖️</span> NR-01 Segurança</a>
   <a href="#" class="nav-item" data-page="ouvidoria"><span class="nav-icon">📢</span> Ouvidoria</a>
   <a href="#" class="nav-item" data-page="integracoes"><span class="nav-icon">🔌</span> Integrações</a>
+
+  <div class="nav-section-label" style="margin-top:12px">Inteligência</div>
+  <a href="#" class="nav-item" data-page="analytics"><span class="nav-icon">📊</span> People Analytics</a>
+  <a href="#" class="nav-item" data-page="timeline"><span class="nav-icon">⏱️</span> Timeline Colaborador</a>
+  <a href="#" class="nav-item" data-page="automacao"><span class="nav-icon">⚡</span> Automações</a>
 
   <div class="nav-section-label" style="margin-top:12px">Sistema</div>
   <a href="#" class="nav-item" data-page="usuarios"><span class="nav-icon">🔐</span> Usuários & Permissões</a>
@@ -228,6 +241,23 @@
 
   <!-- ── Painel de Acessos (helper global) ───────────────── -->
   <script src="js/painelacessos.js"></script>
+
+  <!-- ── Enterprise: Core API + Serviços avançados ────────── -->
+  <script src="js/core/Api.js"></script>
+  <script src="js/utils/skeleton.js"></script>
+  <script src="js/services/IARHService.js"></script>
+  <script src="js/services/AutomationEngine.js"></script>
+  <script src="js/services/BitrixAdapter.js"></script>
+
+  <!-- ── Enterprise: Novos módulos ────────────────────────── -->
+  <script src="js/modules/rh/timeline.js"></script>
+  <script src="js/modules/rh/analytics.js"></script>
+  <!-- ── DP Inteligente ────────────────────────────────────── -->
+  <script src="js/modules/dp/dp-central.js"></script>
+  <script src="js/modules/dp/dp-wizard-rescisao.js"></script>
+  <script src="js/modules/dp/dp-dashboard-ops.js"></script>
+  <script src="js/modules/dp/dp-calculo-massa.js"></script>
+  <script src="js/services/DocumentGeneratorService.js"></script>
 
   <!-- 8. App router (deve ser o último) -->
   <script src="js/app.js"></script>

@@ -1,0 +1,1015 @@
+// =============================================
+// PRISMA SCHEMA — hi Conecta RH Enterprise
+// PostgreSQL + Soft Delete + Multi-tenant
+// =============================================
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum PerfilUsuario {
+  admin
+  rh
+  analista
+  gestor
+  colaborador
+  juridico
+}
+
+enum StatusColaborador {
+  ativo
+  ferias
+  afastado
+  desligado
+  admissao_pendente
+}
+
+enum RegimeContratacao {
+  clt
+  pj
+  estagio
+  temporario
+  autonomo
+}
+
+enum TipoDocumento {
+  contrato
+  aditivo
+  advertencia
+  atestado
+  declaracao
+  certificado
+  exame_admissional
+  exame_demissional
+  epi
+  politica
+  outro
+}
+
+enum StatusDocumento {
+  pendente
+  enviado
+  assinado
+  vencido
+  cancelado
+}
+
+enum StatusFerias {
+  pendente
+  aprovada
+  recusada
+  em_gozo
+  concluida
+}
+
+enum TipoRescisao {
+  sem_justa_causa
+  pedido_demissao
+  justa_causa
+  acordo_mutuo
+  termino_contrato
+  aposentadoria
+}
+
+enum StatusFolha {
+  aberta
+  calculada
+  aprovada
+  paga
+  cancelada
+}
+
+enum PrioridadeNotificacao {
+  baixa
+  normal
+  alta
+  critica
+}
+
+enum StatusWorkflow {
+  pendente
+  em_andamento
+  aprovado
+  recusado
+  cancelado
+  expirado
+}
+
+enum TipoWorkflow {
+  aprovacao_ferias
+  aprovacao_beneficio
+  solicitacao_documento
+  desligamento
+  admissao
+  reajuste_salarial
+  compra
+  treinamento
+  generico
+}
+
+enum TipoRegistroPonto {
+  entrada
+  saida_intervalo
+  retorno_intervalo
+  saida
+}
+
+enum StatusVaga {
+  rascunho
+  aberta
+  em_triagem
+  entrevistas
+  proposta
+  fechada
+  cancelada
+}
+
+enum StatusCandidato {
+  inscrito
+  triagem
+  entrevista_rh
+  entrevista_tecnica
+  proposta
+  aprovado
+  reprovado
+  desistiu
+}
+
+enum PlanoEmpresa {
+  trial
+  starter
+  pro
+  enterprise
+}
+
+enum StatusEmpresa {
+  ativa
+  trial
+  inadimplente
+  cancelada
+  suspensa
+}
+
+// ─────────────────────────────────────────────
+// EMPRESAS (Multi-tenant)
+// ─────────────────────────────────────────────
+
+model Empresa {
+  id               String        @id @default(uuid())
+  nome             String
+  razao_social     String?
+  cnpj             String        @unique
+  email            String
+  telefone         String?
+  logo_url         String?
+  plano            PlanoEmpresa  @default(trial)
+  status           StatusEmpresa @default(trial)
+  trial_ate        DateTime?
+  max_colaboradores Int          @default(30)
+  config           Json?         // configs personalizadas
+  created_at       DateTime      @default(now())
+  updated_at       DateTime      @updatedAt
+  deleted_at       DateTime?
+
+  // Relacionamentos
+  usuarios         Usuario[]
+  colaboradores    Colaborador[]
+  departamentos    Departamento[]
+  cargos           Cargo[]
+  folhas           FolhaPagamento[]
+  ferias           Ferias[]
+  documentos       Documento[]
+  notificacoes     Notificacao[]
+  workflows        Workflow[]
+  vagas            Vaga[]
+  comunicados      Comunicado[]
+  treinamentos     Treinamento[]
+  beneficios_cat   BeneficioCategoria[]
+  audit_logs       AuditLog[]
+  registros_ponto  RegistroPonto[]
+
+  @@map("empresas")
+  @@index([cnpj])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────
+// USUÁRIOS (Login)
+// ─────────────────────────────────────────────
+
+model Usuario {
+  id               String        @id @default(uuid())
+  empresa_id       String
+  colaborador_id   String?       @unique
+  nome             String
+  email            String
+  senha_hash       String
+  perfil           PerfilUsuario @default(colaborador)
+  ativo            Boolean       @default(true)
+  ultimo_acesso    DateTime?
+  ultimo_ip        String?
+  mfa_secret       String?
+  mfa_ativo        Boolean       @default(false)
+  reset_token      String?
+  reset_expira     DateTime?
+  refresh_tokens   RefreshToken[]
+  created_at       DateTime      @default(now())
+  updated_at       DateTime      @updatedAt
+  deleted_at       DateTime?
+
+  empresa          Empresa       @relation(fields: [empresa_id], references: [id])
+  colaborador      Colaborador?  @relation(fields: [colaborador_id], references: [id])
+  audit_logs       AuditLog[]
+  notificacoes     Notificacao[] @relation("NotifDestinatario")
+  aprovacoes       Workflow[]    @relation("WorkflowAprovador")
+  solicitacoes     Workflow[]    @relation("WorkflowSolicitante")
+  feed_posts       FeedPost[]
+  comentarios      Comentario[]
+  reacoes          Reacao[]
+
+  @@unique([empresa_id, email])
+  @@map("usuarios")
+  @@index([empresa_id])
+  @@index([email])
+}
+
+model RefreshToken {
+  id         String   @id @default(uuid())
+  usuario_id String
+  token      String   @unique
+  expira_em  DateTime
+  revogado   Boolean  @default(false)
+  ip         String?
+  user_agent String?
+  created_at DateTime @default(now())
+
+  usuario    Usuario  @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+  @@index([token])
+  @@index([usuario_id])
+}
+
+// ─────────────────────────────────────────────
+// DEPARTAMENTOS
+// ─────────────────────────────────────────────
+
+model Departamento {
+  id          String   @id @default(uuid())
+  empresa_id  String
+  nome        String
+  codigo      String?
+  gestor_id   String?
+  pai_id      String?
+  ativo       Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  deleted_at  DateTime?
+
+  empresa       Empresa        @relation(fields: [empresa_id], references: [id])
+  colaboradores Colaborador[]
+  pai           Departamento?  @relation("DeptFilhos", fields: [pai_id], references: [id])
+  filhos        Departamento[] @relation("DeptFilhos")
+
+  @@unique([empresa_id, nome])
+  @@map("departamentos")
+  @@index([empresa_id])
+}
+
+// ─────────────────────────────────────────────
+// CARGOS
+// ─────────────────────────────────────────────
+
+model Cargo {
+  id             String  @id @default(uuid())
+  empresa_id     String
+  nome           String
+  codigo_cbo     String?
+  nivel          String? // operacional, administrativo, gerencial, diretoria
+  salario_min    Decimal? @db.Decimal(12,2)
+  salario_max    Decimal? @db.Decimal(12,2)
+  descricao      String?
+  ativo          Boolean @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  deleted_at     DateTime?
+
+  empresa        Empresa       @relation(fields: [empresa_id], references: [id])
+  colaboradores  Colaborador[]
+
+  @@unique([empresa_id, nome])
+  @@map("cargos")
+  @@index([empresa_id])
+}
+
+// ─────────────────────────────────────────────
+// COLABORADORES
+// ─────────────────────────────────────────────
+
+model Colaborador {
+  id               String            @id @default(uuid())
+  empresa_id       String
+  departamento_id  String?
+  cargo_id         String?
+  gestor_id        String?
+
+  // Dados pessoais
+  nome             String
+  cpf              String
+  rg               String?
+  data_nascimento  DateTime?
+  sexo             String?
+  estado_civil     String?
+  nacionalidade    String?           @default("Brasileiro")
+  foto_url         String?
+
+  // Documentos
+  pis_pasep        String?
+  ctps_numero      String?
+  ctps_serie       String?
+  titulo_eleitor   String?
+  cnh_numero       String?
+  cnh_categoria    String?
+  cnh_validade     DateTime?
+
+  // Contato
+  email            String?
+  email_corporativo String?
+  telefone         String?
+  celular          String?
+
+  // Endereço
+  cep              String?
+  logradouro       String?
+  numero           String?
+  complemento      String?
+  bairro           String?
+  cidade           String?
+  estado           String?
+
+  // Dados bancários
+  banco            String?
+  agencia          String?
+  conta            String?
+  tipo_conta       String?
+  pix_tipo         String?
+  pix_chave        String?
+
+  // Contrato
+  regime           RegimeContratacao @default(clt)
+  data_admissao    DateTime
+  data_demissao    DateTime?
+  status           StatusColaborador @default(ativo)
+  salario_base     Decimal           @db.Decimal(12,2)
+  carga_horaria    Int               @default(220)
+  gestor_nome      String?
+
+  // Onboarding
+  onboarding_completo Boolean        @default(false)
+  onboarding_pct      Int            @default(0)
+
+  // Metadados
+  observacoes      String?
+  created_at       DateTime          @default(now())
+  updated_at       DateTime          @updatedAt
+  deleted_at       DateTime?
+
+  // Relacionamentos
+  empresa          Empresa           @relation(fields: [empresa_id], references: [id])
+  departamento     Departamento?     @relation(fields: [departamento_id], references: [id])
+  cargo            Cargo?            @relation(fields: [cargo_id], references: [id])
+  usuario          Usuario?
+  dependentes      Dependente[]
+  historico_salarial HistoricoSalarial[]
+  ferias           Ferias[]
+  folhas_itens     FolhaItem[]
+  documentos       Documento[]
+  beneficios       ColaboradorBeneficio[]
+  rescisoes        Rescisao[]
+  treinamentos_col TreinamentoColaborador[]
+  onboarding_tasks OnboardingTask[]
+  registros_ponto  RegistroPonto[]
+  candidaturas     Candidatura[]
+
+  @@unique([empresa_id, cpf])
+  @@map("colaboradores")
+  @@index([empresa_id])
+  @@index([status])
+  @@index([departamento_id])
+  @@index([cpf])
+}
+
+model Dependente {
+  id              String   @id @default(uuid())
+  colaborador_id  String
+  nome            String
+  parentesco      String
+  cpf             String?
+  data_nascimento DateTime?
+  ir              Boolean  @default(false)
+  plano_saude     Boolean  @default(false)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  colaborador     Colaborador @relation(fields: [colaborador_id], references: [id], onDelete: Cascade)
+
+  @@map("dependentes")
+  @@index([colaborador_id])
+}
+
+model HistoricoSalarial {
+  id              String   @id @default(uuid())
+  colaborador_id  String
+  salario_anterior Decimal  @db.Decimal(12,2)
+  salario_novo     Decimal  @db.Decimal(12,2)
+  percentual       Decimal  @db.Decimal(5,2)
+  motivo           String?
+  vigencia         DateTime
+  aprovado_por     String?
+  created_at       DateTime @default(now())
+
+  colaborador     Colaborador @relation(fields: [colaborador_id], references: [id], onDelete: Cascade)
+
+  @@map("historico_salarial")
+  @@index([colaborador_id])
+}
+
+// ─────────────────────────────────────────────
+// FOLHA DE PAGAMENTO
+// ─────────────────────────────────────────────
+
+model FolhaPagamento {
+  id           String      @id @default(uuid())
+  empresa_id   String
+  competencia  String      // formato: YYYY-MM
+  status       StatusFolha @default(aberta)
+  total_bruto  Decimal     @db.Decimal(14,2) @default(0)
+  total_liquido Decimal    @db.Decimal(14,2) @default(0)
+  total_descontos Decimal  @db.Decimal(14,2) @default(0)
+  total_fgts   Decimal     @db.Decimal(14,2) @default(0)
+  total_inss   Decimal     @db.Decimal(14,2) @default(0)
+  total_irrf   Decimal     @db.Decimal(14,2) @default(0)
+  fechado_em   DateTime?
+  fechado_por  String?
+  pago_em      DateTime?
+  created_at   DateTime    @default(now())
+  updated_at   DateTime    @updatedAt
+  deleted_at   DateTime?
+
+  empresa      Empresa     @relation(fields: [empresa_id], references: [id])
+  itens        FolhaItem[]
+
+  @@unique([empresa_id, competencia])
+  @@map("folhas_pagamento")
+  @@index([empresa_id, competencia])
+}
+
+model FolhaItem {
+  id               String   @id @default(uuid())
+  folha_id         String
+  colaborador_id   String
+  salario_base     Decimal  @db.Decimal(12,2)
+  dias_trabalhados Int      @default(30)
+  horas_extras     Decimal  @db.Decimal(6,2) @default(0)
+  valor_he         Decimal  @db.Decimal(10,2) @default(0)
+  faltas           Int      @default(0)
+  desconto_faltas  Decimal  @db.Decimal(10,2) @default(0)
+  outros_proventos Decimal  @db.Decimal(10,2) @default(0)
+  inss             Decimal  @db.Decimal(10,2)
+  irrf             Decimal  @db.Decimal(10,2)
+  fgts             Decimal  @db.Decimal(10,2)
+  plano_saude      Decimal  @db.Decimal(10,2) @default(0)
+  vale_transporte  Decimal  @db.Decimal(10,2) @default(0)
+  outros_descontos Decimal  @db.Decimal(10,2) @default(0)
+  total_bruto      Decimal  @db.Decimal(12,2)
+  total_liquido    Decimal  @db.Decimal(12,2)
+  proventos_json   Json?    // detalhamento completo
+  descontos_json   Json?
+  status_esocial   String?
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  folha            FolhaPagamento @relation(fields: [folha_id], references: [id], onDelete: Cascade)
+  colaborador      Colaborador    @relation(fields: [colaborador_id], references: [id])
+
+  @@unique([folha_id, colaborador_id])
+  @@map("folha_itens")
+  @@index([folha_id])
+  @@index([colaborador_id])
+}
+
+// ─────────────────────────────────────────────
+// FÉRIAS
+// ─────────────────────────────────────────────
+
+model Ferias {
+  id              String       @id @default(uuid())
+  empresa_id      String
+  colaborador_id  String
+  periodo_inicio  DateTime     // início do período aquisitivo
+  periodo_fim     DateTime     // fim do período aquisitivo
+  gozo_inicio     DateTime?
+  gozo_fim        DateTime?
+  dias_solicitados Int
+  dias_abono      Int          @default(0)
+  status          StatusFerias @default(pendente)
+  aprovado_por    String?
+  aprovado_em     DateTime?
+  recusado_motivo String?
+  valor_ferias    Decimal?     @db.Decimal(12,2)
+  valor_terco     Decimal?     @db.Decimal(10,2)
+  valor_abono     Decimal?     @db.Decimal(10,2)
+  valor_inss      Decimal?     @db.Decimal(10,2)
+  valor_irrf      Decimal?     @db.Decimal(10,2)
+  valor_liquido   Decimal?     @db.Decimal(12,2)
+  observacoes     String?
+  created_at      DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
+  deleted_at      DateTime?
+
+  empresa         Empresa      @relation(fields: [empresa_id], references: [id])
+  colaborador     Colaborador  @relation(fields: [colaborador_id], references: [id])
+
+  @@map("ferias")
+  @@index([empresa_id])
+  @@index([colaborador_id])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────
+// RESCISÃO
+// ─────────────────────────────────────────────
+
+model Rescisao {
+  id               String       @id @default(uuid())
+  empresa_id       String
+  colaborador_id   String
+  tipo             TipoRescisao
+  data_demissao    DateTime
+  aviso_previo_dias Int
+  aviso_inicio     DateTime?
+  aviso_fim        DateTime?
+  indenizado       Boolean      @default(false)
+  saldo_salario    Decimal?     @db.Decimal(12,2)
+  ferias_vencidas  Decimal?     @db.Decimal(12,2)
+  ferias_proporc   Decimal?     @db.Decimal(12,2)
+  terco_ferias     Decimal?     @db.Decimal(12,2)
+  decimo_proporc   Decimal?     @db.Decimal(12,2)
+  aviso_previo_val Decimal?     @db.Decimal(12,2)
+  multa_fgts       Decimal?     @db.Decimal(12,2)
+  fgts_saldo       Decimal?     @db.Decimal(12,2)
+  inss             Decimal?     @db.Decimal(10,2)
+  irrf             Decimal?     @db.Decimal(10,2)
+  outros           Decimal?     @db.Decimal(10,2)
+  total_bruto      Decimal?     @db.Decimal(14,2)
+  total_liquido    Decimal?     @db.Decimal(14,2)
+  motivo           String?
+  status           String       @default("rascunho")
+  homologado_em    DateTime?
+  created_at       DateTime     @default(now())
+  updated_at       DateTime     @updatedAt
+
+  empresa          Empresa      @relation(fields: [empresa_id], references: [id])
+  colaborador      Colaborador  @relation(fields: [colaborador_id], references: [id])
+
+  @@map("rescisoes")
+  @@index([empresa_id])
+  @@index([colaborador_id])
+}
+
+// ─────────────────────────────────────────────
+// BENEFÍCIOS
+// ─────────────────────────────────────────────
+
+model BeneficioCategoria {
+  id          String   @id @default(uuid())
+  empresa_id  String
+  nome        String
+  descricao   String?
+  fornecedor  String?
+  valor_empresa Decimal? @db.Decimal(10,2)
+  valor_colab Decimal? @db.Decimal(10,2)
+  recorrencia String?  @default("mensal")
+  ativo       Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  empresa          Empresa                @relation(fields: [empresa_id], references: [id])
+  colaboradores    ColaboradorBeneficio[]
+
+  @@map("beneficio_categorias")
+  @@index([empresa_id])
+}
+
+model ColaboradorBeneficio {
+  id              String   @id @default(uuid())
+  colaborador_id  String
+  beneficio_id    String
+  ativo           Boolean  @default(true)
+  data_inicio     DateTime @default(now())
+  data_fim        DateTime?
+  valor_empresa   Decimal? @db.Decimal(10,2)
+  valor_colab     Decimal? @db.Decimal(10,2)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  colaborador     Colaborador        @relation(fields: [colaborador_id], references: [id], onDelete: Cascade)
+  beneficio       BeneficioCategoria @relation(fields: [beneficio_id], references: [id])
+
+  @@unique([colaborador_id, beneficio_id])
+  @@map("colaborador_beneficios")
+  @@index([colaborador_id])
+}
+
+// ─────────────────────────────────────────────
+// DOCUMENTOS
+// ─────────────────────────────────────────────
+
+model Documento {
+  id              String          @id @default(uuid())
+  empresa_id      String
+  colaborador_id  String?
+  tipo            TipoDocumento
+  titulo          String
+  descricao       String?
+  arquivo_url     String
+  arquivo_nome    String
+  arquivo_size    Int?
+  mime_type       String?
+  versao          Int             @default(1)
+  status          StatusDocumento @default(pendente)
+  assinado_em     DateTime?
+  assinado_por    String?
+  vence_em        DateTime?
+  enviado_por     String?
+  created_at      DateTime        @default(now())
+  updated_at      DateTime        @updatedAt
+  deleted_at      DateTime?
+
+  empresa         Empresa         @relation(fields: [empresa_id], references: [id])
+  colaborador     Colaborador?    @relation(fields: [colaborador_id], references: [id])
+
+  @@map("documentos")
+  @@index([empresa_id])
+  @@index([colaborador_id])
+  @@index([tipo])
+  @@index([vence_em])
+}
+
+// ─────────────────────────────────────────────
+// ONBOARDING
+// ─────────────────────────────────────────────
+
+model OnboardingTemplate {
+  id          String   @id @default(uuid())
+  empresa_id  String?  // null = global
+  nome        String
+  descricao   String?
+  ativo       Boolean  @default(true)
+  created_at  DateTime @default(now())
+  tasks       OnboardingTask[]
+
+  @@map("onboarding_templates")
+}
+
+model OnboardingTask {
+  id              String   @id @default(uuid())
+  template_id     String?
+  colaborador_id  String?
+  empresa_id      String?
+  titulo          String
+  descricao       String?
+  responsavel     String?  // rh | gestor | colaborador | ti
+  prazo_dias      Int      @default(3)
+  obrigatoria     Boolean  @default(true)
+  concluida       Boolean  @default(false)
+  concluida_em    DateTime?
+  concluida_por   String?
+  ordem           Int      @default(0)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  template        OnboardingTemplate? @relation(fields: [template_id], references: [id])
+  colaborador     Colaborador?        @relation(fields: [colaborador_id], references: [id])
+
+  @@map("onboarding_tasks")
+  @@index([colaborador_id])
+  @@index([empresa_id])
+}
+
+// ─────────────────────────────────────────────
+// WORKFLOWS (Motor de Aprovação)
+// ─────────────────────────────────────────────
+
+model Workflow {
+  id              String         @id @default(uuid())
+  empresa_id      String
+  tipo            TipoWorkflow
+  titulo          String
+  descricao       String?
+  dados           Json?          // payload da solicitação
+  solicitante_id  String
+  aprovador_id    String?
+  status          StatusWorkflow @default(pendente)
+  prioridade      String         @default("normal")
+  prazo           DateTime?
+  aprovado_em     DateTime?
+  comentario      String?
+  created_at      DateTime       @default(now())
+  updated_at      DateTime       @updatedAt
+
+  empresa         Empresa        @relation(fields: [empresa_id], references: [id])
+  solicitante     Usuario        @relation("WorkflowSolicitante", fields: [solicitante_id], references: [id])
+  aprovador       Usuario?       @relation("WorkflowAprovador", fields: [aprovador_id], references: [id])
+
+  @@map("workflows")
+  @@index([empresa_id])
+  @@index([status])
+  @@index([solicitante_id])
+}
+
+// ─────────────────────────────────────────────
+// NOTIFICAÇÕES
+// ─────────────────────────────────────────────
+
+model Notificacao {
+  id              String                @id @default(uuid())
+  empresa_id      String
+  destinatario_id String
+  tipo            String
+  titulo          String
+  mensagem        String
+  dados           Json?
+  lida            Boolean               @default(false)
+  lida_em         DateTime?
+  prioridade      PrioridadeNotificacao @default(normal)
+  canal           String                @default("inapp") // inapp | email | whatsapp
+  created_at      DateTime              @default(now())
+
+  empresa         Empresa   @relation(fields: [empresa_id], references: [id])
+  destinatario    Usuario   @relation("NotifDestinatario", fields: [destinatario_id], references: [id])
+
+  @@map("notificacoes")
+  @@index([empresa_id, destinatario_id])
+  @@index([lida])
+  @@index([created_at])
+}
+
+// ─────────────────────────────────────────────
+// PONTO ELETRÔNICO
+// ─────────────────────────────────────────────
+
+model RegistroPonto {
+  id              String            @id @default(uuid())
+  empresa_id      String
+  colaborador_id  String
+  tipo            TipoRegistroPonto
+  data_hora       DateTime          @default(now())
+  ip              String?
+  dispositivo     String?
+  latitude        Decimal?          @db.Decimal(10,8)
+  longitude       Decimal?          @db.Decimal(11,8)
+  ajustado        Boolean           @default(false)
+  ajustado_por    String?
+  ajuste_motivo   String?
+  created_at      DateTime          @default(now())
+
+  empresa         Empresa     @relation(fields: [empresa_id], references: [id])
+  colaborador     Colaborador @relation(fields: [colaborador_id], references: [id])
+
+  @@map("registros_ponto")
+  @@index([empresa_id, colaborador_id])
+  @@index([data_hora])
+}
+
+// ─────────────────────────────────────────────
+// COMUNICAÇÃO / FEED
+// ─────────────────────────────────────────────
+
+model Comunicado {
+  id          String   @id @default(uuid())
+  empresa_id  String
+  autor_id    String?
+  titulo      String
+  conteudo    String
+  urgente     Boolean  @default(false)
+  publicado   Boolean  @default(false)
+  publicado_em DateTime?
+  expira_em   DateTime?
+  segmentos   Json?    // [] de departamentos ou cargos
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  deleted_at  DateTime?
+
+  empresa     Empresa   @relation(fields: [empresa_id], references: [id])
+
+  @@map("comunicados")
+  @@index([empresa_id])
+  @@index([publicado])
+}
+
+model FeedPost {
+  id          String      @id @default(uuid())
+  empresa_id  String
+  autor_id    String
+  conteudo    String
+  midia_url   String?
+  tipo        String      @default("post") // post | comunicado | aniversario
+  fixado      Boolean     @default(false)
+  created_at  DateTime    @default(now())
+  updated_at  DateTime    @updatedAt
+  deleted_at  DateTime?
+
+  autor       Usuario     @relation(fields: [autor_id], references: [id])
+  comentarios Comentario[]
+  reacoes     Reacao[]
+
+  @@map("feed_posts")
+  @@index([empresa_id])
+  @@index([created_at])
+}
+
+model Comentario {
+  id          String   @id @default(uuid())
+  post_id     String
+  autor_id    String
+  conteudo    String
+  created_at  DateTime @default(now())
+  deleted_at  DateTime?
+
+  post        FeedPost @relation(fields: [post_id], references: [id], onDelete: Cascade)
+  autor       Usuario  @relation(fields: [autor_id], references: [id])
+
+  @@map("comentarios")
+  @@index([post_id])
+}
+
+model Reacao {
+  id          String   @id @default(uuid())
+  post_id     String
+  usuario_id  String
+  tipo        String   @default("like") // like | love | haha | wow
+  created_at  DateTime @default(now())
+
+  post        FeedPost @relation(fields: [post_id], references: [id], onDelete: Cascade)
+  usuario     Usuario  @relation(fields: [usuario_id], references: [id])
+
+  @@unique([post_id, usuario_id])
+  @@map("reacoes")
+}
+
+// ─────────────────────────────────────────────
+// TREINAMENTOS
+// ─────────────────────────────────────────────
+
+model Treinamento {
+  id              String   @id @default(uuid())
+  empresa_id      String
+  titulo          String
+  descricao       String?
+  carga_horaria   Int?
+  modalidade      String   @default("ead") // ead | presencial | hibrido
+  obrigatorio     Boolean  @default(false)
+  prazo_dias      Int?
+  conteudo_url    String?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+  deleted_at      DateTime?
+
+  empresa         Empresa                  @relation(fields: [empresa_id], references: [id])
+  colaboradores   TreinamentoColaborador[]
+
+  @@map("treinamentos")
+  @@index([empresa_id])
+}
+
+model TreinamentoColaborador {
+  id              String   @id @default(uuid())
+  treinamento_id  String
+  colaborador_id  String
+  status          String   @default("pendente") // pendente | em_andamento | concluido
+  progresso       Int      @default(0)
+  iniciado_em     DateTime?
+  concluido_em    DateTime?
+  nota            Decimal? @db.Decimal(5,2)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  treinamento     Treinamento @relation(fields: [treinamento_id], references: [id], onDelete: Cascade)
+  colaborador     Colaborador @relation(fields: [colaborador_id], references: [id], onDelete: Cascade)
+
+  @@unique([treinamento_id, colaborador_id])
+  @@map("treinamento_colaboradores")
+  @@index([colaborador_id])
+}
+
+// ─────────────────────────────────────────────
+// RECRUTAMENTO
+// ─────────────────────────────────────────────
+
+model Vaga {
+  id              String      @id @default(uuid())
+  empresa_id      String
+  departamento_id String?
+  cargo_id        String?
+  titulo          String
+  descricao       String?
+  requisitos      String?
+  beneficios      String?
+  salario_min     Decimal?    @db.Decimal(12,2)
+  salario_max     Decimal?    @db.Decimal(12,2)
+  local           String?
+  remoto          Boolean     @default(false)
+  status          StatusVaga  @default(rascunho)
+  vagas_qtd       Int         @default(1)
+  publicada_em    DateTime?
+  encerra_em      DateTime?
+  created_at      DateTime    @default(now())
+  updated_at      DateTime    @updatedAt
+  deleted_at      DateTime?
+
+  empresa         Empresa      @relation(fields: [empresa_id], references: [id])
+  candidaturas    Candidatura[]
+
+  @@map("vagas")
+  @@index([empresa_id])
+  @@index([status])
+}
+
+model Candidato {
+  id              String   @id @default(uuid())
+  nome            String
+  email           String
+  telefone        String?
+  cpf             String?
+  linkedin        String?
+  curriculo_url   String?
+  origem          String?  // linkedin | site | indicacao | plataforma
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  candidaturas    Candidatura[]
+
+  @@unique([email])
+  @@map("candidatos")
+}
+
+model Candidatura {
+  id              String          @id @default(uuid())
+  vaga_id         String
+  candidato_id    String
+  colaborador_id  String?
+  status          StatusCandidato @default(inscrito)
+  etapa_atual     String?
+  nota            Decimal?        @db.Decimal(5,2)
+  observacoes     String?
+  aprovado_em     DateTime?
+  created_at      DateTime        @default(now())
+  updated_at      DateTime        @updatedAt
+
+  vaga            Vaga        @relation(fields: [vaga_id], references: [id])
+  candidato       Candidato   @relation(fields: [candidato_id], references: [id])
+  colaborador     Colaborador? @relation(fields: [colaborador_id], references: [id])
+
+  @@map("candidaturas")
+  @@index([vaga_id])
+  @@index([candidato_id])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────
+// AUDITORIA
+// ─────────────────────────────────────────────
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  empresa_id  String?
+  usuario_id  String?
+  acao        String   // CREATE | UPDATE | DELETE | LOGIN | EXPORT
+  recurso     String   // colaboradores | folha | usuarios...
+  recurso_id  String?
+  dados_antes Json?
+  dados_depois Json?
+  ip          String?
+  user_agent  String?
+  created_at  DateTime @default(now())
+
+  empresa     Empresa? @relation(fields: [empresa_id], references: [id])
+  usuario     Usuario? @relation(fields: [usuario_id], references: [id])
+
+  @@map("audit_logs")
+  @@index([empresa_id])
+  @@index([usuario_id])
+  @@index([recurso])
+  @@index([created_at])
+}

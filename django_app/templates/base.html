@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-perfil="{{ usuario_perfil }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}{{ page_title|default:"hi Conecta RH" }}{% endblock %} — hi Conecta RH</title>
+  <meta name="description" content="hi Conecta RH — Plataforma Corporativa de RH">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+
+  {% load static hi_tags %}
+
+  <!-- Fontes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+  <!-- CSS Enterprise -->
+  <link rel="stylesheet" href="{% static 'css/hi-enterprise.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="perfil-{{ usuario_perfil }}">
+
+  <!-- BARRA DE LOADING GLOBAL -->
+  <div id="global-loading"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">hi</div>
+      <div class="logo-text">
+        <span class="logo-hi">hi</span> Conecta RH
+        <small>Sistema Corporativo</small>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      {% with grupos_vistos='' %}
+      {% for item in MENUS %}
+        {% if item.grupo != prev_grupo %}
+          {% if not forloop.first %}</div>{% endif %}
+          <div class="nav-section-label">{{ GRUPOS|get_item:item.grupo|default:item.grupo }}</div>
+        {% endif %}
+        {% url item.url as item_url %}
+        <a href="{{ item_url }}"
+           class="nav-item {% if request.path == item_url or request.path|startswith:item_url %}active{% endif %}">
+          <span class="nav-icon">{{ item.icon }}</span>
+          {{ item.label }}
+        </a>
+        {% with prev_grupo=item.grupo %}{% endwith %}
+      {% endfor %}
+      </div>
+      {% endwith %}
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">{{ usuario_iniciais }}</div>
+      <div class="user-info">
+        <strong>{{ usuario_nome }}</strong>
+        <small>{{ request.user.get_perfil_display }}</small>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="main-content" id="mainContent">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+      <div class="topbar-title" id="pageTitle">{{ page_title|default:"Dashboard" }}</div>
+      <div class="topbar-actions">
+
+        <!-- Notificações -->
+        <button class="btn-icon" id="btn-notif" onclick="toggleNotificacoes(event)" title="Notificações">
+          🔔 <span class="badge" id="notif-badge">0</span>
+        </button>
+
+        <!-- Usuário -->
+        <div class="topbar-user-info">
+          <div class="topbar-user-name">{{ request.user.nome|first_name }}</div>
+          <div class="topbar-avatar" onclick="menuUsuario()" title="{{ request.user.nome }}">
+            {{ usuario_iniciais }}
+          </div>
+        </div>
+
+        <div class="user-dropdown" id="user-dropdown" style="display:none">
+          <div class="user-dropdown-header">
+            <strong>{{ usuario_nome }}</strong>
+            <small>{{ request.user.email }}</small>
+          </div>
+          <a href="{% url 'colaborador:portal' %}" class="user-dropdown-item">🏠 Meu Portal</a>
+          <a href="{% url 'accounts:perfil' %}" class="user-dropdown-item">👤 Meu Perfil</a>
+          <a href="{% url 'accounts:trocar_senha' %}" class="user-dropdown-item">🔑 Alterar Senha</a>
+          <a href="{% url 'accounts:logout' %}" class="user-dropdown-item">🚪 Sair</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- MENSAGENS DJANGO -->
+    {% if messages %}
+    <div class="django-messages" id="django-messages">
+      {% for msg in messages %}
+      <div class="alert alert-{{ msg.tags }} alert-dismissible">
+        {{ msg }}
+        <button onclick="this.parentElement.remove()">✕</button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- BREADCRUMB -->
+    {% block breadcrumb %}{% endblock %}
+
+    <!-- CONTEÚDO DA PÁGINA -->
+    <div class="page-container" id="pageContainer">
+      {% block content %}{% endblock %}
+    </div>
+
+  </main>
+
+  <!-- PAINEL DE NOTIFICAÇÕES -->
+  <div id="notif-panel" class="notif-panel" style="display:none">
+    <div class="notif-panel-header">
+      <strong>🔔 Notificações</strong>
+      <button onclick="document.getElementById('notif-panel').style.display='none'">✕</button>
+    </div>
+    <div id="notif-lista"></div>
+  </div>
+
+  <!-- CSRF Token para AJAX -->
+  <script>
+    const CSRF_TOKEN = '{{ csrf_token }}';
+    const USER_PERFIL = '{{ usuario_perfil }}';
+    const USER_NOME  = '{{ usuario_nome }}';
+  </script>
+
+  <!-- JS Enterprise -->
+  <script src="{% static 'js/hi-enterprise.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+
+</body>
+</html>

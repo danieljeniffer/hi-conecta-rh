@@ -150,14 +150,14 @@ function renderEndomarketing() {
 
       <!-- Canais / Tabs -->
       <nav class="tv-canais">
-        <button class="tv-canal-btn" data-canal="home"            onclick="tvMudarCanal(this,'home')">🏠 INÍCIO</button>
+        <button class="tv-canal-btn active" data-canal="home" onclick="tvMudarCanal(this,'home')">🏠 INÍCIO</button>
         <button class="tv-canal-btn" data-canal="comunicados"      onclick="tvMudarCanal(this,'comunicados')">📢 COMUNICADOS</button>
         <button class="tv-canal-btn" data-canal="aniversarios"     onclick="tvMudarCanal(this,'aniversarios')">🎂 ANIVERSARIANTES</button>
         <button class="tv-canal-btn" data-canal="beneficios"       onclick="tvMudarCanal(this,'beneficios')">💳 BENEFÍCIOS</button>
         <button class="tv-canal-btn" data-canal="agenda"           onclick="tvMudarCanal(this,'agenda')">📅 AGENDA</button>
         <button class="tv-canal-btn" data-canal="noticias"         onclick="tvMudarCanal(this,'noticias')">⚽ NOTÍCIAS</button>
         <button class="tv-canal-btn" data-canal="sistemas"         onclick="tvMudarCanal(this,'sistemas')">🔗 SISTEMAS</button>
-        <button class="tv-canal-btn active" data-canal="streaming"  onclick="tvMudarCanal(this,'streaming')">🎬 STREAMING</button>
+        <button class="tv-canal-btn" data-canal="streaming"  onclick="tvMudarCanal(this,'streaming')">🎬 STREAMING</button>
         <button class="tv-canal-btn" data-canal="slides"           onclick="tvMudarCanal(this,'slides')">📺 SLIDES</button>
         <button class="tv-canal-btn" data-canal="admin"            onclick="tvMudarCanal(this,'admin')">⚙️ ADMIN</button>
       </nav>
@@ -189,7 +189,7 @@ function renderEndomarketing() {
 
     <!-- ═══════════════ CONTEÚDO PRINCIPAL ═══════════════ -->
     <div class="tv-body" id="tv-body">
-      ${tvRenderCanal('streaming')}
+      ${tvRenderCanal('home')}
     </div>
 
     <!-- ═══════════════ TICKER DE NOTÍCIAS ═══════════════ -->
@@ -245,130 +245,181 @@ function tvRenderCanal(canal) {
 }
 
 // ─────────────────────────────────────────────
-// CANAL: HOME — Layout 3 colunas
+// CANAL: HOME — Redesign Premium
 // ─────────────────────────────────────────────
 function tvCanal_Home() {
-  const com   = endoData.comunicados[0];
-  const pao   = endoData.paoDiario[0];
-  const dica  = endoData.dicaBemEstar[Math.floor(Math.random() * endoData.dicaBemEstar.length)];
-  const agenda = endoData.agendaCultural[0];
+  const com    = endoData.comunicados[0];
+  const pao    = endoData.paoDiario[0];
+  const dica   = endoData.dicaBemEstar[Math.floor(Math.random() * endoData.dicaBemEstar.length)];
+  const agenda = endoData.agendaCultural;
+  const colab  = endoData.colaboradorDestaque;
+  const ind    = endoData.indicadores[0];
+
+  const corComunicado = com.urgente ? 'linear-gradient(135deg,#7f1d1d,#b91c1c)' : 'linear-gradient(135deg,#1e3a5f,#2563eb)';
 
   return `
-  <div class="tv-home-grid">
+<div class="tv-home-redesign">
 
-    <!-- ── COLUNA ESQUERDA ── -->
-    <div class="tv-col tv-col-left">
-
-      <!-- COMUNICADO HERO -->
-      <div class="tv-card tv-hero-comunicado">
-        <div class="tv-com-tag">
-          <span class="tv-com-urgente">📢 COMUNICADO</span>
-          <span class="tv-com-data">${com.data}</span>
-        </div>
-        <h2 class="tv-hero-titulo">${com.titulo}</h2>
-        <p class="tv-hero-texto">${com.texto}</p>
-        <button class="tv-btn-outline" onclick="tvMudarCanal(null,'comunicados')">Ver todos →</button>
+  <!-- ══ HERO BANNER ══════════════════════════════════════════ -->
+  <div class="tvh-hero" style="background:${corComunicado}">
+    <div class="tvh-hero-left">
+      <div class="tvh-hero-tag">
+        ${com.urgente ? '<span class="tvh-urgente-badge">🔴 URGENTE</span>' : '<span class="tvh-com-badge">📢 COMUNICADO</span>'}
+        <span class="tvh-hero-data">${com.data}</span>
       </div>
+      <h2 class="tvh-hero-titulo">${com.titulo}</h2>
+      <p class="tvh-hero-sub">${com.texto}</p>
+      <button class="tv-btn-outline tvh-hero-btn" onclick="tvMudarCanal(null,'comunicados')">
+        Ver todos os comunicados →
+      </button>
+    </div>
+    <div class="tvh-hero-right" id="tv-spotlight">
+      ${tvSpotlightContent(0)}
+    </div>
+  </div>
 
-      <!-- AGENDA DESTAQUE -->
-      <div class="tv-card tv-agenda-destaque" style="position:relative;overflow:hidden;min-height:200px">
-        <img src="${agenda.foto}" alt="${agenda.titulo}"
-          style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.35"
-          onerror="this.style.display='none'" />
-        <div style="position:relative;z-index:1">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-            <span class="tv-agenda-tipo" style="background:${agenda.cor}">${agenda.tipo}</span>
-            <span style="font-size:12px;opacity:.75">${agenda.dia} · ${agenda.data}</span>
+  <!-- ══ GRID PRINCIPAL ══════════════════════════════════════ -->
+  <div class="tvh-grid">
+
+    <!-- ── COLUNA A: Agenda + Destaque ────────────────────── -->
+    <div class="tvh-col">
+
+      <!-- Agenda Cultural -->
+      <div class="tvh-section-label">📅 AGENDA CULTURAL</div>
+      <div class="tvh-agenda-list">
+        ${agenda.map(e => `
+        <div class="tvh-agenda-item" style="border-left:3px solid ${e.cor}">
+          <div class="tvh-agenda-foto">
+            <img src="${e.foto}" alt="${e.titulo}"
+              style="width:100%;height:100%;object-fit:cover;border-radius:6px"
+              onerror="this.parentElement.style.background='${e.cor}33'" />
           </div>
-          <h3 style="font-size:20px;font-weight:900;margin-bottom:4px">${agenda.titulo}</h3>
-          <p style="font-size:13px;opacity:.75">📍 ${agenda.local} &nbsp;·&nbsp; 🕐 ${agenda.hora}</p>
-          <button class="tv-btn-outline" style="margin-top:10px" onclick="tvMudarCanal(null,'agenda')">Ver agenda completa →</button>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ── COLUNA CENTRAL ── -->
-    <div class="tv-col tv-col-center">
-
-      <!-- SPOTLIGHT ROTATIVO (últimas notícias) -->
-      <div class="tv-card tv-spotlight" id="tv-spotlight">
-        ${tvSpotlightContent(0)}
-      </div>
-
-      <!-- COTAÇÕES -->
-      <div class="tv-card tv-cotacoes-row">
-        <div class="tv-cotacoes-header">📈 MERCADO</div>
-        <div class="tv-cotacoes-list">
-          ${endoData.cotacoes.map(c=>`
-            <div class="tv-cotacao-item">
-              <span class="tv-cotacao-nome">${c.nome}</span>
-              <span class="tv-cotacao-val">${c.valor}</span>
-              <span class="tv-cotacao-var ${c.up===true?'up':c.up===false?'down':'flat'}">
-                ${c.up===true?'▲':c.up===false?'▼':'–'} ${c.var}
-              </span>
+          <div class="tvh-agenda-info">
+            <span class="tvh-agenda-tipo" style="background:${e.cor}">${e.tipo}</span>
+            <div class="tvh-agenda-titulo">${e.titulo}</div>
+            <div class="tvh-agenda-meta">
+              <span>📅 ${e.dia} ${e.data}</span>
+              <span>🕐 ${e.hora}</span>
             </div>
-          `).join('')}
+            <div class="tvh-agenda-local">📍 ${e.local}</div>
+          </div>
+        </div>`).join('')}
+      </div>
+
+      <!-- Colaborador Destaque -->
+      <div class="tvh-destaque-card">
+        <div class="tvh-destaque-label">⭐ COLABORADOR DESTAQUE</div>
+        <div class="tvh-destaque-body">
+          <div class="tvh-destaque-avatar">
+            ${colab.foto
+              ? `<img src="${colab.foto}" alt="${colab.nome}" onerror="this.style.display='none'">`
+              : `<span>${colab.avatar}</span>`}
+          </div>
+          <div>
+            <div class="tvh-destaque-nome">${colab.nome}</div>
+            <div class="tvh-destaque-dept">${colab.dept}</div>
+            <div class="tvh-destaque-motivo">${colab.motivo}</div>
+          </div>
         </div>
       </div>
 
     </div>
 
-    <!-- ── COLUNA DIREITA ── -->
-    <div class="tv-col tv-col-right">
+    <!-- ── COLUNA B: Cotações + Notícias ───────────────────── -->
+    <div class="tvh-col">
 
-      <!-- ANIVERSARIANTES -->
-      <div class="tv-card">
-        <div class="tv-card-header">🎂 ANIVERSARIANTES</div>
-        <div class="tv-aniv-lista">
-          ${endoData.aniversariantes.map(a=>`
-            <div class="tv-aniv-item">
-              <div class="tv-aniv-avatar">${a.avatar}</div>
-              <div class="tv-aniv-info">
-                <strong>${a.nome}</strong>
-                <span>${a.setor}</span>
-              </div>
-              <span class="tv-aniv-dia">${a.dia}</span>
-            </div>
-          `).join('')}
-        </div>
-        <button class="tv-btn-outline" style="margin-top:8px;width:100%" onclick="tvMudarCanal(null,'aniversarios')">Ver todos →</button>
+      <!-- Cotações — destaque visual -->
+      <div class="tvh-section-label">📈 MERCADO</div>
+      <div class="tvh-cotacoes-grid">
+        ${endoData.cotacoes.map(c => `
+        <div class="tvh-cotacao-card ${c.up===true?'up':c.up===false?'down':'flat'}">
+          <div class="tvh-cotacao-nome">${c.nome}</div>
+          <div class="tvh-cotacao-valor">${c.valor}</div>
+          <div class="tvh-cotacao-var">
+            ${c.up===true ? '▲' : c.up===false ? '▼' : '–'} ${c.var}
+          </div>
+        </div>`).join('')}
       </div>
 
-      <!-- PÃO DIÁRIO -->
-      <div class="tv-card tv-pao-card">
-        <div class="tv-card-header" style="color:#fbbf24">📖 PÃO DIÁRIO</div>
-        <p class="tv-pao-versiculo">${pao.versiculo}</p>
-        <span class="tv-pao-ref">${pao.ref}</span>
-        <p class="tv-pao-reflexao">${pao.reflexao}</p>
-      </div>
-
-      <!-- DICA DE BEM-ESTAR -->
-      <div class="tv-card tv-dica-card">
-        <div class="tv-card-header" style="color:#93c5fd">💙 DICA DE BEM-ESTAR</div>
-        <p style="font-size:13px;color:#bfdbfe;line-height:1.6">${dica}</p>
-        <div style="font-size:32px;margin-top:8px;text-align:center">🌟</div>
-      </div>
-
-      <!-- SISTEMAS RÁPIDO -->
-      <div class="tv-card">
-        <div class="tv-card-header">🔗 SISTEMAS</div>
-        <div class="tv-sistemas-mini">
-          ${endoData.sistemas.map(s=>`
-            <a href="${s.link}" target="_blank" class="tv-sis-logo" title="${s.nome}" style="border-color:${s.cor}30">
-              ${s.logo
-                ? `<img src="${s.logo}" alt="${s.nome}" onerror="this.style.display='none';this.nextSibling.style.display='flex'">`
-                : ''
-              }
-              <span style="display:${s.logo?'none':'flex'};font-size:20px;align-items:center;justify-content:center">${s.fallback}</span>
-            </a>
-          `).join('')}
-        </div>
+      <!-- Notícias -->
+      <div class="tvh-section-label" style="margin-top:4px">📰 ÚLTIMAS NOTÍCIAS</div>
+      <div class="tvh-noticias-list">
+        ${endoData.noticias.slice(0, 5).map((n, i) => `
+        <div class="tvh-noticia-item ${i===0?'destaque':''}">
+          <span class="tvh-noticia-emoji">${n.emoji}</span>
+          <div class="tvh-noticia-body">
+            <div class="tvh-noticia-cat">${n.cat}</div>
+            <div class="tvh-noticia-titulo">${n.titulo}</div>
+            ${i===0 ? `<div class="tvh-noticia-desc">${n.desc.slice(0,120)}...</div>` : ''}
+            <div class="tvh-noticia-tempo">${n.tempo} atrás</div>
+          </div>
+        </div>`).join('')}
       </div>
 
     </div>
 
-  </div><!-- /tv-home-grid -->`;
+    <!-- ── COLUNA C: Pessoas + Bem-estar + Sistemas ─────────── -->
+    <div class="tvh-col">
+
+      <!-- Aniversariantes -->
+      <div class="tvh-section-label">🎂 ANIVERSARIANTES DO MÊS</div>
+      <div class="tvh-aniv-cards">
+        ${endoData.aniversariantes.map(a => `
+        <div class="tvh-aniv-card">
+          <div class="tvh-aniv-av">${a.avatar}</div>
+          <div class="tvh-aniv-info">
+            <div class="tvh-aniv-nome">${a.nome}</div>
+            <div class="tvh-aniv-setor">${a.setor}</div>
+          </div>
+          <div class="tvh-aniv-dia">${a.dia}</div>
+        </div>`).join('')}
+      </div>
+
+      <!-- Pão Diário -->
+      <div class="tvh-pao">
+        <div class="tvh-pao-label">📖 PÃO DIÁRIO</div>
+        <div class="tvh-pao-aspas">"</div>
+        <p class="tvh-pao-texto">${pao.versiculo.replace(/^[""]/, '').replace(/[""]$/, '')}</p>
+        <span class="tvh-pao-ref">${pao.ref}</span>
+      </div>
+
+      <!-- Dica de Bem-estar -->
+      <div class="tvh-dica">
+        <div class="tvh-dica-label">💙 BEM-ESTAR</div>
+        <p class="tvh-dica-texto">${dica}</p>
+      </div>
+
+      <!-- Meta do Mês -->
+      <div class="tvh-meta">
+        <div class="tvh-meta-label">🎯 ${ind.nome}</div>
+        <div class="tvh-meta-bar-wrap">
+          <div class="tvh-meta-bar" style="width:${(ind.atual/ind.meta)*100}%;background:${ind.cor}"></div>
+        </div>
+        <div class="tvh-meta-nums">
+          <span style="color:${ind.cor};font-weight:800;font-size:22px">${ind.atual}%</span>
+          <span style="color:rgba(255,255,255,.4);font-size:12px">meta: ${ind.meta}%</span>
+        </div>
+      </div>
+
+      <!-- Sistemas -->
+      <div class="tvh-section-label">🔗 SISTEMAS</div>
+      <div class="tvh-sistemas-grid">
+        ${endoData.sistemas.map(s => `
+        <a href="${s.link}" target="_blank" class="tvh-sis-btn" style="border-color:${s.cor}40;background:${s.cor}10" title="${s.nome}: ${s.descricao}">
+          ${s.logo
+            ? `<img src="${s.logo}" alt="${s.nome}"
+                 onerror="this.style.display='none';this.nextSibling.style.display='block'">`
+            : ''
+          }
+          <span style="display:${s.logo?'none':'block'};font-size:18px">${s.fallback}</span>
+          <span class="tvh-sis-nome">${s.nome}</span>
+        </a>`).join('')}
+      </div>
+
+    </div>
+  </div><!-- /tvh-grid -->
+
+</div><!-- /tv-home-redesign -->`;
 }
 
 function tvSpotlightContent(idx) {

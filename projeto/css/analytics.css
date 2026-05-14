@@ -1,0 +1,202 @@
+/* ============================================================
+   PEOPLE ANALYTICS — analytics.css
+   hi Conecta RH  ·  Prefixo: pa-
+   ============================================================ */
+
+.pa-root { display: flex; flex-direction: column; gap: 20px; }
+
+/* ── Hero ─────────────────────────────────── */
+.pa-hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #7c3aed 100%);
+  border-radius: 14px; padding: 20px 24px; color: #fff;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+
+.pa-hero-left  { display: flex; align-items: center; gap: 14px; }
+.pa-hero-icon  { font-size: 38px; line-height: 1; }
+.pa-hero h2    { margin: 0 0 4px; font-size: 18px; font-weight: 900; }
+.pa-hero p     { margin: 0; font-size: 12px; color: rgba(255,255,255,.65); }
+.pa-hero-right { display: flex; align-items: center; gap: 10px; }
+
+.pa-btn {
+  background: rgba(255,255,255,.15); color: #fff;
+  border: 1px solid rgba(255,255,255,.25); border-radius: 8px;
+  padding: 8px 16px; font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: inherit; transition: background .15s;
+}
+.pa-btn:hover { background: rgba(255,255,255,.25); }
+
+.pa-atualizado { font-size: 11px; color: rgba(255,255,255,.5); }
+
+/* ── Tabs ────────────────────────────────── */
+.pa-tabs {
+  display: flex; gap: 2px; flex-wrap: wrap;
+  border-bottom: 1px solid #e2e8f0; padding-bottom: 0;
+}
+
+.pa-tab {
+  padding: 9px 16px; border-radius: 8px 8px 0 0;
+  border: none; background: transparent;
+  color: #64748b; font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: inherit; transition: all .14s;
+  border-bottom: 2px solid transparent;
+}
+
+.pa-tab:hover { color: #2563eb; background: #f8fafc; }
+.pa-tab.ativo { color: #2563eb; border-bottom-color: #2563eb; background: #eff6ff; }
+
+/* ── KPI Grid ────────────────────────────── */
+.pa-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px; margin-bottom: 20px;
+}
+
+.pa-kpi {
+  background: #fff; border: 1px solid #e2e8f0;
+  border-radius: 12px; padding: 14px;
+  position: relative; overflow: hidden;
+}
+
+.pa-kpi::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; width: 3px; height: 100%;
+  background: var(--pa-cor, #2563eb);
+}
+
+.pa-kpi-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.pa-kpi-icon   { font-size: 20px; }
+.pa-kpi-delta  { font-size: 11px; font-weight: 700; }
+
+.pa-kpi-val    { font-size: 22px; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+.pa-kpi-label  { font-size: 11px; font-weight: 700; color: #334155; }
+.pa-kpi-sub    { font-size: 10px; color: #94a3b8; margin-top: 2px; }
+
+/* ── Card ────────────────────────────────── */
+.pa-card {
+  background: #fff; border: 1px solid #e2e8f0;
+  border-radius: 12px; padding: 18px; margin-bottom: 16px;
+}
+
+.pa-card-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
+}
+
+.pa-card-hd h4 { margin: 0; font-size: 14px; font-weight: 700; }
+
+.pa-meta-badge {
+  background: #dcfce7; color: #15803d;
+  font-size: 10px; font-weight: 700; padding: 3px 9px;
+  border-radius: 20px;
+}
+
+/* ── Grid 2 cols ─────────────────────────── */
+.pa-grid-2 {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; margin-bottom: 16px;
+}
+
+/* ── Bar chart CSS ───────────────────────── */
+.pa-bar-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 0; border-bottom: 1px solid #f8fafc;
+}
+
+.pa-bar-label { font-size: 12px; font-weight: 600; min-width: 90px; color: #334155; }
+
+.pa-bar-track {
+  flex: 1; height: 8px; background: #f1f5f9;
+  border-radius: 4px; overflow: hidden;
+}
+
+.pa-bar-fill {
+  height: 100%; border-radius: 4px;
+  transition: width .5s cubic-bezier(.4,0,.2,1);
+}
+
+.pa-bar-val { font-size: 12px; font-weight: 800; min-width: 38px; text-align: right; }
+
+/* ── Chart barras verticais ──────────────── */
+.pa-chart-bars {
+  display: flex; align-items: flex-end; gap: 8px;
+  justify-content: space-between; padding: 4px 0;
+}
+
+.pa-chart-bar-col { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 4px; }
+
+.pa-chart-bar-wrap {
+  display: flex; align-items: flex-end;
+  width: 100%; background: #f1f5f9; border-radius: 4px; overflow: hidden;
+}
+
+.pa-chart-bar-fill { width: 100%; border-radius: 4px 4px 0 0; transition: height .6s; }
+
+.pa-chart-bar-val   { font-size: 10px; font-weight: 800; color: #334155; }
+.pa-chart-bar-label { font-size: 9px; color: #94a3b8; text-align: center; }
+
+/* ── Line chart SVG ──────────────────────── */
+.pa-chart-line-wrap { overflow-x: auto; }
+.pa-chart-svg       { width: 100%; min-width: 320px; }
+
+/* ── Table ───────────────────────────────── */
+.pa-table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0; }
+
+.pa-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+
+.pa-table th {
+  background: #f8fafc; padding: 10px 12px;
+  text-align: left; font-size: 10px; font-weight: 700;
+  letter-spacing: .5px; text-transform: uppercase;
+  color: #94a3b8; border-bottom: 1px solid #e2e8f0;
+}
+
+.pa-table td {
+  padding: 12px; border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.pa-table tr:last-child td { border-bottom: none; }
+.pa-table tr:hover td { background: #f8fafc; }
+
+.pa-nivel-badge {
+  display: inline-flex; align-items: center;
+  font-size: 10px; font-weight: 700; padding: 3px 9px;
+  border-radius: 20px; border: 1px solid; text-transform: capitalize;
+}
+
+.pa-btn-sm {
+  background: #eff6ff; color: #2563eb;
+  border: 1px solid #bfdbfe; border-radius: 6px;
+  padding: 5px 10px; font-size: 11px; font-weight: 700;
+  cursor: pointer; font-family: inherit; white-space: nowrap;
+  transition: all .14s;
+}
+.pa-btn-sm:hover { background: #2563eb; color: #fff; border-color: #2563eb; }
+
+/* ── Alert banner ────────────────────────── */
+.pa-alert-banner {
+  background: #fee2e2; border: 1px solid #fca5a5;
+  color: #7f1d1d; border-radius: 10px; padding: 12px 16px;
+  display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+  font-size: 13px; flex-wrap: wrap;
+}
+
+.pa-alert-btn {
+  background: #dc2626; color: #fff; border: none;
+  border-radius: 6px; padding: 4px 12px; font-size: 11px;
+  font-weight: 700; cursor: pointer; font-family: inherit;
+  margin-left: auto;
+}
+
+/* ── Responsivo ──────────────────────────── */
+@media (max-width: 900px) {
+  .pa-grid-2 { grid-template-columns: 1fr; }
+  .pa-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .pa-kpi-grid { grid-template-columns: 1fr 1fr; }
+  .pa-tabs { overflow-x: auto; flex-wrap: nowrap; }
+  .pa-tab  { white-space: nowrap; }
+}

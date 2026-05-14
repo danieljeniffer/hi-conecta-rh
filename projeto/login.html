@@ -459,8 +459,11 @@
   <script>
     'use strict';
 
+    // ── CONFIGURAÇÃO ────────────────────────────────────────
+    const API_URL    = (window.AppConfig?.api?.baseUrl) || 'http://localhost:3001/api/v1';
+    const API_ATIVO  = true; // false = modo demo (localhost apenas)
+
     // ── RATE LIMIT CLIENT-SIDE ──────────────────────────────
-    // Limite de 5 tentativas por 15 minutos por email
     const _RL_MAX  = 5;
     const _RL_MINS = 15;
 
@@ -548,71 +551,127 @@
       document.getElementById('error-msg').style.display = 'none';
     }
 
-    // ── LOGIN ────────────────────────────────────────────────
-    function fazerLogin(tipo) {
+    // ── CONTROLE DE BOTÃO ────────────────────────────────────
+    function _setBtnLoading(btn, loading) {
+      if (!btn) return;
+      btn.disabled = loading;
+      btn.style.opacity = loading ? '.65' : '1';
+      btn.style.cursor  = loading ? 'wait' : 'pointer';
+      btn.textContent   = loading ? 'Aguarde...' : 'Entrar na plataforma →';
+    }
+
+    // ── LOGIN COM API REAL + FALLBACK DEMO ───────────────────
+    async function fazerLogin(tipo) {
       const emailId = tipo === 'corporativo' ? 'corp-email' : 'pes-email';
       const senhaId = tipo === 'corporativo' ? 'corp-senha' : 'pes-senha';
+      const btn     = document.querySelector(`#form-${tipo} .btn-login`);
 
       const email = (document.getElementById(emailId)?.value || '').trim().toLowerCase();
       const senha = (document.getElementById(senhaId)?.value || '').trim();
 
-      // 1. Campos obrigatórios
-      if (!email || !senha) {
-        _mostrarErro('❌ Preencha e-mail e senha.');
-        return;
-      }
+      _limparMensagens();
 
-      // 2. Formato básico de e-mail
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
-        _mostrarErro('❌ E-mail inválido.');
-        return;
-      }
-
-      // 3. Rate limit: bloqueia após 5 tentativas em 15 min
+      // Validações básicas
+      if (!email || !senha) { _mostrarErro('❌ Preencha e-mail e senha.'); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { _mostrarErro('❌ E-mail inválido.'); return; }
       if (!_rlVerificar(email)) {
-        _mostrarErro('⏳ Muitas tentativas. Aguarde alguns minutos e tente novamente.');
+        _mostrarErro('⏳ Muitas tentativas. Aguarde alguns minutos.');
         return;
       }
 
-      // 4. Busca o usuário (comparação case-insensitive no email)
+      _setBtnLoading(btn, true);
+
+      // ── MODO API REAL ─────────────────────────────────────
+      if (API_ATIVO) {
+        try {
+          const controller = new AbortController();
+          const timeoutId  = setTimeout(() => controller.abort(), 10000);
+
+          const res = await fetch(`${API_URL}/auth/login`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ email, senha }),
+            signal:  controller.signal,
+          });
+
+          clearTimeout(timeoutId);
+          const json = await res.json();
+
+          if (!res.ok) {
+            const info = _rlRegistrar(email);
+            const restam = _RL_MAX - info.tentativas;
+            _setBtnLoading(btn, false);
+            _mostrarErro(json.message || `❌ Credenciais inválidas. ${restam > 0 ? restam + ' tentativas restantes.' : ''}`);
+            return;
+          }
+
+          // Sucesso — salva tokens e sessão
+          const { access_token, refresh_token, usuario } = json.data;
+          sessionStorage.setItem('_at', access_token);
+          if (refresh_token) sessionStorage.setItem('_rt', refresh_token);
+
+          const sessao = {
+            id:         usuario.id,
+            nome:       String(usuario.nome  || '').slice(0, 200),
+            email:      String(usuario.email || '').slice(0, 200),
+            cargo:      String(usuario.cargo || '').slice(0, 200),
+            setor:      String(usuario.setor || '').slice(0, 100),
+            perfil:     usuario.perfil,
+            empresa_id: usuario.empresa_id,
+            _via_api:   true,
+          };
+
+          _rlLimpar(email);
+          sessionStorage.setItem('hiRH_user', JSON.stringify(sessao));
+
+          _mostrarSucesso(`✅ Bem-vindo(a), ${sessao.nome.split(' ')[0]}! Redirecionando...`);
+          setTimeout(() => {
+            const redirect = new URLSearchParams(location.search).get('redirect');
+            window.location.href = redirect ? `index.html${redirect}` : 'index.html';
+          }, 1200);
+          return;
+
+        } catch (err) {
+          if (err.name === 'AbortError') {
+            // API indisponível — cai para modo demo automaticamente
+            console.warn('[Login] API inacessível. Usando modo demo.');
+          } else {
+            _setBtnLoading(btn, false);
+            _mostrarErro('❌ Não foi possível conectar ao servidor.');
+            return;
+          }
+        }
+      }
+
+      // ── MODO DEMO (fallback) ──────────────────────────────
       const lista   = _getUsuarios();
-      const usuario = lista.find(u =>
-        u.email.toLowerCase() === email && u.senha === senha
-      );
+      const usuario = lista.find(u => u.email.toLowerCase() === email && u.senha === senha);
 
       if (!usuario) {
-        const info = _rlRegistrar(email);
+        const info  = _rlRegistrar(email);
         const restam = _RL_MAX - info.tentativas;
+        _setBtnLoading(btn, false);
         _mostrarErro(restam > 0
           ? `❌ E-mail ou senha incorretos. ${restam} tentativa${restam !== 1 ? 's' : ''} restante${restam !== 1 ? 's' : ''}.`
-          : '⏳ Conta bloqueada temporariamente por excesso de tentativas.'
-        );
+          : '⏳ Conta bloqueada por excesso de tentativas.');
         return;
       }
 
-      // 5. Valida perfil (impede elevação de privilégio por dado corrompido)
-      if (!_PERFIS_VALIDOS.includes(usuario.perfil)) {
-        console.warn('[Login] Perfil inválido, usando colab:', usuario.perfil);
-        usuario.perfil = 'colab';
-      }
+      if (!_PERFIS_VALIDOS.includes(usuario.perfil)) usuario.perfil = 'colab';
 
-      // 6. Login OK — limpa rate limit e salva sessão sem senha
       _rlLimpar(email);
+      sessionStorage.setItem('hiRH_user', JSON.stringify({
+        nome:   String(usuario.nome  || '').slice(0, 200),
+        email:  String(usuario.email || '').slice(0, 200),
+        cargo:  String(usuario.cargo || '').slice(0, 200),
+        setor:  String(usuario.setor || '').slice(0, 100),
+        perfil: usuario.perfil,
+        _via_api: false,
+      }));
 
-      const sessao = {
-        nome:    String(usuario.nome  || '').slice(0, 200),
-        email:   String(usuario.email || '').slice(0, 200),
-        cargo:   String(usuario.cargo || '').slice(0, 200),
-        setor:   String(usuario.setor || '').slice(0, 100),
-        perfil:  usuario.perfil,
-        tipo:    usuario.tipo === 'pessoal' ? 'pessoal' : 'corporativo',
-        // senha nunca entra na sessão
-      };
-
-      sessionStorage.setItem('hiRH_user', JSON.stringify(sessao));
-
-      _mostrarSucesso(`✅ Bem-vindo(a), ${sessao.nome.split(' ')[0]}! Redirecionando...`);
-      setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+      _mostrarSucesso(`✅ Bem-vindo(a), ${usuario.nome.split(' ')[0]}! (modo demo)`);
+      setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+      _setBtnLoading(btn, false);
     }
 
     // ── INTEGRAÇÕES EXTERNAS (placeholders) ─────────────────

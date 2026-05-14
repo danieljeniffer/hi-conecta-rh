@@ -1,0 +1,109 @@
+/* ============================================================
+   AUTOMATION ENGINE — automation.css
+   hi Conecta RH  ·  Prefixo: auto-
+   ============================================================ */
+
+.auto-root { display: flex; flex-direction: column; gap: 16px; }
+
+.auto-hero {
+  background: linear-gradient(135deg, #0f172a, #1e3a5f, #d97706);
+  border-radius: 14px; padding: 20px 24px; color: #fff;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+}
+
+.auto-hero-left  { display: flex; align-items: center; gap: 14px; }
+.auto-hero-icon  { font-size: 38px; line-height: 1; }
+.auto-hero h2    { margin: 0 0 4px; font-size: 18px; font-weight: 900; }
+.auto-hero p     { margin: 0; font-size: 12px; color: rgba(255,255,255,.65); }
+.auto-hero-right { display: flex; align-items: center; gap: 14px; }
+
+.auto-stat { text-align: center; color: #fff; }
+.auto-stat strong, .auto-stat { font-size: 22px; font-weight: 900; }
+.auto-stat small { display: block; font-size: 10px; opacity: .65; font-weight: 600; }
+
+.auto-btn-new {
+  background: #fff; color: #d97706; border: none;
+  border-radius: 8px; padding: 8px 16px;
+  font-size: 12px; font-weight: 800;
+  cursor: pointer; font-family: inherit;
+  transition: opacity .15s;
+}
+.auto-btn-new:hover { opacity: .88; }
+
+/* ── Cards de automação ─────────────────────── */
+.auto-lista { display: flex; flex-direction: column; gap: 10px; }
+
+.auto-card {
+  background: #fff; border: 1px solid #e2e8f0;
+  border-radius: 12px; padding: 14px 16px;
+  transition: box-shadow .14s, border-color .14s;
+}
+
+.auto-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.07); border-color: #bfdbfe; }
+.auto-card-inativo { opacity: .6; background: #f8fafc; }
+
+.auto-card-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 8px; margin-bottom: 10px;
+}
+
+.auto-card-left { display: flex; align-items: center; gap: 12px; }
+
+.auto-card-nome    { font-size: 13px; font-weight: 700; color: #1e293b; }
+.auto-card-gatilho { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+.auto-card-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.auto-exec-count {
+  background: #f1f5f9; color: #334155;
+  font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px;
+}
+
+.auto-ultima { font-size: 10px; color: #94a3b8; white-space: nowrap; }
+
+.auto-btn-edit, .auto-btn-sim, .auto-btn-del {
+  border: 1px solid #e2e8f0; border-radius: 6px;
+  padding: 4px 10px; font-size: 11px; font-weight: 600;
+  cursor: pointer; font-family: inherit; background: #fff;
+  transition: all .12s;
+}
+
+.auto-btn-edit:hover { border-color: #2563eb; color: #2563eb; }
+.auto-btn-sim  { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
+.auto-btn-sim:hover { background: #2563eb; color: #fff; }
+.auto-btn-del:hover { border-color: #dc2626; color: #dc2626; }
+
+/* ── Toggle switch ──────────────────────────── */
+.auto-toggle {
+  width: 40px; height: 22px; border-radius: 11px;
+  background: #e2e8f0; position: relative;
+  cursor: pointer; transition: background .2s; flex-shrink: 0;
+}
+
+.auto-toggle.ativo { background: #16a34a; }
+
+.auto-toggle-ball {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; position: absolute; top: 2px; left: 2px;
+  transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+
+.auto-toggle.ativo .auto-toggle-ball { transform: translateX(18px); }
+
+/* ── Chips de ações ─────────────────────────── */
+.auto-acoes-list { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.auto-acao-chip {
+  background: #f1f5f9; border: 1px solid #e2e8f0;
+  border-radius: 20px; padding: 3px 10px;
+  font-size: 10px; font-weight: 600; color: #334155;
+}
+
+/* ── Card genérico ─────────────────────────── */
+.auto-card-hd h4  { margin: 0; font-size: 14px; font-weight: 700; }
+
+@media (max-width: 640px) {
+  .auto-card-right { justify-content: flex-end; }
+  .auto-auto-ultima { display: none; }
+}

@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load hi_tags %}
+
+{% block title %}Dashboard Executivo{% endblock %}
+
+{% block content %}
+<div class="depto-page">
+
+  <!-- BOAS-VINDAS -->
+  <div class="dash-boas-vindas dash-adm">
+    <div>
+      <h2>Bom dia, {{ request.user.nome|first_name }}! 👋</h2>
+      <p>{{ "now"|date:"l, d \d\e F \d\e Y" }} — Visão executiva da empresa</p>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      {% if kpis.turnover > 5 %}
+      <div style="background:rgba(220,38,38,.2);border-radius:20px;padding:8px 16px;font-size:13px;font-weight:600;color:#fca5a5">
+        ⚠️ Turnover: {{ kpis.turnover }}%
+      </div>
+      {% endif %}
+      <div style="background:rgba(255,255,255,.15);border-radius:20px;padding:8px 16px;font-size:13px;font-weight:600;color:white">
+        👥 {{ kpis.total_colabs }} colaboradores
+      </div>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="depto-cards">
+    <div class="depto-card" onclick="location.href='{% url "rh:pessoas" %}'" style="cursor:pointer">
+      <div class="depto-card-icon">👥</div>
+      <div class="depto-card-info">
+        <strong>{{ kpis.total_colabs }}</strong>
+        <span>Colaboradores ativos</span>
+      </div>
+    </div>
+
+    <div class="depto-card">
+      <div class="depto-card-icon">🔍</div>
+      <div class="depto-card-info">
+        <strong>{{ kpis.vagas_abertas }}</strong>
+        <span>Vagas abertas</span>
+      </div>
+    </div>
+
+    <div class="depto-card" style="border-left:4px solid var(--warning)">
+      <div class="depto-card-icon">🏖️</div>
+      <div class="depto-card-info">
+        <strong>{{ kpis.ferias_pendentes }}</strong>
+        <span>Férias pendentes</span>
+      </div>
+    </div>
+
+    <div class="depto-card" onclick="location.href='{% url "analytics:dashboard" %}'" style="cursor:pointer">
+      <div class="depto-card-icon">📉</div>
+      <div class="depto-card-info">
+        <strong>{{ kpis.turnover }}%</strong>
+        <span>Turnover mensal</span>
+      </div>
+    </div>
+
+    {% if folha_atual %}
+    <div class="depto-card destaque">
+      <div class="depto-card-icon">💰</div>
+      <div class="depto-card-info">
+        <strong>{{ folha_atual.total_liquido|moeda }}</strong>
+        <span>Folha {{ folha_atual.competencia }}</span>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- GRID PRINCIPAL -->
+  <div class="ind-grid">
+
+    <!-- DEPARTAMENTOS -->
+    <div class="depto-section">
+      <div class="section-header">
+        <h3>🏢 Headcount por Departamento</h3>
+        <button class="link-btn" onclick="location.href='{% url "rh:pessoas" %}'">Ver todos →</button>
+      </div>
+      {% for dept in departamentos %}
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div>
+          <strong style="font-size:13px">{{ dept.nome }}</strong>
+          <small style="display:block;color:var(--text-muted)">
+            {% if dept.gestor %}Gestor: {{ dept.gestor.nome }}{% endif %}
+          </small>
+        </div>
+        <strong style="color:var(--primary);font-size:18px">{{ dept.headcount }}</strong>
+      </div>
+      {% empty %}
+      <p style="color:var(--text-muted);text-align:center;padding:20px">Nenhum departamento cadastrado.</p>
+      {% endfor %}
+    </div>
+
+    <!-- ANIVERSARIANTES -->
+    <div class="depto-section">
+      <div class="section-header">
+        <h3>🎂 Aniversariantes (próximos 7 dias)</h3>
+      </div>
+      {% for colab in aniversariantes %}
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div class="abs-avatar">{{ colab.iniciais }}</div>
+        <div style="flex:1">
+          <strong style="font-size:12px">{{ colab.nome }}</strong>
+          <small style="display:block;color:var(--text-muted)">{{ colab.cargo }}</small>
+        </div>
+        <span style="font-size:12px;color:#ec4899;font-weight:700">
+          {{ colab.data_nascimento|date:"d/m" }}
+        </span>
+      </div>
+      {% empty %}
+      <p style="color:var(--text-muted);text-align:center;padding:20px">Nenhum aniversariante esta semana.</p>
+      {% endfor %}
+    </div>
+
+    <!-- ACESSO RÁPIDO -->
+    <div class="depto-section">
+      <div class="section-header"><h3>⚡ Acesso Rápido</h3></div>
+      <div class="dash-acoes-grid">
+        <a href="{% url 'dp:central' %}" class="btn-primary" style="text-decoration:none;text-align:center">⚡ Central DP</a>
+        <a href="{% url 'rh:pessoas' %}" style="text-decoration:none;text-align:center" class="btn-secondary">👥 Pessoas</a>
+        <a href="{% url 'analytics:dashboard' %}" style="text-decoration:none;text-align:center" class="btn-secondary">📊 Analytics</a>
+        <a href="{% url 'dp:ferias_lista' %}" style="text-decoration:none;text-align:center" class="btn-secondary">🏖️ Férias</a>
+        <a href="{% url 'dp:folha_lista' %}" style="text-decoration:none;text-align:center" class="btn-secondary">💰 Folha</a>
+        <a href="{% url 'comunicacao:feed' %}" style="text-decoration:none;text-align:center" class="btn-secondary">📣 Feed</a>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

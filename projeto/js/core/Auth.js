@@ -54,7 +54,7 @@ const Auth = (() => {
       jornada: 'edit',   endomarketing: 'edit', recrutamento: 'edit',
       departamento: 'edit', integracoes: 'edit', cargos: 'edit',
       desenvolvimento: 'edit', clima: 'edit', documentos: 'edit',
-      nr01: 'edit', ouvidoria: 'edit', gestor: 'edit', bonificacoes: 'edit', portal: 'edit', usuarios: 'edit',
+      nr01: 'edit', ouvidoria: 'edit', gestor: 'edit', bonificacoes: 'edit', portal: 'edit', analytics: 'edit', timeline: 'edit', automacao: 'edit', dpc: 'edit', dpdashboard: 'edit', usuarios: 'edit',
     },
 
     // ── GESTOR DE RH ──────────────────────────────────────
@@ -64,7 +64,7 @@ const Auth = (() => {
       jornada: 'view',      endomarketing: 'edit', recrutamento: 'edit',
       departamento: 'edit', integracoes: false, cargos: 'edit',
       desenvolvimento: 'edit', clima: 'edit', documentos: 'edit',
-      nr01: 'edit', ouvidoria: 'edit', gestor: 'edit', bonificacoes: 'edit', portal: 'view', usuarios: false,
+      nr01: 'edit', ouvidoria: 'edit', gestor: 'edit', bonificacoes: 'edit', portal: 'view', analytics: 'edit', timeline: 'edit', automacao: 'edit', dpc: 'edit', dpdashboard: 'edit', usuarios: false,
     },
 
     // ── GESTOR DE EQUIPE ──────────────────────────────────
@@ -74,7 +74,7 @@ const Auth = (() => {
       jornada: 'view',    endomarketing: false, recrutamento: 'view',
       departamento: false, integracoes: false, cargos: 'view',
       desenvolvimento: 'view', clima: 'view', documentos: 'view',
-      nr01: 'view', ouvidoria: 'view', gestor: 'edit', bonificacoes: 'view', portal: 'view', usuarios: false,
+      nr01: 'view', ouvidoria: 'view', gestor: 'edit', bonificacoes: 'view', portal: 'view', analytics: 'view', timeline: 'view', automacao: false, usuarios: false,
     },
 
     // ── ANALISTA DE RH ────────────────────────────────────
@@ -113,22 +113,22 @@ const Auth = (() => {
     admin: [
       'dashboard','portal','pessoas','indicadores','servicos','comunicacao',
       'experiencia','endomarketing',
-      'recrutamento','departamento','integracoes','cargos','bonificacoes',
+      'recrutamento','departamento','dpc','dpdashboard','integracoes','cargos','bonificacoes',
       'desenvolvimento','clima','documentos','nr01','ouvidoria',
-      'gestor','usuarios',
+      'gestor','analytics','timeline','automacao','usuarios',
     ],
     rh: [
       'dashboard','portal','pessoas','indicadores','servicos','comunicacao',
       'experiencia','endomarketing',
-      'recrutamento','departamento','cargos','bonificacoes',
+      'recrutamento','departamento','dpc','dpdashboard','cargos','bonificacoes',
       'desenvolvimento','clima','documentos','nr01','ouvidoria',
-      'gestor',
+      'gestor','analytics','timeline','automacao',
     ],
     gestor: [
       'dashboard','portal','pessoas','servicos','comunicacao',
       'experiencia',
       'cargos','bonificacoes','desenvolvimento','clima','documentos','nr01','ouvidoria',
-      'gestor',
+      'gestor','analytics','timeline',
     ],
     analista: [
       'dashboard','portal','pessoas','servicos','comunicacao',
