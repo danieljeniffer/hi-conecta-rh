@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load hi_tags %}
+
+{% block title %}Departamento Pessoal{% endblock %}
+
+{% block content %}
+<div class="page-inner">
+
+  <!-- KPIs Operacionais ───────────────────────────────────── -->
+  <div class="kpis-grid">
+    <div class="kpi-card {% if kpis.ferias_vcdo60 > 0 %}kpi-amber{% else %}kpi-green{% endif %}" onclick="location.href='{% url "dp:ferias_lista" %}'">
+      <div class="kpi-icon">🏖️</div>
+      <div class="kpi-valor">{{ kpis.ferias_vcdo60 }}</div>
+      <div class="kpi-label">Férias Vencendo</div>
+      <div class="kpi-meta">Próximos 60 dias</div>
+    </div>
+    <div class="kpi-card {% if kpis.ferias_pend > 0 %}kpi-amber{% else %}kpi-green{% endif %}">
+      <div class="kpi-icon">⏳</div>
+      <div class="kpi-valor">{{ kpis.ferias_pend }}</div>
+      <div class="kpi-label">Férias Pendentes</div>
+      <div class="kpi-meta">Aguardam aprovação</div>
+    </div>
+    <div class="kpi-card {% if kpis.rescisoes_abert > 0 %}kpi-danger{% else %}kpi-green{% endif %}" onclick="location.href='{% url "dp:rescisao_lista" %}'">
+      <div class="kpi-icon">👋</div>
+      <div class="kpi-valor">{{ kpis.rescisoes_abert }}</div>
+      <div class="kpi-label">Rescisões Abertas</div>
+    </div>
+    <div class="kpi-card {% if kpis.notif_crit > 0 %}kpi-danger{% else %}kpi-blue{% endif %}">
+      <div class="kpi-icon">🔔</div>
+      <div class="kpi-valor">{{ kpis.notif_crit }}</div>
+      <div class="kpi-label">Alertas Críticos</div>
+    </div>
+    <div class="kpi-card kpi-green">
+      <div class="kpi-icon">💰</div>
+      <div class="kpi-valor">{{ kpis.folha_liquido|moeda }}</div>
+      <div class="kpi-label">Folha — {{ kpis.folha_status }}</div>
+    </div>
+    <div class="kpi-card kpi-blue">
+      <div class="kpi-icon">🆕</div>
+      <div class="kpi-valor">{{ kpis.admissoes_pend }}</div>
+      <div class="kpi-label">Admissões Pendentes</div>
+    </div>
+  </div>
+
+  <!-- Acesso rápido ───────────────────────────────────────── -->
+  <div class="hi-card">
+    <div class="hi-card-hd"><h3>⚡ Acesso Rápido</h3></div>
+    <div class="dp-atalhos">
+      <a href="{% url 'dp:central' %}"        class="dp-atalho-btn dp-atalho-blue">⚡<span>Central Trabalhista</span></a>
+      <a href="{% url 'dp:folha_lista' %}"    class="dp-atalho-btn dp-atalho-green">💰<span>Folha de Pagamento</span></a>
+      <a href="{% url 'dp:ferias_lista' %}"   class="dp-atalho-btn dp-atalho-purple">🏖️<span>Férias</span></a>
+      <a href="{% url 'dp:rescisao_lista' %}" class="dp-atalho-btn dp-atalho-red">👋<span>Rescisão</span></a>
+      <a href="{% url 'dp:decimo_lista' %}"   class="dp-atalho-btn dp-atalho-amber">🎁<span>13º Salário</span></a>
+      <a href="{% url 'dp:beneficios' %}"     class="dp-atalho-btn dp-atalho-teal">💳<span>Benefícios</span></a>
+      <a href="{% url 'dp:calculo_massa' %}"  class="dp-atalho-btn dp-atalho-blue">⚡<span>Cálculo em Massa</span></a>
+      <a href="{% url 'dp:notificacoes' %}"   class="dp-atalho-btn dp-atalho-amber">🔔<span>Notificações</span></a>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+
+    <!-- Inconsistências ─────────────────────────────────── -->
+    {% if inconsistencias %}
+    <div class="hi-card">
+      <div class="hi-card-hd"><h3>⚠️ Inconsistências Detectadas</h3><span class="badge badge-danger">{{ inconsistencias|length }}</span></div>
+      {% for inc in inconsistencias %}
+      <div class="alerta-item alerta-{{ inc.tipo }}" style="margin-bottom:6px">{{ inc.texto }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Timeline operacional ─────────────────────────────── -->
+    <div class="hi-card">
+      <div class="hi-card-hd"><h3>📋 Atividades de Hoje</h3>
+        <form method="post" action="{% url 'dp:gerar_alertas' %}" style="margin:0">
+          {% csrf_token %}
+          <button type="submit" class="btn-secondary" style="font-size:11px;padding:5px 10px">🔔 Gerar Alertas</button>
+        </form>
+      </div>
+      {% if timeline %}
+        {% for ev in timeline %}
+        <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border-l)">
+          <div style="width:26px;height:26px;border-radius:8px;background:{{ ev.cor }}18;color:{{ ev.cor }};font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{ ev.icon }}</div>
+          <div style="flex:1">
+            <div style="font-size:12px;font-weight:600">{{ ev.texto }}</div>
+            <div style="font-size:10px;color:var(--text-muted)">{{ ev.hora }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px">Nenhuma atividade registrada hoje.</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+</div>
+
+<style>
+.dp-atalhos { display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px }
+.dp-atalho-btn {
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:16px 10px;border-radius:12px;text-decoration:none;
+  font-size:12px;font-weight:700;text-align:center;
+  border:1px solid transparent;transition:all .14s;
+}
+.dp-atalho-btn:hover { transform:translateY(-2px);box-shadow:var(--shadow-md);text-decoration:none }
+.dp-atalho-btn span { font-size:11px }
+.dp-atalho-blue   { background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8 }
+.dp-atalho-green  { background:#f0fdf4;border-color:#bbf7d0;color:#15803d }
+.dp-atalho-purple { background:#f3e8ff;border-color:#d8b4fe;color:#7c3aed }
+.dp-atalho-red    { background:#fef2f2;border-color:#fca5a5;color:#b91c1c }
+.dp-atalho-amber  { background:#fffbeb;border-color:#fde68a;color:#92400e }
+.dp-atalho-teal   { background:#ecfdf5;border-color:#6ee7b7;color:#0f766e }
+</style>
+{% endblock %}

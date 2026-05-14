@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Gerar PDI com IA{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3 px-4" style="max-width:800px">
+  <div class="d-flex align-items-center gap-2 mb-4">
+    <a href="{% url 'treinamento:pdis' %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i></a>
+    <h1 class="h4 fw-bold text-white mb-0"><i class="bi bi-robot text-primary me-2"></i>Gerar PDI com IA</h1>
+  </div>
+
+  <div style="background:#0f172a;border:1px solid rgba(139,92,246,.2);border-radius:12px;padding:1.5rem">
+    <div class="mb-3">
+      <label class="form-label text-muted small">Colaborador *</label>
+      <select id="colaboradorSelect" class="form-select bg-dark border-secondary text-white" required>
+        <option value="">— Selecionar —</option>
+        {% for c in colaboradores %}<option value="{{ c.id }}">{{ c.nome }} — {{ c.cargo.nome|default:"Sem cargo" }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label text-muted small">Objetivos de Desenvolvimento</label>
+      <textarea id="objetivos" class="form-control bg-dark border-secondary text-white" rows="3" placeholder="Ex: Desenvolver habilidades de liderança, aprimorar conhecimentos técnicos em Python..."></textarea>
+    </div>
+    <div class="row g-3">
+      <div class="col-sm-6">
+        <label class="form-label text-muted small">Pontos Fortes</label>
+        <input type="text" id="pontos_fortes" class="form-control bg-dark border-secondary text-white" placeholder="Ex: proativo, comunicativo">
+      </div>
+      <div class="col-sm-6">
+        <label class="form-label text-muted small">Áreas de Melhoria</label>
+        <input type="text" id="areas_melhoria" class="form-control bg-dark border-secondary text-white" placeholder="Ex: gestão de tempo, apresentações">
+      </div>
+    </div>
+    <button id="btnGerar" class="btn btn-primary w-100 mt-4" onclick="gerarPDI()">
+      <i class="bi bi-magic me-1"></i>Gerar PDI com Inteligência Artificial
+    </button>
+  </div>
+
+  <div id="resultado" class="mt-4" style="display:none">
+    <div style="background:#0f172a;border:1px solid rgba(16,185,129,.2);border-radius:12px;padding:1.5rem">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold text-success mb-0"><i class="bi bi-check-circle me-1"></i>PDI Gerado com Sucesso!</h6>
+        <a id="linkPDI" href="#" class="btn btn-sm btn-outline-success">Ver PDI</a>
+      </div>
+      <div id="pdiTitulo" class="fw-bold text-white mb-2"></div>
+      <div id="pdiObjetivo" class="text-muted small mb-3"></div>
+      <div id="pdiAcoes"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+async function gerarPDI() {
+    const colab = document.getElementById('colaboradorSelect').value;
+    if (!colab) { alert('Selecione um colaborador.'); return; }
+
+    const btn = document.getElementById('btnGerar');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>Gerando...';
+
+    const resp = await fetch('{% url "treinamento:gerar_pdi" %}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+        body: JSON.stringify({
+            colaborador_id: colab,
+            objetivos: document.getElementById('objetivos').value,
+            pontos_fortes: document.getElementById('pontos_fortes').value,
+            areas_melhoria: document.getElementById('areas_melhoria').value,
+        })
+    });
+    const data = await resp.json();
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-magic me-1"></i>Gerar PDI com Inteligência Artificial';
+
+    if (data.sucesso) {
+        document.getElementById('resultado').style.display = 'block';
+        document.getElementById('pdiTitulo').textContent = data.dados.titulo;
+        document.getElementById('pdiObjetivo').textContent = data.dados.objetivo;
+        const acoesDiv = document.getElementById('pdiAcoes');
+        acoesDiv.innerHTML = (data.dados.acoes || []).map(a => `
+            <div class="d-flex gap-2 align-items-start mb-2 p-2 rounded" style="background:rgba(30,41,59,.5)">
+              <i class="bi bi-arrow-right-short text-primary mt-1 flex-shrink-0"></i>
+              <div>
+                <div class="text-white small fw-semibold">${a.acao}</div>
+                <div class="text-muted" style="font-size:.7rem">Prazo: ${a.prazo} · ${a.recurso || 'Sem recurso definido'}</div>
+              </div>
+            </div>`).join('');
+        document.getElementById('resultado').scrollIntoView({behavior:'smooth'});
+    } else {
+        alert('Erro ao gerar PDI: ' + (data.mensagem || 'Tente novamente.'));
+    }
+}
+</script>
+{% endblock %}

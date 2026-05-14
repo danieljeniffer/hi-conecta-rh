@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}Central de Inteligência Organizacional{% endblock %}
+
+{% block extra_head %}
+<style>
+.intel-card {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border: 1px solid rgba(99,102,241,.25);
+    border-radius: 16px;
+    padding: 1.75rem;
+    transition: all .25s;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+    position: relative;
+    overflow: hidden;
+}
+.intel-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg,rgba(99,102,241,.08),transparent);
+    opacity: 0;
+    transition: opacity .25s;
+}
+.intel-card:hover { transform: translateY(-6px); box-shadow: 0 24px 48px rgba(0,0,0,.5); }
+.intel-card:hover::after { opacity: 1; }
+.intel-icon {
+    width: 56px; height: 56px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; margin-bottom: 1rem;
+}
+.intel-card h5 { color: #f8fafc; font-weight: 700; margin-bottom: .5rem; }
+.intel-card p  { color: #94a3b8; font-size: .83rem; margin: 0; }
+.intel-badge {
+    position: absolute; top: 1rem; right: 1rem;
+    font-size: .7rem; padding: .2rem .5rem; border-radius: 999px;
+}
+.dna-score-ring {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; font-weight: 800;
+    border: 6px solid rgba(99,102,241,.3);
+    background: rgba(99,102,241,.1);
+    color: #818cf8;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3 px-4">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h1 class="h4 fw-bold text-white mb-0">
+        <i class="bi bi-cpu-fill text-primary me-2"></i>Inteligência Organizacional
+      </h1>
+      <small class="text-muted">IA, Insights e Previsões Estratégicas</small>
+    </div>
+    <span class="badge bg-primary px-3 py-2">{{ referencia }}</span>
+  </div>
+
+  <!-- DNA Corporativo snapshot -->
+  {% if dna %}
+  <div class="card border-0 rounded-3 mb-4 p-3" style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2)!important">
+    <div class="row align-items-center">
+      <div class="col-auto">
+        <div class="dna-score-ring">{{ dna.score_dna|floatformat:0 }}</div>
+      </div>
+      <div class="col">
+        <div class="fw-bold text-white">DNA Corporativo — {{ referencia }}</div>
+        <div class="text-muted small mt-1">{{ dna.narrativa_ia|truncatechars:180 }}</div>
+        <div class="row g-2 mt-2">
+          <div class="col-auto"><span class="badge bg-secondary">Cultura {{ dna.cultura_score|floatformat:0 }}</span></div>
+          <div class="col-auto"><span class="badge bg-secondary">Liderança {{ dna.lideranca_score|floatformat:0 }}</span></div>
+          <div class="col-auto"><span class="badge bg-secondary">Bem-estar {{ dna.bem_estar_score|floatformat:0 }}</span></div>
+          <div class="col-auto"><span class="badge bg-secondary">Resultados {{ dna.resultados_score|floatformat:0 }}</span></div>
+        </div>
+      </div>
+      <div class="col-auto">
+        <a href="{% url 'inteligencia:dna_corporativo' %}" class="btn btn-sm btn-outline-primary">
+          Ver detalhes <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Cards de módulos -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+      <a href="{% url 'inteligencia:dna_corporativo' %}" class="intel-card">
+        <div class="intel-icon" style="background:rgba(99,102,241,.2);color:#818cf8">
+          <i class="bi bi-diagram-3"></i>
+        </div>
+        <h5>DNA Corporativo</h5>
+        <p>6 dimensões da identidade organizacional analisadas com IA — Cultura, Liderança, Aprendizado, Inovação, Bem-estar e Resultados.</p>
+      </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+      <a href="{% url 'inteligencia:modo_fantasma' %}" class="intel-card">
+        {% if alertas_fantasma > 0 %}
+        <span class="intel-badge badge bg-danger">{{ alertas_fantasma }} novos</span>
+        {% endif %}
+        <div class="intel-icon" style="background:rgba(139,92,246,.2);color:#a78bfa">
+          <i class="bi bi-eye-slash"></i>
+        </div>
+        <h5>Modo Fantasma</h5>
+        <p>Detecta silos, líderes informais, micro-conflitos e talentos ocultos — o que não aparece nos relatórios formais.</p>
+      </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+      <a href="{% url 'inteligencia:rh_temporal' %}" class="intel-card">
+        <div class="intel-icon" style="background:rgba(59,130,246,.2);color:#60a5fa">
+          <i class="bi bi-graph-up-arrow"></i>
+        </div>
+        <h5>RH Temporal Preditivo</h5>
+        <p>Projeções temporais de headcount, turnover, custo de folha e engajamento com intervalos de confiança.</p>
+      </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+      <a href="{% url 'inteligencia:ia_executiva' %}" class="intel-card">
+        <div class="intel-icon" style="background:rgba(16,185,129,.2);color:#34d399">
+          <i class="bi bi-robot"></i>
+        </div>
+        <h5>IA Executiva Conselheira</h5>
+        <p>Consulte a IA com dados organizacionais reais para estratégia de RH, retenção e transformação cultural.</p>
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-xl-4">
+      <a href="{% url 'inteligencia:simulador_futuro' %}" class="intel-card">
+        <div class="intel-icon" style="background:rgba(245,158,11,.2);color:#fbbf24">
+          <i class="bi bi-calculator"></i>
+        </div>
+        <h5>Simulador de Futuro</h5>
+        <p>Simule o impacto de expansão, reajuste salarial, PLR, home office e reestruturação antes de decidir.</p>
+        {% if simulacoes %}
+        <div class="mt-2 text-muted small"><i class="bi bi-clock me-1"></i>Última: {{ simulacoes.0.nome|truncatechars:30 }}</div>
+        {% endif %}
+      </a>
+    </div>
+
+    <!-- Consultas recentes -->
+    <div class="col-xl-8">
+      <div style="background:#0f172a;border:1px solid rgba(99,102,241,.15);border-radius:16px;padding:1.25rem;height:100%">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h6 class="text-uppercase text-muted small mb-0" style="letter-spacing:.1em">
+            <i class="bi bi-chat-dots me-1"></i>Consultas Recentes à IA
+          </h6>
+          <a href="{% url 'inteligencia:ia_executiva' %}" class="btn btn-sm btn-outline-primary">
+            Nova consulta <i class="bi bi-plus ms-1"></i>
+          </a>
+        </div>
+        {% for c in consultas_recentes %}
+        <div class="p-2 rounded mb-2" style="background:rgba(30,41,59,.5)">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="text-muted" style="font-size:.7rem">{{ c.get_categoria_display }} · {{ c.created_at|timesince }} atrás · {{ c.modelo_usado }}</div>
+              <div class="text-white small fw-semibold">{{ c.pergunta|truncatechars:70 }}</div>
+              <div class="text-muted" style="font-size:.72rem">{{ c.resposta|truncatechars:100 }}</div>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="text-muted text-center py-4">
+          <i class="bi bi-robot display-6 d-block mb-2 opacity-50"></i>
+          Nenhuma consulta ainda. <a href="{% url 'inteligencia:ia_executiva' %}">Fazer primeira consulta</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

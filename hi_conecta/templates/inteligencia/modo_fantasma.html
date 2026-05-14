@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Modo Fantasma — Insights Ocultos{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3 px-4">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h1 class="h4 fw-bold text-white mb-0">
+        <i class="bi bi-eye-slash text-purple me-2" style="color:#a78bfa"></i>Modo Fantasma
+      </h1>
+      <small class="text-muted">Insights ocultos — o que não aparece nos relatórios formais</small>
+    </div>
+    <div class="d-flex gap-2">
+      <form method="post">{% csrf_token %}
+        <input type="hidden" name="detectar" value="1">
+        <button type="submit" class="btn btn-sm btn-outline-primary">
+          <i class="bi bi-search me-1"></i>Detectar Insights
+        </button>
+      </form>
+      {% if nao_lidos > 0 %}
+      <span class="badge bg-warning text-dark px-3 py-2">{{ nao_lidos }} não lidos</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <form method="get" class="row g-2 mb-4 align-items-end">
+    <div class="col-sm-4 col-md-3">
+      <label class="form-label text-muted small">Tipo</label>
+      <select name="tipo" class="form-select form-select-sm bg-dark border-secondary text-white">
+        <option value="">Todos</option>
+        {% for val, label in tipos %}
+        <option value="{{ val }}" {% if filtro_tipo == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-sm-3 col-md-2">
+      <label class="form-label text-muted small">Impacto</label>
+      <select name="impacto" class="form-select form-select-sm bg-dark border-secondary text-white">
+        <option value="">Todos</option>
+        <option value="critico" {% if filtro_impacto == 'critico' %}selected{% endif %}>Crítico</option>
+        <option value="alto" {% if filtro_impacto == 'alto' %}selected{% endif %}>Alto</option>
+        <option value="medio" {% if filtro_impacto == 'medio' %}selected{% endif %}>Médio</option>
+        <option value="baixo" {% if filtro_impacto == 'baixo' %}selected{% endif %}>Baixo</option>
+      </select>
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-sm btn-primary">Filtrar</button>
+      <a href="{% url 'inteligencia:modo_fantasma' %}" class="btn btn-sm btn-outline-secondary ms-1">Limpar</a>
+    </div>
+  </form>
+
+  <!-- Insights -->
+  <div class="row g-3">
+    {% for insight in insights %}
+    {% with imp=insight.impacto %}
+    <div class="col-md-6 col-xl-4">
+      <div class="card border-0 rounded-3 h-100"
+        style="background:#0f172a;border-left:4px solid
+          {% if imp == 'critico' %}#ef4444
+          {% elif imp == 'alto' %}#f59e0b
+          {% elif imp == 'medio' %}#a78bfa
+          {% else %}#10b981{% endif %} !important">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-start justify-content-between mb-2">
+            <span class="badge {% if imp == 'critico' %}bg-danger{% elif imp == 'alto' %}bg-warning text-dark{% elif imp == 'medio' %}bg-purple{% else %}bg-success{% endif %}" style="{% if imp == 'medio' %}background:#7c3aed!important{% endif %}">
+              {{ insight.get_impacto_display }}
+            </span>
+            <span class="text-muted" style="font-size:.7rem">{{ insight.confianca }}% confiança</span>
+          </div>
+          <div class="badge bg-secondary mb-2" style="font-size:.7rem">{{ insight.get_tipo_display }}</div>
+          <h6 class="fw-bold text-white">{{ insight.titulo }}</h6>
+          <p class="text-muted small mb-2">{{ insight.descricao }}</p>
+          {% if insight.recomendacao %}
+          <div class="p-2 rounded" style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2)">
+            <div class="text-primary" style="font-size:.7rem;font-weight:700">
+              <i class="bi bi-lightbulb me-1"></i>RECOMENDAÇÃO
+            </div>
+            <div class="text-light" style="font-size:.78rem">{{ insight.recomendacao }}</div>
+          </div>
+          {% endif %}
+          <div class="text-muted mt-2" style="font-size:.7rem">
+            {{ insight.created_at|timesince }} atrás · {{ referencia }}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endwith %}
+    {% empty %}
+    <div class="col-12 text-center text-muted py-5">
+      <i class="bi bi-eye-slash display-3 d-block mb-3 opacity-30"></i>
+      Nenhum insight detectado para {{ referencia }}.<br>
+      <small>Clique em "Detectar Insights" para analisar padrões organizacionais ocultos.</small>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

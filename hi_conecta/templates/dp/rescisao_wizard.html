@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load hi_tags %}
+
+{% block title %}Wizard de Rescisão{% endblock %}
+
+{% block content %}
+<div class="page-inner" style="max-width:800px">
+
+  <!-- Progress bar ─────────────────────────────────────── -->
+  <div class="hi-card" style="padding:16px 20px;margin-bottom:16px">
+    <div class="wizard-steps">
+      {% for e in etapas %}
+      <div class="wizard-step {% if e.n < etapa %}concluido{% elif e.n == etapa %}ativo{% endif %}">
+        <div class="wizard-step-num">{% if e.n < etapa %}✓{% else %}{{ e.n }}{% endif %}</div>
+        <div class="wizard-step-label">{{ e.icon }} {{ e.label }}</div>
+      </div>
+      {% if not forloop.last %}<div class="wizard-step-line"></div>{% endif %}
+      {% endfor %}
+    </div>
+    <div class="wizard-bar">
+      <div class="wizard-bar-fill" style="width:{% widthratio etapa etapas|length 100 %}%"></div>
+    </div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:4px;text-align:right">Etapa {{ etapa }} de {{ etapas|length }}</div>
+  </div>
+
+  <!-- Formulário da etapa ──────────────────────────────── -->
+  <div class="hi-card">
+    <div class="hi-card-hd">
+      <h3>{{ etapas|get_item_by_index:etapa_minus_one.icon|default:"" }} {{ etapas|get_item_by_index:etapa_minus_one.label|default:"Wizard Rescisão" }}</h3>
+    </div>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if rescisao %}
+        <input type="hidden" name="colaborador_id" value="{{ rescisao.colaborador_id }}">
+        <input type="hidden" name="tipo" value="{{ rescisao.tipo }}">
+      {% endif %}
+
+      {% if etapa == 1 %}
+        <div class="hi-form-group">
+          <label class="hi-label">Colaborador <span style="color:var(--danger)">*</span></label>
+          <select name="colaborador_id" class="hi-select" required {% if rescisao %}disabled{% endif %}>
+            <option value="">Selecione...</option>
+            {% for c in colabs %}
+            <option value="{{ c.id }}" {% if rescisao and rescisao.colaborador_id == c.id %}selected{% endif %}>{{ c.nome }} — {{ c.cargo }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="hi-form-group">
+          <label class="hi-label">Tipo de Rescisão <span style="color:var(--danger)">*</span></label>
+          <select name="tipo" class="hi-select" required>
+            {% for val, label in tipos_rescisao %}
+            <option value="{{ val }}" {% if rescisao and rescisao.tipo == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="hi-form-group">
+          <label class="hi-label">Data do Desligamento <span style="color:var(--danger)">*</span></label>
+          <input type="date" name="data_demissao" class="hi-input" required
+                 value="{{ rescisao.data_demissao|date:'Y-m-d'|default:'' }}">
+        </div>
+        <div class="alerta-item alerta-info">
+          ℹ️ O aviso prévio será calculado automaticamente com base no tempo de empresa (Lei 12.506/2011).
+        </div>
+
+      {% elif etapa == 2 %}
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Configure as condições do aviso prévio.</p>
+        <div class="hi-form-group">
+          <label class="hi-label">Aviso Prévio</label>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius-sm)">
+              <input type="radio" name="aviso_indenizado" value="False" checked> Trabalhado (colaborador cumpre os dias)
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius-sm)">
+              <input type="radio" name="aviso_indenizado" value="True"> Indenizado (empresa paga sem exigir trabalho)
+            </label>
+          </div>
+        </div>
+
+      {% elif etapa == 3 %}
+        <p style="font-size:13px;margin-bottom:14px">Verifique pendências do colaborador antes de prosseguir.</p>
+        {% for item, label in pendencias_items %}
+        <label style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer">
+          <input type="checkbox" name="pend_{{ item }}" value="1"> {{ label }}
+        </label>
+        {% endfor %}
+        <div class="alerta-item alerta-info" style="margin-top:10px">ℹ️ Exame demissional deve ser realizado em até 10 dias úteis após o desligamento (NR-7).</div>
+
+      {% elif etapa == 4 %}
+        <p style="font-size:13px;margin-bottom:14px">Confirme o encerramento dos benefícios.</p>
+        {% if rescisao %}
+          {% for cb in rescisao.colaborador.beneficios.all %}
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px">
+            <span style="font-size:13px;font-weight:600">{{ cb.beneficio.nome }}</span>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
+              <input type="checkbox" name="cancelar_{{ cb.id }}" value="1" checked> Cancelar
+            </label>
+          </div>
+          {% empty %}
+          <p style="color:var(--text-muted)">Nenhum benefício ativo para encerrar.</p>
+          {% endfor %}
+        {% endif %}
+
+      {% elif etapa == 5 %}
+        <p style="font-size:13px;margin-bottom:14px">Revise os valores calculados antes de prosseguir.</p>
+        {% if rescisao and rescisao.memoria_calculo %}
+          <div class="memoria-wrap" style="margin-bottom:14px">
+            <div class="memoria-titulo">💰 Memória de Cálculo — Rescisão</div>
+            {% for l in rescisao.memoria_calculo %}
+            <div class="memoria-linha {% if l.tipo %}{{ l.tipo }}{% endif %}">
+              <span class="mem-sinal">{{ l.sinal }}</span>
+              <span class="mem-item">{{ l.item }}</span>
+              <span class="mem-val {% if l.tipo == 'desconto' %}neg{% elif l.tipo == 'total' %}total{% endif %}">R$ {{ l.valor|floatformat:2 }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius-sm);padding:14px;text-align:center">
+            <div style="font-size:12px;color:#15803d;margin-bottom:4px">💰 RESCISÃO LÍQUIDA</div>
+            <div style="font-size:28px;font-weight:900;color:#15803d">{{ rescisao.total_liquido|moeda }}</div>
+          </div>
+          <div class="hi-form-group" style="margin-top:14px">
+            <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer">
+              <input type="checkbox" name="conferido" value="1" required style="margin-top:2px">
+              <span>Confirmo que revisei todos os valores e a documentação trabalhista está em ordem.</span>
+            </label>
+          </div>
+        {% else %}
+          <div class="alerta-item alerta-warning">⚠️ Clique em "Calcular" na etapa anterior para visualizar os valores.</div>
+        {% endif %}
+
+      {% elif etapa == 6 %}
+        <p style="font-size:13px;margin-bottom:14px">Gere os documentos necessários para a rescisão.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          {% for doc, label, icon in docs_rescisao %}
+          <div style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;display:flex;align-items:center;gap:10px">
+            <span style="font-size:22px">{{ icon }}</span>
+            <div style="flex:1">
+              <div style="font-size:12px;font-weight:700">{{ label }}</div>
+            </div>
+            <button type="button" class="btn-secondary" style="font-size:11px;padding:4px 10px" onclick="Toast.info('{{ label }} gerado!')">⬇</button>
+          </div>
+          {% endfor %}
+        </div>
+
+      {% elif etapa == 7 %}
+        <div style="text-align:center;padding:20px 0">
+          <div style="font-size:48px;margin-bottom:12px">📡</div>
+          <h3>Envio ao eSocial</h3>
+          <p style="color:var(--text-muted);font-size:13px;margin:10px 0 20px">O evento S-2299 (Desligamento) será gerado e enviado ao eSocial automaticamente.</p>
+          {% if rescisao and rescisao.esocial_enviado %}
+            <div class="alerta-item alerta-ok">✅ eSocial já enviado para este desligamento.</div>
+          {% else %}
+            <div class="alerta-item alerta-info">ℹ️ Ao confirmar, o evento de desligamento será registrado.</div>
+          {% endif %}
+          <div style="margin-top:16px">
+            <label style="display:flex;align-items:center;gap:8px;justify-content:center;cursor:pointer;font-size:13px">
+              <input type="checkbox" name="esocial_autorizado" value="1"> Autorizo o envio do evento ao eSocial
+            </label>
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Navegação ──────────────────────────────────────── -->
+      <div style="display:flex;justify-content:space-between;margin-top:20px;padding-top:14px;border-top:1px solid var(--border-l)">
+        {% if etapa > 1 %}
+          {% if rescisao %}
+            <a href="?etapa={{ etapa|add:"-1" }}&pk={{ rescisao.pk }}" class="btn-secondary">← Anterior</a>
+          {% else %}
+            <a href="?etapa={{ etapa|add:"-1" }}" class="btn-secondary">← Anterior</a>
+          {% endif %}
+        {% else %}
+          <a href="{% url 'dp:rescisao_lista' %}" class="btn-secondary">← Cancelar</a>
+        {% endif %}
+
+        {% if etapa < 7 %}
+          <button type="submit" class="btn-primary">Próximo →</button>
+        {% else %}
+          <button type="submit" class="btn-primary" style="background:var(--danger)">✅ Finalizar Rescisão</button>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+</div>
+
+<style>
+.wizard-steps { display:flex;align-items:center;margin-bottom:12px;overflow-x:auto }
+.wizard-step  { display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0 }
+.wizard-step-num { width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:var(--bg-card);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--text-muted) }
+.wizard-step.ativo    .wizard-step-num { background:var(--danger);border-color:var(--danger);color:#fff }
+.wizard-step.concluido .wizard-step-num { background:var(--success);border-color:var(--success);color:#fff }
+.wizard-step-label { font-size:9px;font-weight:700;color:var(--text-muted);text-align:center;white-space:nowrap }
+.wizard-step.ativo    .wizard-step-label { color:var(--danger) }
+.wizard-step.concluido .wizard-step-label { color:var(--success) }
+.wizard-step-line { flex:1;height:2px;background:var(--border);min-width:16px;margin-bottom:16px }
+.wizard-bar { height:4px;background:var(--border);border-radius:2px;overflow:hidden }
+.wizard-bar-fill { height:100%;background:var(--danger);border-radius:2px;transition:width .4s }
+.memoria-wrap { background:#f8fafc;border-radius:var(--radius-sm);border:1px solid var(--border);overflow:hidden }
+.memoria-titulo { font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg-card) }
+.memoria-linha { display:flex;gap:8px;padding:7px 14px;border-bottom:1px solid #f8fafc;font-size:12px }
+.memoria-linha.desconto { background:#fef2f2 }
+.memoria-linha.total    { background:#f0fdf4;font-weight:700 }
+.mem-sinal { min-width:12px;font-weight:700;color:var(--text-muted) }
+.mem-item  { flex:1 }
+.mem-val.neg   { color:var(--danger) }
+.mem-val.total { color:var(--success) }
+.alerta-ok { background:#dcfce7;color:#15803d;border:1px solid #bbf7d0 }
+</style>
+{% endblock %}

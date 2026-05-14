@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+{% block title %}Dashboard Executivo — People Analytics{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<style>
+/* ── Executive Dashboard ── */
+.kpi-card {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border: 1px solid rgba(99,102,241,.3);
+    border-radius: 16px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+}
+.kpi-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,.4); }
+.kpi-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--accent, linear-gradient(90deg,#6366f1,#8b5cf6));
+}
+.kpi-card.danger  { --accent: linear-gradient(90deg,#ef4444,#dc2626); border-color: rgba(239,68,68,.3); }
+.kpi-card.warning { --accent: linear-gradient(90deg,#f59e0b,#d97706); border-color: rgba(245,158,11,.3); }
+.kpi-card.success { --accent: linear-gradient(90deg,#10b981,#059669); border-color: rgba(16,185,129,.3); }
+.kpi-card.info    { --accent: linear-gradient(90deg,#3b82f6,#2563eb); border-color: rgba(59,130,246,.3); }
+.kpi-value { font-size: 2.4rem; font-weight: 800; color: #f8fafc; line-height: 1; }
+.kpi-label { font-size: .75rem; text-transform: uppercase; letter-spacing: .1em; color: #94a3b8; margin-top: .25rem; }
+.kpi-badge { font-size: .7rem; padding: .2rem .5rem; border-radius: 999px; font-weight: 600; }
+
+/* Gauge Ring */
+.gauge-ring { position: relative; width: 120px; height: 120px; }
+.gauge-ring svg { transform: rotate(-90deg); }
+.gauge-ring .gauge-text {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transform: rotate(0deg);
+}
+
+/* Heatmap */
+.heatmap-cell {
+    border-radius: 8px;
+    padding: .5rem;
+    text-align: center;
+    font-size: .75rem;
+    font-weight: 600;
+    transition: transform .15s;
+    cursor: default;
+}
+.heatmap-cell:hover { transform: scale(1.05); }
+.heat-excellent { background: rgba(16,185,129,.25); color: #10b981; border: 1px solid rgba(16,185,129,.4); }
+.heat-good      { background: rgba(99,102,241,.2); color: #818cf8; border: 1px solid rgba(99,102,241,.3); }
+.heat-warn      { background: rgba(245,158,11,.2); color: #fbbf24; border: 1px solid rgba(245,158,11,.3); }
+.heat-critical  { background: rgba(239,68,68,.2);  color: #f87171; border: 1px solid rgba(239,68,68,.3); }
+
+/* Alerta pills */
+.alerta-pill {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .75rem 1rem;
+    background: rgba(30,41,59,.6);
+    border-radius: 10px;
+    border-left: 3px solid;
+    margin-bottom: .5rem;
+    font-size: .83rem;
+}
+.alerta-pill.critica { border-color: #ef4444; }
+.alerta-pill.alta    { border-color: #f59e0b; }
+.alerta-pill.media   { border-color: #6366f1; }
+.alerta-pill.baixa   { border-color: #10b981; }
+
+/* Risk badge */
+.risk-badge { padding: .2rem .6rem; border-radius: 999px; font-size: .7rem; font-weight: 700; }
+.risk-critico { background: rgba(239,68,68,.2); color: #f87171; }
+.risk-alto    { background: rgba(245,158,11,.2); color: #fbbf24; }
+.risk-medio   { background: rgba(99,102,241,.2); color: #818cf8; }
+.risk-baixo   { background: rgba(16,185,129,.2); color: #10b981; }
+
+/* Section */
+.exec-section {
+    background: rgba(15,23,42,.8);
+    border: 1px solid rgba(99,102,241,.15);
+    border-radius: 16px;
+    padding: 1.5rem;
+}
+.section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.2rem;
+    padding-bottom: .75rem;
+    border-bottom: 1px solid rgba(99,102,241,.1);
+}
+.section-title { font-size: .85rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #818cf8; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3 px-4">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h1 class="h4 fw-bold text-white mb-0">Dashboard Executivo</h1>
+      <small class="text-muted">People Analytics — {{ referencia }}</small>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'inteligencia:ia_executiva' %}" class="btn btn-sm btn-outline-primary">
+        <i class="bi bi-cpu me-1"></i>Consultar IA
+      </a>
+      <a href="{% url 'analytics:central_alertas' %}" class="btn btn-sm btn-outline-danger">
+        <i class="bi bi-bell-fill me-1"></i>Alertas
+        {% if alertas_criticos > 0 %}<span class="badge bg-danger ms-1">{{ alertas_criticos }}</span>{% endif %}
+      </a>
+      <button class="btn btn-sm btn-outline-secondary" onclick="location.reload()">
+        <i class="bi bi-arrow-clockwise"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+      <div class="kpi-card info">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="kpi-value">{{ total_colab }}</div>
+            <div class="kpi-label">Colaboradores Ativos</div>
+          </div>
+          <i class="bi bi-people-fill text-primary" style="font-size:2rem;opacity:.5"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+      <div class="kpi-card {% if score_engajamento >= 70 %}success{% elif score_engajamento >= 50 %}warning{% else %}danger{% endif %}">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="kpi-value">{{ score_engajamento }}
+              <small style="font-size:1rem;color:#94a3b8">/100</small>
+            </div>
+            <div class="kpi-label">Score de Engajamento</div>
+          </div>
+          <div class="gauge-ring" id="gaugeEng" data-value="{{ score_engajamento }}"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+      <div class="kpi-card {% if turnover_mes.taxa_turnover <= 1.5 %}success{% elif turnover_mes.taxa_turnover <= 3 %}warning{% else %}danger{% endif %}">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="kpi-value">{{ turnover_mes.taxa_turnover }}
+              <small style="font-size:1rem;color:#94a3b8">%</small>
+            </div>
+            <div class="kpi-label">Turnover no Mês</div>
+            <small class="text-muted">Benchmark: 1,5%</small>
+          </div>
+          <i class="bi bi-arrow-left-right" style="font-size:2rem;opacity:.5;color:{% if turnover_mes.taxa_turnover <= 1.5 %}#10b981{% elif turnover_mes.taxa_turnover <= 3 %}#f59e0b{% else %}#ef4444{% endif %}"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+      <div class="kpi-card {% if alertas_criticos == 0 %}success{% elif alertas_criticos <= 3 %}warning{% else %}danger{% endif %}">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="kpi-value">{{ alertas_criticos }}
+              {% if alertas_altos > 0 %}<small style="font-size:.9rem;color:#f59e0b"> +{{ alertas_altos }}</small>{% endif %}
+            </div>
+            <div class="kpi-label">Alertas Críticos</div>
+            <small class="text-muted">{{ alertas_altos }} de alta prioridade</small>
+          </div>
+          <i class="bi bi-exclamation-triangle-fill" style="font-size:2rem;opacity:.5;color:{% if alertas_criticos == 0 %}#10b981{% else %}#ef4444{% endif %}"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- eNPS + Gráficos -->
+  <div class="row g-3 mb-4">
+    <div class="col-xl-4">
+      <div class="exec-section h-100">
+        <div class="section-header">
+          <span class="section-title"><i class="bi bi-graph-up me-1"></i>eNPS Organizacional</span>
+          <span class="badge bg-primary">{{ referencia }}</span>
+        </div>
+        <div class="text-center mb-3">
+          <div class="display-4 fw-bold {% if enps.eNPS > 30 %}text-success{% elif enps.eNPS > 0 %}text-warning{% else %}text-danger{% endif %}">
+            {% if enps.eNPS is not None %}{{ enps.eNPS }}{% else %}—{% endif %}
+          </div>
+          <div class="text-muted small">Employee Net Promoter Score</div>
+          <div class="mt-2">
+            {% if enps.classificacao == 'excelente' %}
+            <span class="badge bg-success">Excelente</span>
+            {% elif enps.classificacao == 'bom' %}
+            <span class="badge bg-primary">Bom</span>
+            {% else %}
+            <span class="badge bg-danger">Crítico</span>
+            {% endif %}
+          </div>
+        </div>
+        <canvas id="chartENPS" height="160"></canvas>
+        <div class="row g-2 mt-2 text-center small">
+          <div class="col-4">
+            <div class="text-success fw-bold">{{ enps.promotores }}</div>
+            <div class="text-muted">Promotores</div>
+          </div>
+          <div class="col-4">
+            <div class="text-warning fw-bold">{{ enps.neutros }}</div>
+            <div class="text-muted">Neutros</div>
+          </div>
+          <div class="col-4">
+            <div class="text-danger fw-bold">{{ enps.detratores }}</div>
+            <div class="text-muted">Detratores</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-8">
+      <div class="exec-section h-100">
+        <div class="section-header">
+          <span class="section-title"><i class="bi bi-grid-3x3-gap me-1"></i>Mapa de Energia por Setor</span>
+          <a href="{% url 'analytics:mapa_energia' %}" class="btn btn-xs btn-outline-secondary btn-sm">Ver completo</a>
+        </div>
+        <div class="row g-2">
+          {% for setor in scores_setor %}
+          {% with s=setor.score_geral|floatformat:0 %}
+          <div class="col-sm-6 col-md-4">
+            <div class="heatmap-cell
+              {% if s >= 80 %}heat-excellent
+              {% elif s >= 65 %}heat-good
+              {% elif s >= 50 %}heat-warn
+              {% else %}heat-critical{% endif %}"
+              title="{{ setor.departamento.nome }}: Score {{ s }} | Headcount {{ setor.headcount }}">
+              <div class="fw-bold" style="font-size:.8rem">{{ setor.departamento.nome|truncatechars:18 }}</div>
+              <div style="font-size:1.3rem;margin:.25rem 0">{{ s }}</div>
+              <div style="opacity:.7">{{ setor.headcount }} colaboradores</div>
+            </div>
+          </div>
+          {% endwith %}
+          {% empty %}
+          <div class="col-12 text-muted text-center py-4">
+            <i class="bi bi-bar-chart display-6 d-block mb-2"></i>
+            Nenhum score calculado ainda.<br>
+            <a href="{% url 'analytics:dashboard' %}">Rodar análise</a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Riscos + Alertas -->
+  <div class="row g-3">
+    <div class="col-xl-6">
+      <div class="exec-section">
+        <div class="section-header">
+          <span class="section-title"><i class="bi bi-person-x me-1"></i>Top Riscos de Saída</span>
+          <a href="{% url 'analytics:turnover' %}" class="btn btn-sm btn-outline-secondary">Ver todos</a>
+        </div>
+        {% for prev in previsoes_criticas %}
+        <div class="d-flex align-items-center justify-content-between py-2 border-bottom border-secondary">
+          <div>
+            <div class="fw-semibold text-white small">{{ prev.colaborador.nome }}</div>
+            <div class="text-muted" style="font-size:.72rem">
+              {{ prev.colaborador.departamento.nome|default:"—" }} · {{ prev.get_horizonte_display }}
+            </div>
+          </div>
+          <div class="text-end">
+            <span class="risk-badge risk-{{ prev.nivel_risco }}">{{ prev.nivel_risco|upper }}</span>
+            <div class="fw-bold text-white mt-1" style="font-size:.9rem">{{ prev.probabilidade }}%</div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="text-muted text-center py-4">
+          <i class="bi bi-check-circle text-success display-6 d-block mb-2"></i>
+          Nenhum risco crítico detectado.
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="col-xl-6">
+      <div class="exec-section">
+        <div class="section-header">
+          <span class="section-title"><i class="bi bi-bell me-1"></i>Alertas Recentes</span>
+          <a href="{% url 'analytics:central_alertas' %}" class="btn btn-sm btn-outline-secondary">Ver todos</a>
+        </div>
+        {% for alerta in alertas_recentes %}
+        <div class="alerta-pill {{ alerta.prioridade }}">
+          <div class="flex-grow-1">
+            <div class="fw-semibold text-white" style="font-size:.83rem">{{ alerta.titulo|truncatechars:55 }}</div>
+            <div class="text-muted" style="font-size:.7rem">
+              {{ alerta.get_tipo_display }} · {{ alerta.created_at|timesince }} atrás
+            </div>
+          </div>
+          <span class="badge {% if alerta.prioridade == 'critica' %}bg-danger{% elif alerta.prioridade == 'alta' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+            {{ alerta.get_prioridade_display }}
+          </span>
+        </div>
+        {% empty %}
+        <div class="text-muted text-center py-4">
+          <i class="bi bi-bell-slash display-6 d-block mb-2"></i>
+          Nenhum alerta ativo.
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// eNPS donut
+const ctxENPS = document.getElementById('chartENPS');
+if (ctxENPS) {
+    new Chart(ctxENPS, {
+        type: 'doughnut',
+        data: {
+            labels: ['Promotores', 'Neutros', 'Detratores'],
+            datasets: [{
+                data: [{{ enps.promotores }}, {{ enps.neutros }}, {{ enps.detratores }}],
+                backgroundColor: ['#10b981','#6366f1','#ef4444'],
+                borderWidth: 0,
+                hoverOffset: 8,
+            }]
+        },
+        options: {
+            cutout: '70%',
+            plugins: { legend: { display: false } },
+            animation: { animateScale: true },
+        }
+    });
+}
+
+// Gauges animados via SVG
+document.querySelectorAll('.gauge-ring[data-value]').forEach(el => {
+    const val = parseFloat(el.dataset.value) || 0;
+    const r = 46, cx = 60, cy = 60;
+    const circ = 2 * Math.PI * r;
+    const dash = (val / 100) * circ;
+    const color = val >= 70 ? '#10b981' : val >= 50 ? '#f59e0b' : '#ef4444';
+
+    el.innerHTML = `
+    <svg viewBox="0 0 120 120" width="80" height="80">
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="8"/>
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="8"
+        stroke-dasharray="${dash} ${circ}" stroke-linecap="round"
+        style="transition:stroke-dasharray 1s ease"/>
+    </svg>
+    <div class="gauge-text">
+      <span style="font-size:.7rem;font-weight:800;color:${color}">${val}</span>
+    </div>`;
+});
+</script>
+{% endblock %}

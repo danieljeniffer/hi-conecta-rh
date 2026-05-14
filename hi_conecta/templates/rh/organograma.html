@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Organograma{% endblock %}
+
+{% block extra_css %}
+<style>
+.org-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; overflow:auto; min-height:400px }
+.org-node {
+  display:inline-block; background:#fff; border:1px solid var(--border);
+  border-radius:10px; padding:10px 14px; text-align:center; min-width:130px;
+  box-shadow:var(--shadow); transition:box-shadow .15s; cursor:default;
+}
+.org-node:hover { box-shadow:var(--shadow-md) }
+.org-node-nome { font-size:12px; font-weight:700; color:var(--text) }
+.org-node-hc   { font-size:10px; color:var(--text-muted); margin-top:2px }
+.org-node-gestor { font-size:10px; color:var(--primary); margin-top:2px }
+
+/* Árvore HTML simples */
+ul.org-tree { padding-left:24px; list-style:none; position:relative }
+ul.org-tree::before { content:''; position:absolute; left:0; top:0; bottom:0; width:1px; background:var(--border) }
+ul.org-tree li { position:relative; padding:8px 0 8px 20px }
+ul.org-tree li::before { content:''; position:absolute; left:0; top:50%; width:20px; height:1px; background:var(--border) }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-inner">
+
+  <div class="hi-card-hd" style="margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <h2 style="margin:0">🌳 Organograma</h2>
+      <div id="org-view-toggle" style="display:flex;gap:4px">
+        <button class="btn-secondary active" id="btn-tree"  onclick="mudarVista('tree')">📋 Árvore</button>
+        <button class="btn-secondary"        id="btn-d3"    onclick="mudarVista('d3')">🗺️ Mapa</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista: Árvore HTML -->
+  <div class="org-wrap" id="vista-tree">
+    <div id="org-tree-container">
+      <p style="color:var(--text-muted)">Carregando organograma...</p>
+    </div>
+  </div>
+
+  <!-- Vista: D3 SVG -->
+  <div class="org-wrap" id="vista-d3" style="display:none;min-height:500px">
+    <svg id="org-svg" width="100%" height="500"></svg>
+  </div>
+
+</div>
+
+<script>
+function mudarVista(tipo) {
+  document.getElementById('vista-tree').style.display = tipo === 'tree' ? 'block' : 'none';
+  document.getElementById('vista-d3').style.display   = tipo === 'd3'   ? 'block' : 'none';
+  document.getElementById('btn-tree').classList.toggle('active', tipo === 'tree');
+  document.getElementById('btn-d3').classList.toggle('active', tipo === 'd3');
+  if (tipo === 'd3') renderD3();
+}
+
+// Carrega dados via API
+let orgData = null;
+
+async function carregarOrg() {
+  const resp = await Api.get('{% url "rh:organograma_json" %}');
+  if (resp.sucesso) {
+    orgData = resp.dados;
+    renderArvore(orgData, document.getElementById('org-tree-container'));
+  }
+}
+
+function renderArvore(no, container) {
+  container.innerHTML = '';
+  function buildUL(dados) {
+    const div = document.createElement('div');
+    div.className = 'org-node';
+    div.innerHTML = `
+      <div class="org-node-nome">${dados.nome}</div>
+      <div class="org-node-hc">👥 ${dados.headcount} colaboradores</div>
+      ${dados.gestor ? `<div class="org-node-gestor">👔 ${dados.gestor}</div>` : ''}
+    `;
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'padding-left:32px;margin-top:6px';
+
+    if (dados.filhos && dados.filhos.length) {
+      const ul = document.createElement('ul');
+      ul.className = 'org-tree';
+      dados.filhos.forEach(filho => {
+        const li = document.createElement('li');
+        li.appendChild(buildUL(filho));
+        ul.appendChild(li);
+      });
+      wrap.appendChild(ul);
+    }
+
+    const root = document.createElement('div');
+    root.appendChild(div);
+    root.appendChild(wrap);
+    return root;
+  }
+
+  (dados.filhos || []).forEach(d => container.appendChild(buildUL(d)));
+}
+
+function renderD3() {
+  if (!orgData) return;
+  // Implementação básica sem D3 — desenha SVG simples
+  const svg = document.getElementById('org-svg');
+  svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="#64748b" font-size="14">Mapa interativo (requer D3.js) — use a vista Árvore</text>';
+}
+
+carregarOrg();
+</script>
+{% endblock %}

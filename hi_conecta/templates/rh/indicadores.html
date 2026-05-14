@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load hi_tags %}
+
+{% block title %}Indicadores de RH{% endblock %}
+
+{% block content %}
+<div class="page-inner">
+
+  <div class="kpis-grid">
+    <div class="kpi-card kpi-blue">
+      <div class="kpi-icon">👥</div>
+      <div class="kpi-valor">{{ ind.total }}</div>
+      <div class="kpi-label">Headcount Total</div>
+    </div>
+    <div class="kpi-card kpi-green">
+      <div class="kpi-icon">🆕</div>
+      <div class="kpi-valor">{{ ind.adm_ano }}</div>
+      <div class="kpi-label">Admissões no Ano</div>
+    </div>
+    <div class="kpi-card {% if ind.turnover_ano > 5 %}kpi-danger{% else %}kpi-green{% endif %}">
+      <div class="kpi-icon">📉</div>
+      <div class="kpi-valor">{{ ind.turnover_ano }}%</div>
+      <div class="kpi-label">Turnover Anual</div>
+      <div class="kpi-meta">Meta: &lt; 5%</div>
+    </div>
+    <div class="kpi-card kpi-purple">
+      <div class="kpi-icon">⭐</div>
+      <div class="kpi-valor">{{ ind.nota_media }}</div>
+      <div class="kpi-label">Média Avaliações</div>
+      <div class="kpi-meta">Escala 0–5</div>
+    </div>
+  </div>
+
+  <!-- Headcount por departamento -->
+  <div class="hi-card">
+    <div class="hi-card-hd"><h3>🏢 Headcount por Departamento</h3></div>
+    {% for d in ind.headcount_depto %}
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-l)">
+      <span style="flex:1;font-size:13px;font-weight:600">{{ d.nome }}</span>
+      <div style="flex:2;height:8px;background:var(--border);border-radius:4px;overflow:hidden">
+        <div style="height:100%;background:var(--primary);border-radius:4px;width:{% widthratio d.hc ind.total 100 %}%"></div>
+      </div>
+      <span style="font-size:13px;font-weight:800;color:var(--primary);min-width:32px;text-align:right">{{ d.hc }}</span>
+    </div>
+    {% empty %}
+    <p style="color:var(--text-muted)">Nenhum departamento com colaboradores ativos.</p>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

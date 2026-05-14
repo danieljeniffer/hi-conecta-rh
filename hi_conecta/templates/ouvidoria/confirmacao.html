@@ -1,0 +1,17 @@
+﻿{% extends "base.html" %}
+{% block title %}Denúncia Registrada{% endblock %}
+{% block content %}
+<div class="container py-5 text-center" style="max-width:500px">
+  <div style="font-size:3rem;margin-bottom:1rem">🔒</div>
+  <h2 class="fw-bold text-white mb-2">Denúncia Registrada!</h2>
+  <p class="text-muted mb-3">Sua denúncia foi recebida com segurança.</p>
+  <div class="card border-0 rounded-3 p-4 mb-3" style="background:#0f172a;border:1px solid rgba(16,185,129,.3)!important">
+    <div class="text-muted small mb-1">Número do Protocolo</div>
+    <div class="display-6 fw-bold text-success">{{ protocolo }}</div>
+    <div class="text-muted small mt-2">Guarde este número para acompanhar sua denúncia</div>
+  </div>
+  <a href="{% url 'ouvidoria:acompanhar' %}?protocolo={{ protocolo }}" class="btn btn-outline-primary">
+    Acompanhar Denúncia
+  </a>
+</div>
+{% endblock %}

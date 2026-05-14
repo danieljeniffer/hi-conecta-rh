@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load hi_tags static %}
+
+{% block title %}Central Trabalhista{% endblock %}
+
+{% block content %}
+<div class="page-inner">
+  <div class="central-root">
+
+    <!-- Painel esquerdo: seleção ─────────────────────────── -->
+    <div class="central-sel">
+
+      <div class="central-secao">
+        <div class="central-secao-titulo">👤 Colaborador</div>
+        <input type="text" id="busca-colab" class="hi-input" placeholder="🔍 Buscar..."
+               oninput="filtrarColabs(this.value)" style="margin-bottom:8px">
+        <div class="central-lista" id="central-lista">
+          {% for c in colabs %}
+          <div class="central-colab-item"
+               data-id="{{ c.id }}"
+               data-nome="{{ c.nome|lower }}"
+               data-sal="{{ c.salario_base }}"
+               data-admissao="{{ c.data_admissao|date:'Y-m-d' }}"
+               onclick="selecionarColab(this)">
+            <div class="mini-avatar">{{ c.iniciais }}</div>
+            <div class="central-colab-info">
+              <div class="central-colab-nome">{{ c.nome }}</div>
+              <div class="central-colab-sub">{{ c.cargo|default:"—" }} · {{ c.salario_base|moeda }}</div>
+            </div>
+            <span class="badge badge-{{ c.status|badge_status }}">{{ c.get_status_display }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="central-secao" style="margin-top:16px">
+        <div class="central-secao-titulo">🧮 Tipo de Cálculo</div>
+        <div class="central-tipos">
+          <button class="central-tipo" data-tipo="liquido"    onclick="selecionarTipo(this,'liquido')">   💰<span>Holerite</span></button>
+          <button class="central-tipo" data-tipo="ferias"     onclick="selecionarTipo(this,'ferias')">    🏖️<span>Férias</span></button>
+          <button class="central-tipo" data-tipo="decimo"     onclick="selecionarTipo(this,'decimo')">    🎁<span>13º</span></button>
+          <button class="central-tipo" data-tipo="rescisao"   onclick="selecionarTipo(this,'rescisao')">  👋<span>Rescisão</span></button>
+          <button class="central-tipo" data-tipo="simulacao"  onclick="selecionarTipo(this,'simulacao')"> 📊<span>Simulação</span></button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Painel direito: resultado ────────────────────────── -->
+    <div class="central-resultado" id="central-resultado">
+      <div style="text-align:center;padding:60px 20px;color:var(--text-muted)">
+        <div style="font-size:48px;margin-bottom:12px">⚡</div>
+        <h3>Central Trabalhista</h3>
+        <p>Selecione um colaborador e o tipo de cálculo.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.central-root { display:grid;grid-template-columns:280px 1fr;gap:16px;min-height:600px }
+.central-sel  { display:flex;flex-direction:column }
+.central-secao { background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px }
+.central-secao-titulo { font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px }
+.central-lista { display:flex;flex-direction:column;gap:3px;max-height:320px;overflow-y:auto }
+.central-colab-item { display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:all .12s }
+.central-colab-item:hover { background:var(--bg);border-color:var(--border) }
+.central-colab-item.ativo { background:#eff6ff;border-color:#bfdbfe }
+.mini-avatar { width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0 }
+.central-colab-info { flex:1;min-width:0 }
+.central-colab-nome { font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis }
+.central-colab-sub  { font-size:10px;color:var(--text-muted) }
+.central-tipos { display:grid;grid-template-columns:1fr 1fr;gap:6px }
+.central-tipo { display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;transition:all .13s }
+.central-tipo:hover { border-color:var(--primary);background:#eff6ff;color:var(--primary) }
+.central-tipo.ativo { border-color:var(--primary);background:var(--primary);color:#fff }
+.central-resultado { background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:auto }
+
+/* Memória de cálculo */
+.memoria-wrap { background:#f8fafc;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border) }
+.memoria-titulo { font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg-card) }
+.memoria-linha { display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid #f8fafc;font-size:12px;gap:8px }
+.memoria-linha.desconto { background:#fef2f2 }
+.memoria-linha.total    { background:#f0fdf4;font-weight:700;border-top:1px solid #bbf7d0 }
+.mem-sinal { font-weight:800;color:var(--text-muted);min-width:12px }
+.mem-item  { flex:1 }
+.mem-lei   { font-size:9px;color:var(--primary);cursor:help }
+.mem-val   { font-weight:700 }
+.mem-val.neg   { color:var(--danger) }
+.mem-val.total { color:var(--success);font-size:14px }
+.mem-pct   { font-size:10px;color:var(--text-muted);margin-left:4px }
+.liquido-banner { border-radius:var(--radius-sm);padding:16px 18px;color:#fff;text-align:center;margin-bottom:14px }
+.liquido-val  { font-size:32px;font-weight:900;line-height:1 }
+.liquido-sub  { font-size:12px;opacity:.75;margin-top:4px }
+
+@media(max-width:768px){ .central-root{grid-template-columns:1fr} }
+</style>
+
+<script>
+let colabSel = null, tipoSel = null;
+
+function filtrarColabs(q) {
+  document.querySelectorAll('.central-colab-item').forEach(el => {
+    el.style.display = !q || el.dataset.nome.includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
+function selecionarColab(el) {
+  document.querySelectorAll('.central-colab-item').forEach(e => e.classList.remove('ativo'));
+  el.classList.add('ativo');
+  colabSel = { id: el.dataset.id, nome: el.querySelector('.central-colab-nome').textContent,
+               sal: parseFloat(el.dataset.sal), admissao: el.dataset.admissao };
+  if (tipoSel) executarCalculo();
+}
+
+function selecionarTipo(btn, tipo) {
+  document.querySelectorAll('.central-tipo').forEach(b => b.classList.remove('ativo'));
+  btn.classList.add('ativo');
+  tipoSel = tipo;
+  if (colabSel) executarCalculo();
+}
+
+async function executarCalculo() {
+  if (!colabSel || !tipoSel) return;
+  const res = document.getElementById('central-resultado');
+  res.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)">⌛ Calculando...</div>';
+
+  const payload = { tipo: tipoSel, colaborador_id: colabSel.id };
+  if (tipoSel === 'rescisao') {
+    payload.tipo_rescisao = 'sem_justa_causa';
+    payload.data_demissao = new Date().toISOString().slice(0,10);
+  }
+
+  const resp = await Api.post('{% url "dp:central_calcular" %}', payload);
+  if (!resp.sucesso) { res.innerHTML = `<div class="alerta-item alerta-danger" style="margin:20px">❌ ${resp.mensagem}</div>`; return; }
+
+  const r = resp.resultado;
+  const liquido = r.valor_liquido ?? r.total_liquido ?? r.liquido ?? r.parcela_2 ?? 0;
+  const cores = { liquido:'#16a34a', ferias:'#7c3aed', decimo:'#d97706', rescisao:'#dc2626', simulacao:'#2563eb' };
+  const cor = cores[tipoSel] || '#2563eb';
+  const subtitulos = { liquido:'Salário Líquido', ferias:`Férias ${r.dias || 30}d + ⅓`, decimo:`13º — ${r.meses || 12} meses`, rescisao:'Rescisão', simulacao:'Ganho Líquido' };
+
+  let memoriaHtml = '';
+  if (r.memoria_calculo) {
+    memoriaHtml = `<div class="memoria-wrap">
+      <div class="memoria-titulo">📐 Memória de Cálculo</div>
+      ${r.memoria_calculo.map(l => `
+      <div class="memoria-linha ${l.tipo || ''}">
+        <span class="mem-sinal">${l.sinal || ''}</span>
+        <span class="mem-item">${l.item}${l.lei ? ` <span class="mem-lei" title="${l.lei}">⚖️</span>` : ''}</span>
+        <span class="mem-val ${l.tipo === 'desconto' ? 'neg' : l.tipo === 'total' ? 'total' : ''}">
+          ${fmt(l.valor)}${l.pct ? ` <span class="mem-pct">${l.pct}</span>` : ''}
+        </span>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  let extras = '';
+  if (r.fgts)           extras += `<div style="font-size:11px;color:var(--text-muted);margin-top:6px">🏦 FGTS depositado pela empresa: ${fmt(r.fgts)}</div>`;
+  if (r.seguro_desemprego !== undefined) extras += `<div style="font-size:11px;margin-top:4px;color:${r.seguro_desemprego?'#16a34a':'#dc2626'}">📋 Seguro-desemprego: ${r.seguro_desemprego?'Sim':'Não'}</div>`;
+
+  res.innerHTML = `
+<div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+  <div>
+    <div style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:4px">${resp.colaborador} · ${resp.cargo || ''}</div>
+    <div class="liquido-banner" style="background:linear-gradient(135deg,${cor}dd,${cor})">
+      <div style="font-size:11px;opacity:.8;text-transform:uppercase;letter-spacing:.5px">${subtitulos[tipoSel]}</div>
+      <div class="liquido-val">${fmt(liquido)}</div>
+    </div>
+  </div>
+  ${memoriaHtml}
+  ${extras}
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn-primary" onclick="copiarResultado()">📋 Copiar</button>
+    ${tipoSel === 'rescisao' ? '<a href="{% url \'dp:rescisao_lista\' %}" class="btn-secondary">🧙 Abrir Wizard</a>' : ''}
+    ${tipoSel === 'ferias' ? '<a href="{% url \'dp:ferias_lista\' %}" class="btn-secondary">🏖️ Solicitar</a>' : ''}
+  </div>
+</div>`;
+
+  window._ultimoResultado = { colaborador: resp.colaborador, tipo: tipoSel, resultado: r };
+}
+
+const fmt = v => 'R$ ' + parseFloat(v || 0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+function copiarResultado() {
+  if (!window._ultimoResultado) return;
+  const { colaborador, tipo, resultado } = window._ultimoResultado;
+  let txt = `${tipo.toUpperCase()} — ${colaborador}\n${'─'.repeat(40)}\n`;
+  if (resultado.memoria_calculo) {
+    txt += resultado.memoria_calculo.map(l => `${l.sinal || ' '} ${l.item.padEnd(30)} ${fmt(l.valor)}`).join('\n');
+  }
+  navigator.clipboard?.writeText(txt);
+  Toast.success('Resultado copiado!');
+}
+</script>
+{% endblock %}

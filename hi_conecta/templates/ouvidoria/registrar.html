@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Canal de Ética e Ouvidoria{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width:700px">
+  <div class="text-center mb-4">
+    <div style="width:60px;height:60px;border-radius:16px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto .75rem">🛡️</div>
+    <h1 class="h3 fw-bold text-white">Canal de Ética</h1>
+    <p class="text-muted">Sua identidade é protegida. Todas as denúncias são tratadas com sigilo total e investigadas por equipe dedicada.</p>
+  </div>
+
+  <div class="card border-0 rounded-3" style="background:#0f172a;border:1px solid rgba(99,102,241,.2)!important">
+    <div class="card-body p-4">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label class="form-label text-muted">Categoria *</label>
+          <select name="categoria" class="form-select bg-dark border-secondary text-white" required>
+            <option value="">— Selecionar —</option>
+            {% for v, l in categorias %}<option value="{{ v }}">{{ l }}</option>{% endfor %}
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label text-muted">Descrição detalhada *</label>
+          <textarea name="descricao" class="form-control bg-dark border-secondary text-white" rows="6" required placeholder="Descreva o ocorrido com o máximo de detalhes possível. Datas, locais, frequência..."></textarea>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <label class="form-label text-muted">Data da ocorrência</label>
+            <input type="date" name="data_ocorrencia" class="form-control bg-dark border-secondary text-white">
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label text-muted">Local</label>
+            <input type="text" name="local" class="form-control bg-dark border-secondary text-white" placeholder="Setor, departamento, etc.">
+          </div>
+        </div>
+
+        <div class="mb-3 mt-3">
+          <label class="form-label text-muted">Pessoas envolvidas <small class="text-muted">(opcional, sem identificação completa)</small></label>
+          <textarea name="envolvidos" class="form-control bg-dark border-secondary text-white" rows="2" placeholder="Descreva sem identificar completamente se preferir manter anonimato"></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label text-muted">Evidência <small class="text-muted">(opcional)</small></label>
+          <input type="file" name="evidencia" class="form-control bg-dark border-secondary text-white" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label text-muted">E-mail para acompanhamento <small class="text-muted">(opcional — não é obrigatório)</small></label>
+          <input type="email" name="contato_opcional" class="form-control bg-dark border-secondary text-white" placeholder="Deixe em branco para manter total anonimato">
+        </div>
+
+        <div class="alert" style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);border-radius:8px;padding:.75rem 1rem">
+          <div class="text-primary small"><i class="bi bi-shield-lock me-1"></i>Sua identidade é 100% protegida. Nenhum dado de identificação é armazenado sem sua autorização.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 mt-3">
+          <i class="bi bi-send me-1"></i>Enviar Denúncia com Segurança
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="text-center mt-3">
+    <a href="{% url 'ouvidoria:acompanhar' %}" class="text-muted small text-decoration-none">
+      <i class="bi bi-search me-1"></i>Já tem um protocolo? Acompanhe aqui
+    </a>
+  </div>
+</div>
+{% endblock %}

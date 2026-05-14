@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load hi_tags %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-inner">
+
+  <!-- Boas-vindas ─────────────────────────────────────── -->
+  <div class="welcome-banner">
+    <div>
+      <h2 class="welcome-title">
+        {% now "H" as hora %}
+        {% if hora|add:"0" < 12 %}Bom dia{% elif hora|add:"0" < 18 %}Boa tarde{% else %}Boa noite{% endif %},
+        {{ usuario_nome|split:" "|first }}! 👋
+      </h2>
+      <p class="welcome-sub">
+        {% now "l, d \d\e F \d\e Y" %} · Dashboard executivo
+      </p>
+    </div>
+    {% if usuario_is_rh %}
+    <div class="welcome-actions">
+      <a href="{% url 'dp:central' %}" class="btn-primary">⚡ Central Trabalhista</a>
+      <a href="{% url 'rh:pessoas' %}"  class="btn-secondary">👥 Colaboradores</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- KPIs ────────────────────────────────────────────── -->
+  {% if kpis %}
+  <div class="kpis-grid">
+
+    <div class="kpi-card kpi-blue" onclick="location.href='{% url "rh:pessoas" %}'">
+      <div class="kpi-icon" aria-hidden="true">👥</div>
+      <div class="kpi-valor">{{ kpis.total_colaboradores|default:"—" }}</div>
+      <div class="kpi-label">Colaboradores Ativos</div>
+    </div>
+
+    <div class="kpi-card kpi-green">
+      <div class="kpi-icon" aria-hidden="true">🔍</div>
+      <div class="kpi-valor">{{ kpis.admissoes_mes|default:"0" }}</div>
+      <div class="kpi-label">Admissões este mês</div>
+    </div>
+
+    <div class="kpi-card {% if kpis.turnover > 5 %}kpi-danger{% else %}kpi-amber{% endif %}">
+      <div class="kpi-icon" aria-hidden="true">📉</div>
+      <div class="kpi-valor">{{ kpis.turnover|default:"0" }}%</div>
+      <div class="kpi-label">Turnover mensal</div>
+      <div class="kpi-meta">Meta: &lt; 5%</div>
+    </div>
+
+    <div class="kpi-card kpi-amber">
+      <div class="kpi-icon" aria-hidden="true">🏖️</div>
+      <div class="kpi-valor">{{ kpis.ferias_pendentes|default:"0" }}</div>
+      <div class="kpi-label">Férias pendentes</div>
+    </div>
+
+    {% if kpis.folha %}
+    <div class="kpi-card kpi-purple">
+      <div class="kpi-icon" aria-hidden="true">💰</div>
+      <div class="kpi-valor">{{ kpis.folha.total_liquido|moeda }}</div>
+      <div class="kpi-label">Folha {{ kpis.folha.competencia }}</div>
+      <div class="kpi-meta">{{ kpis.folha.get_status_display }}</div>
+    </div>
+    {% endif %}
+
+  </div>
+  {% endif %}
+
+  <!-- Grid principal ───────────────────────────────────── -->
+  <div class="dashboard-grid">
+
+    <!-- Acesso rápido -->
+    <section class="card-section" aria-labelledby="atalhos-title">
+      <div class="section-header">
+        <h3 id="atalhos-title">⚡ Acesso Rápido</h3>
+      </div>
+      <div class="atalhos-grid">
+        <a href="{% url 'dp:central' %}"       class="atalho-btn">⚡ Central DP</a>
+        <a href="{% url 'rh:pessoas' %}"        class="atalho-btn">👥 Pessoas</a>
+        <a href="{% url 'analytics:dashboard' %}" class="atalho-btn">📊 Analytics</a>
+        <a href="{% url 'dp:ferias_lista' %}"   class="atalho-btn">🏖️ Férias</a>
+        <a href="{% url 'dp:folha_lista' %}"    class="atalho-btn">💰 Folha</a>
+        <a href="{% url 'comunicacao:feed' %}"  class="atalho-btn">📣 Comunicação</a>
+        <a href="{% url 'recrutamento:vagas' %}"class="atalho-btn">🔍 Recrutamento</a>
+        <a href="{% url 'documentos:lista' %}"  class="atalho-btn">📄 Documentos</a>
+      </div>
+    </section>
+
+    <!-- Alertas do sistema -->
+    <section class="card-section" aria-labelledby="alertas-title">
+      <div class="section-header">
+        <h3 id="alertas-title">🚨 Alertas</h3>
+      </div>
+      <div id="alertas-lista">
+        <div class="alerta-item alerta-info">
+          ℹ️ Sistema inicializado e funcionando corretamente.
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+</div>
+{% endblock %}

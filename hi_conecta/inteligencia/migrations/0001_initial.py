@@ -1,0 +1,132 @@
+"""inteligencia — Migration inicial."""
+import uuid
+import django.core.validators
+import django.db.models.deletion
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    initial = True
+    dependencies = [
+        ('rh', '0001_initial'),
+        ('accounts', '0001_initial'),
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name='DNACorporativo',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('deleted_at', models.DateTimeField(blank=True, null=True)),
+                ('referencia', models.CharField(max_length=7, unique=True)),
+                ('cultura_score', models.DecimalField(decimal_places=2, default=0, max_digits=5)),
+                ('cultura_descricao', models.TextField(blank=True)),
+                ('cultura_pontos_fortes', models.JSONField(blank=True, default=list)),
+                ('cultura_riscos', models.JSONField(blank=True, default=list)),
+                ('lideranca_score', models.DecimalField(decimal_places=2, default=0, max_digits=5)),
+                ('lideranca_estilo', models.CharField(blank=True, max_length=50)),
+                ('lideranca_cobertura', models.DecimalField(decimal_places=2, default=0, max_digits=5)),
+                ('aprendizado_score', models.DecimalField(decimal_places=2, default=0, max_digits=5)),
+                ('horas_treinamento_media', models.DecimalField(decimal_places=1, default=0, max_digits=6)),
+                ('taxa_conclusao_trilhas', models.DecimalField(decimal_places=2, default=0, max_digits=5)),
+                ('inovacao_score', models.DecimalField(decimal_places=2, default=0, max_digits=5)),
+                ('ideias_propostas', models.IntegerField(default=0)),
+                ('ideias_implementadas', models.IntegerField(default=0)),
+                ('bem_estar_score', models.DecimalField(decimal_places=2, default=0, max_digits=5)),
+                ('taxa_afastamentos', models.DecimalField(decimal_places=2, default=0, max_digits=5)),
+                ('colaboradores_risco_burnout', models.IntegerField(default=0)),
+                ('resultados_score', models.DecimalField(decimal_places=2, default=0, max_digits=5)),
+                ('metas_atingidas_pct', models.DecimalField(decimal_places=2, default=0, max_digits=5)),
+                ('nps_colaborador', models.DecimalField(blank=True, decimal_places=1, max_digits=5, null=True)),
+                ('score_dna', models.DecimalField(decimal_places=2, default=0, max_digits=5)),
+                ('narrativa_ia', models.TextField(blank=True)),
+                ('recomendacoes_estrategicas', models.JSONField(blank=True, default=list)),
+            ],
+            options={'db_table': 'inteligencia_dna_corporativo', 'ordering': ['-referencia']},
+        ),
+        migrations.CreateModel(
+            name='ModoFantasma',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('deleted_at', models.DateTimeField(blank=True, null=True)),
+                ('tipo', models.CharField(max_length=25)),
+                ('titulo', models.CharField(max_length=200)),
+                ('descricao', models.TextField()),
+                ('evidencias', models.JSONField(blank=True, default=list)),
+                ('confianca', models.DecimalField(decimal_places=2, default=70, max_digits=5)),
+                ('impacto', models.CharField(default='medio', max_length=10)),
+                ('colaboradores_envolvidos', models.ManyToManyField(blank=True, related_name='insights_fantasma', to='rh.colaborador')),
+                ('departamentos_envolvidos', models.ManyToManyField(blank=True, related_name='insights_fantasma', to='rh.departamento')),
+                ('recomendacao', models.TextField(blank=True)),
+                ('lido', models.BooleanField(default=False)),
+                ('referencia', models.CharField(max_length=7)),
+            ],
+            options={'db_table': 'inteligencia_modo_fantasma', 'ordering': ['-created_at']},
+        ),
+        migrations.CreateModel(
+            name='PrevisaoRHTemporal',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('deleted_at', models.DateTimeField(blank=True, null=True)),
+                ('metrica_tipo', models.CharField(max_length=20)),
+                ('departamento', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='previsoes_temporais', to='rh.departamento')),
+                ('referencia_base', models.CharField(max_length=7)),
+                ('horizonte_meses', models.IntegerField(default=3)),
+                ('valor_atual', models.DecimalField(decimal_places=4, max_digits=15)),
+                ('projecoes', models.JSONField(blank=True, default=list)),
+                ('metodologia', models.CharField(default='tendencia_linear', max_length=50)),
+                ('premissas', models.JSONField(blank=True, default=list)),
+                ('narrativa', models.TextField(blank=True)),
+            ],
+            options={'db_table': 'inteligencia_previsao_temporal', 'ordering': ['-created_at']},
+        ),
+        migrations.CreateModel(
+            name='ConsultaIAExecutiva',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('deleted_at', models.DateTimeField(blank=True, null=True)),
+                ('usuario', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='consultas_ia', to='accounts.usuario')),
+                ('categoria', models.CharField(default='geral', max_length=20)),
+                ('pergunta', models.TextField()),
+                ('contexto_json', models.JSONField(blank=True, default=dict)),
+                ('resposta', models.TextField(blank=True)),
+                ('provedor', models.CharField(default='anthropic', max_length=15)),
+                ('modelo_usado', models.CharField(blank=True, max_length=50)),
+                ('tokens_usados', models.IntegerField(default=0)),
+                ('tempo_resposta_ms', models.IntegerField(default=0)),
+                ('avaliacao_usuario', models.IntegerField(blank=True, null=True, validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(5)])),
+            ],
+            options={'db_table': 'inteligencia_consulta_ia', 'ordering': ['-created_at']},
+        ),
+        migrations.CreateModel(
+            name='SimulacaoFuturoCorporativo',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('deleted_at', models.DateTimeField(blank=True, null=True)),
+                ('usuario', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='simulacoes_futuro', to='accounts.usuario')),
+                ('cenario', models.CharField(max_length=25)),
+                ('nome', models.CharField(max_length=200)),
+                ('descricao', models.TextField(blank=True)),
+                ('parametros', models.JSONField(blank=True, default=dict)),
+                ('resultado', models.JSONField(blank=True, default=dict)),
+                ('impacto_financeiro', models.DecimalField(blank=True, decimal_places=2, max_digits=15, null=True)),
+                ('impacto_engajamento_delta', models.DecimalField(blank=True, decimal_places=2, max_digits=5, null=True)),
+                ('impacto_turnover_delta', models.DecimalField(blank=True, decimal_places=2, max_digits=5, null=True)),
+                ('narrativa_ia', models.TextField(blank=True)),
+                ('recomendacao', models.TextField(blank=True)),
+                ('favorita', models.BooleanField(default=False)),
+            ],
+            options={'db_table': 'inteligencia_simulacao_futuro', 'ordering': ['-created_at']},
+        ),
+    ]

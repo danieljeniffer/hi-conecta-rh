@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+{% load hi_tags %}
+
+{% block title %}{{ colab.nome }}{% endblock %}
+
+{% block content %}
+<div class="page-inner">
+
+  <!-- Cabeçalho do perfil ───────────────────────────────── -->
+  <div class="perfil-header">
+    <div class="perfil-avatar-wrap">
+      {% if colab.foto %}
+        <img src="{{ colab.foto.url }}" alt="{{ colab.iniciais }}" class="perfil-foto">
+      {% else %}
+        <div class="perfil-avatar-lg">{{ colab.iniciais }}</div>
+      {% endif %}
+    </div>
+    <div class="perfil-info">
+      <h2 class="perfil-nome">{{ colab.nome }}</h2>
+      <p class="perfil-sub">
+        {{ colab.cargo|default:"Sem cargo" }} ·
+        {{ colab.departamento|default:"Sem departamento" }}
+      </p>
+      <div class="perfil-badges">
+        <span class="badge {{ colab.status|badge_status }}">{{ colab.get_status_display }}</span>
+        <span class="badge badge-secondary">{{ colab.get_regime_display }}</span>
+        <span class="badge badge-info">{{ colab.tempo_empresa_str }} de empresa</span>
+      </div>
+    </div>
+    <div class="perfil-acoes">
+      {% if pode_editar %}
+        <a href="{% url 'rh:colaborador_editar' colab.pk %}" class="btn-primary">✏️ Editar</a>
+        {% if colab.status != 'desligado' %}
+          <button class="btn-secondary" onclick="abrirDesligamento()">👋 Desligar</button>
+        {% endif %}
+      {% endif %}
+      <a href="{% url 'rh:pessoas' %}" class="btn-secondary">← Voltar</a>
+    </div>
+  </div>
+
+  <!-- Tabs ─────────────────────────────────────────────── -->
+  <div class="tabs-nav">
+    <button class="tab-btn active" onclick="mudarTab(this,'dados')">📋 Dados</button>
+    <button class="tab-btn" onclick="mudarTab(this,'contrato')">📄 Contrato</button>
+    <button class="tab-btn" onclick="mudarTab(this,'timeline')">⏱️ Timeline</button>
+    <button class="tab-btn" onclick="mudarTab(this,'avaliacoes')">⭐ Avaliações</button>
+    <button class="tab-btn" onclick="mudarTab(this,'documentos')">📁 Documentos</button>
+  </div>
+
+  <!-- Tab: Dados Pessoais ──────────────────────────────── -->
+  <div class="tab-content active" id="tab-dados">
+    <div class="grid-2">
+
+      <div class="hi-card">
+        <div class="hi-card-hd"><h3>👤 Dados Pessoais</h3></div>
+        {% for label, valor in dados_pessoais %}
+        <div class="dado-linha">
+          <span class="dado-label">{{ label }}</span>
+          <span class="dado-valor">{{ valor|default:"—" }}</span>
+        </div>
+        {% endfor %}
+        <div class="dado-linha"><span class="dado-label">CPF</span><span class="dado-valor">{{ colab.cpf_formatado }}</span></div>
+        <div class="dado-linha"><span class="dado-label">Data de Nascimento</span><span class="dado-valor">{{ colab.data_nascimento|date:"d/m/Y"|default:"—" }}</span></div>
+        <div class="dado-linha"><span class="dado-label">Sexo</span><span class="dado-valor">{{ colab.get_sexo_display|default:"—" }}</span></div>
+        <div class="dado-linha"><span class="dado-label">Estado Civil</span><span class="dado-valor">{{ colab.get_estado_civil_display|default:"—" }}</span></div>
+        <div class="dado-linha"><span class="dado-label">E-mail</span><span class="dado-valor">{{ colab.email|default:"—" }}</span></div>
+        <div class="dado-linha"><span class="dado-label">Celular</span><span class="dado-valor">{{ colab.celular|default:"—" }}</span></div>
+      </div>
+
+      <div class="hi-card">
+        <div class="hi-card-hd"><h3>🏠 Endereço</h3></div>
+        <div class="dado-linha"><span class="dado-label">Logradouro</span><span class="dado-valor">{{ colab.logradouro }} {{ colab.numero }}{% if colab.complemento %}, {{ colab.complemento }}{% endif %}</span></div>
+        <div class="dado-linha"><span class="dado-label">Bairro</span><span class="dado-valor">{{ colab.bairro|default:"—" }}</span></div>
+        <div class="dado-linha"><span class="dado-label">Cidade/UF</span><span class="dado-valor">{{ colab.cidade|default:"—" }}{% if colab.estado %}/{{ colab.estado }}{% endif %}</span></div>
+        <div class="dado-linha"><span class="dado-label">CEP</span><span class="dado-valor">{{ colab.cep|default:"—" }}</span></div>
+      </div>
+
+      <!-- Dependentes -->
+      <div class="hi-card">
+        <div class="hi-card-hd">
+          <h3>👨‍👩‍👧 Dependentes</h3>
+          <span class="badge badge-info">{{ colab.dependentes.count }}</span>
+        </div>
+        {% for dep in colab.dependentes.all %}
+        <div class="dado-linha">
+          <span class="dado-label">{{ dep.nome }}</span>
+          <span class="dado-valor">{{ dep.parentesco }}{% if dep.ir %} · Dep. IR{% endif %}</span>
+        </div>
+        {% empty %}
+        <p style="color:var(--text-muted);font-size:13px">Nenhum dependente cadastrado.</p>
+        {% endfor %}
+      </div>
+
+      <!-- Dados bancários (somente para RH/admin) -->
+      {% tem_perm 'rh' 'editar' as pode_ver_banco %}
+      {% if pode_ver_banco %}
+      <div class="hi-card">
+        <div class="hi-card-hd"><h3>🏦 Dados Bancários</h3></div>
+        <div class="dado-linha"><span class="dado-label">Banco</span><span class="dado-valor">{{ colab.banco|default:"—" }}</span></div>
+        <div class="dado-linha"><span class="dado-label">Agência/Conta</span><span class="dado-valor">{{ colab.agencia|default:"—" }} / {{ colab.conta|default:"—" }}</span></div>
+        <div class="dado-linha"><span class="dado-label">Tipo</span><span class="dado-valor">{{ colab.get_tipo_conta_display|default:"—" }}</span></div>
+        <div class="dado-linha"><span class="dado-label">PIX</span><span class="dado-valor">{{ colab.get_pix_tipo_display|default:"—" }}: {{ colab.pix_chave|default:"—" }}</span></div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <!-- Tab: Contrato ────────────────────────────────────── -->
+  <div class="tab-content" id="tab-contrato" style="display:none">
+    <div class="grid-2">
+
+      <div class="hi-card">
+        <div class="hi-card-hd"><h3>📄 Dados Contratuais</h3></div>
+        <div class="dado-linha"><span class="dado-label">Regime</span><span class="dado-valor">{{ colab.get_regime_display }}</span></div>
+        <div class="dado-linha"><span class="dado-label">Admissão</span><span class="dado-valor">{{ colab.data_admissao|date:"d/m/Y" }}</span></div>
+        <div class="dado-linha"><span class="dado-label">Tempo de Empresa</span><span class="dado-valor">{{ colab.tempo_empresa_str }}</span></div>
+        <div class="dado-linha"><span class="dado-label">Salário Base</span><span class="dado-valor" style="color:var(--success);font-weight:700">{{ colab.salario_base|moeda }}</span></div>
+        <div class="dado-linha"><span class="dado-label">Carga Horária</span><span class="dado-valor">{{ colab.carga_horaria }}h/mês</span></div>
+        <div class="dado-linha"><span class="dado-label">E-mail Corporativo</span><span class="dado-valor">{{ colab.email_corporativo|default:"—" }}</span></div>
+        {% if colab.data_demissao %}<div class="dado-linha"><span class="dado-label">Desligamento</span><span class="dado-valor" style="color:var(--danger)">{{ colab.data_demissao|date:"d/m/Y" }}</span></div>{% endif %}
+      </div>
+
+      <div class="hi-card">
+        <div class="hi-card-hd"><h3>💰 Histórico Salarial</h3></div>
+        {% for h in colab.historico_salarial.all %}
+        <div class="dado-linha">
+          <span class="dado-label">{{ h.vigencia|date:"d/m/Y" }} — {{ h.get_motivo_display }}</span>
+          <span class="dado-valor" style="color:var(--success)">
+            {{ h.salario_novo|moeda }}
+            <small style="color:var(--text-muted)">({{ h.percentual|floatformat:1 }}%)</small>
+          </span>
+        </div>
+        {% empty %}
+        <p style="color:var(--text-muted);font-size:13px">Nenhum registro.</p>
+        {% endfor %}
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Tab: Timeline ───────────────────────────────────── -->
+  <div class="tab-content" id="tab-timeline" style="display:none">
+    <div class="hi-card">
+      <div class="hi-card-hd"><h3>⏱️ Timeline Trabalhista</h3></div>
+      <div class="timeline-wrap">
+        {% for ev in timeline %}
+        <div class="tl-item">
+          <div class="tl-icon" style="background:{{ ev.cor }}18;color:{{ ev.cor }}">{{ ev.icon }}</div>
+          <div class="tl-body">
+            <div class="tl-titulo">{{ ev.titulo }}</div>
+            <div class="tl-data">{{ ev.data|date:"d/m/Y" }}</div>
+          </div>
+        </div>
+        {% empty %}
+        <p style="color:var(--text-muted)">Nenhum evento registrado.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Avaliações ─────────────────────────────────── -->
+  <div class="tab-content" id="tab-avaliacoes" style="display:none">
+    <div class="hi-card">
+      <div class="hi-card-hd">
+        <h3>⭐ Avaliações de Desempenho</h3>
+        {% if pode_editar %}
+          <a href="{% url 'rh:avaliacao_nova' %}?colaborador={{ colab.pk }}" class="btn-primary btn-sm">+ Nova Avaliação</a>
+        {% endif %}
+      </div>
+      <div class="table-wrap">
+        <table class="hi-table">
+          <thead><tr><th>Tipo</th><th>Status</th><th>Prazo</th><th>Nota</th><th>Efetivação</th></tr></thead>
+          <tbody>
+            {% for av in colab.avaliacoes.all %}
+            <tr>
+              <td>{{ av.get_tipo_display }}</td>
+              <td><span class="badge {{ av.status|badge_status }}">{{ av.get_status_display }}</span></td>
+              <td>{{ av.prazo|date:"d/m/Y" }}</td>
+              <td>{{ av.nota_geral|default:"—" }}</td>
+              <td>{% if av.recomenda_efetivacao is not None %}{{ av.recomenda_efetivacao|yesno:"✅ Sim,❌ Não" }}{% else %}—{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-muted)">Nenhuma avaliação.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Documentos ─────────────────────────────────── -->
+  <div class="tab-content" id="tab-documentos" style="display:none">
+    <div class="hi-card">
+      <div class="hi-card-hd"><h3>📁 Documentos</h3></div>
+      <p style="color:var(--text-muted);font-size:13px">Módulo de documentos disponível na Fase 3.</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal desligamento ──────────────────────────────────── -->
+<div id="modal-desligamento" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+  <div class="hi-card" style="max-width:440px;width:90%">
+    <div class="hi-card-hd"><h3>👋 Desligar Colaborador</h3></div>
+    <div class="hi-form-group">
+      <label class="hi-label">Data do Desligamento</label>
+      <input type="date" id="data-demissao" class="hi-input" value="{{ 'now'|date:'Y-m-d' }}">
+    </div>
+    <div class="hi-form-group">
+      <label class="hi-label">Motivo</label>
+      <textarea id="motivo-desligamento" class="hi-textarea" rows="3"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn-secondary" onclick="document.getElementById('modal-desligamento').style.display='none'">Cancelar</button>
+      <button class="btn-primary" style="background:var(--danger)" onclick="confirmarDesligamento()">Desligar</button>
+    </div>
+  </div>
+</div>
+
+<style>
+.perfil-header { background:linear-gradient(135deg,#0f172a,#1e3a5f,#2563eb); border-radius:14px; padding:22px 26px; color:#fff; display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin-bottom:18px }
+.perfil-foto { width:72px; height:72px; border-radius:50%; object-fit:cover; border:3px solid rgba(255,255,255,.25); flex-shrink:0 }
+.perfil-avatar-lg { width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg,#7c3aed,#2563eb); color:#fff; font-size:22px; font-weight:900; display:flex; align-items:center; justify-content:center; flex-shrink:0 }
+.perfil-info { flex:1; min-width:0 }
+.perfil-nome { margin:0 0 4px; font-size:20px; font-weight:800 }
+.perfil-sub  { margin:0 0 8px; font-size:13px; color:rgba(255,255,255,.7) }
+.perfil-badges { display:flex; gap:6px; flex-wrap:wrap }
+.perfil-acoes { display:flex; gap:8px; flex-wrap:wrap; flex-shrink:0 }
+
+.tabs-nav { display:flex; gap:2px; border-bottom:1px solid var(--border); margin-bottom:14px }
+.tab-btn { padding:9px 16px; border:none; background:transparent; border-bottom:2px solid transparent; font-size:12px; font-weight:700; color:var(--text-muted); cursor:pointer; font-family:inherit }
+.tab-btn:hover { color:var(--primary) }
+.tab-btn.active { color:var(--primary); border-bottom-color:var(--primary) }
+
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px }
+
+.dado-linha { display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--border-l); font-size:13px }
+.dado-label  { color:var(--text-muted); font-weight:600; min-width:140px }
+.dado-valor  { font-weight:500; text-align:right }
+
+.timeline-wrap { display:flex; flex-direction:column; gap:0; position:relative; padding-left:24px }
+.timeline-wrap::before { content:''; position:absolute; left:14px; top:0; bottom:0; width:2px; background:var(--border) }
+.tl-item { display:flex; gap:12px; align-items:flex-start; padding:10px 0; position:relative }
+.tl-icon { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; position:relative; z-index:1; margin-left:-14px }
+.tl-titulo { font-size:13px; font-weight:700 }
+.tl-data   { font-size:11px; color:var(--text-muted); margin-top:2px }
+
+@media(max-width:768px){ .grid-2{grid-template-columns:1fr} .perfil-header{flex-direction:column} }
+</style>
+
+<script>
+function mudarTab(btn, id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+  btn.classList.add('active');
+  document.getElementById('tab-' + id).style.display = '';
+}
+
+function abrirDesligamento() {
+  document.getElementById('modal-desligamento').style.display = 'flex';
+}
+
+async function confirmarDesligamento() {
+  const data   = document.getElementById('data-demissao').value;
+  const motivo = document.getElementById('motivo-desligamento').value;
+  if (!data) { Toast.warning('Informe a data do desligamento.'); return; }
+  const ok = await confirmar(`Desligar {{ colab.nome }}? Esta ação registrará o desligamento.`);
+  if (!ok) return;
+  const resp = await Api.post('{% url "rh:colaborador_desligar" colab.pk %}', {data_demissao: data, motivo});
+  if (resp.sucesso) { Toast.success('Colaborador desligado.'); setTimeout(() => location.reload(), 1500); }
+  else Toast.error(resp.mensagem || 'Erro.');
+}
+</script>
+{% endblock %}

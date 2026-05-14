@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+{% block title %}Simulador de Futuro Corporativo{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<style>
+.cenario-card {
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all .2s;
+    background: rgba(15,23,42,.8);
+}
+.cenario-card:hover, .cenario-card.ativo {
+    border-color: #6366f1;
+    background: rgba(99,102,241,.1);
+}
+.cenario-card i { font-size: 1.5rem; }
+.resultado-card {
+    background: #0f172a;
+    border: 1px solid rgba(99,102,241,.2);
+    border-radius: 12px;
+    padding: 1.25rem;
+}
+.impacto-valor {
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3 px-4">
+  <div class="d-flex align-items-center gap-2 mb-4">
+    <a href="{% url 'inteligencia:hub' %}" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i>
+    </a>
+    <div>
+      <h1 class="h4 fw-bold text-white mb-0"><i class="bi bi-calculator text-warning me-2"></i>Simulador de Futuro</h1>
+      <small class="text-muted">Simule impactos de decisões estratégicas antes de executar</small>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Painel de configuração -->
+    <div class="col-xl-5">
+      <div class="resultado-card">
+        <h6 class="text-uppercase text-muted small mb-3" style="letter-spacing:.1em">
+          <i class="bi bi-sliders me-1"></i>Configure o Cenário
+        </h6>
+
+        <!-- Seleção de cenário -->
+        <div class="row g-2 mb-3">
+          {% for key, info in cenarios.items %}
+          <div class="col-6">
+            <div class="cenario-card" onclick="selecionarCenario('{{ key }}')" id="card-{{ key }}">
+              <div class="fw-bold text-white" style="font-size:.83rem">{{ info.label }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <input type="hidden" id="cenarioSelecionado" value="">
+
+        <!-- Parâmetros dinâmicos -->
+        <div id="parametrosDiv"></div>
+
+        <div class="mb-3">
+          <label class="form-label text-muted small">Nome da simulação</label>
+          <input type="text" id="nomeSimulacao" class="form-control bg-dark border-secondary text-white"
+            placeholder="Ex: Expansão Q3 2026">
+        </div>
+
+        <button id="btnSimular" class="btn btn-warning w-100 fw-bold" disabled>
+          <i class="bi bi-play-fill me-1"></i>Simular Agora
+        </button>
+      </div>
+    </div>
+
+    <!-- Resultado -->
+    <div class="col-xl-7">
+      <div class="resultado-card" id="resultadoArea">
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-calculator display-3 d-block mb-3 opacity-30"></i>
+          Configure e execute uma simulação para ver os resultados aqui.
+        </div>
+      </div>
+
+      <!-- Histórico de simulações -->
+      {% if simulacoes %}
+      <div class="resultado-card mt-3">
+        <h6 class="text-uppercase text-muted small mb-3" style="letter-spacing:.1em">
+          <i class="bi bi-clock-history me-1"></i>Simulações Recentes
+        </h6>
+        {% for sim in simulacoes %}
+        <div class="d-flex align-items-start justify-content-between p-2 rounded mb-2"
+          style="background:rgba(30,41,59,.5);cursor:pointer"
+          onclick="mostrarSimulacaoSalva({{ sim.resultado|safe }}, `{{ sim.narrativa_ia|escapejs }}`, '{{ sim.nome }}')">
+          <div>
+            <div class="fw-semibold text-white small">{{ sim.nome }}</div>
+            <div class="text-muted" style="font-size:.72rem">
+              {{ sim.get_cenario_display }} · {{ sim.created_at|date:"d/m/Y H:i" }}
+            </div>
+          </div>
+          <div class="text-end">
+            {% if sim.impacto_financeiro %}
+            <span class="{% if sim.impacto_financeiro >= 0 %}text-success{% else %}text-danger{% endif %} fw-bold small">
+              {% if sim.impacto_financeiro >= 0 %}+{% endif %}R$ {{ sim.impacto_financeiro|floatformat:0 }}
+            </span>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const cenarios = {
+    expansao: {
+        label: 'Expansão',
+        params: [
+            { id: 'novas_vagas',                  label: 'Número de novas vagas',         type: 'number', default: 10 },
+            { id: 'salario_medio_novo',            label: 'Salário médio (R$)',            type: 'number', default: 4000 },
+            { id: 'custo_recrutamento_por_vaga',   label: 'Custo de recrutamento/vaga (R$)', type: 'number', default: 2000 },
+        ]
+    },
+    reducao: {
+        label: 'Redução',
+        params: [
+            { id: 'vagas_eliminadas',        label: 'Vagas a eliminar',          type: 'number', default: 5 },
+            { id: 'salario_medio_eliminado', label: 'Salário médio eliminado (R$)', type: 'number', default: 3500 },
+            { id: 'custo_rescisao_medio',    label: 'Custo médio de rescisão (R$)', type: 'number', default: 8000 },
+        ]
+    },
+    reajuste_salarial: {
+        label: 'Reajuste Salarial',
+        params: [
+            { id: 'percentual_reajuste',       label: 'Percentual de reajuste (%)', type: 'number', default: 8 },
+            { id: 'colaboradores_afetados',    label: 'Colaboradores afetados (0 = todos)', type: 'number', default: 0 },
+        ]
+    },
+    plr: {
+        label: 'PLR',
+        params: [
+            { id: 'valor_medio_plr',           label: 'Valor médio por colaborador (R$)', type: 'number', default: 3000 },
+            { id: 'colaboradores_elegíveis',   label: 'Colaboradores elegíveis (0 = todos)', type: 'number', default: 0 },
+        ]
+    },
+    home_office: {
+        label: 'Home Office',
+        params: [
+            { id: 'percentual_home',               label: 'Percentual em home office (%)',  type: 'number', default: 50 },
+            { id: 'economia_infraestrutura_mes',    label: 'Economia infra/mês (R$)',        type: 'number', default: 5000 },
+            { id: 'impacto_engajamento_delta',      label: 'Delta de engajamento esperado',  type: 'number', default: 5 },
+        ]
+    },
+};
+
+let cenarioAtivo = null;
+
+function selecionarCenario(key) {
+    cenarioAtivo = key;
+    document.querySelectorAll('.cenario-card').forEach(c => c.classList.remove('ativo'));
+    document.getElementById('card-' + key).classList.add('ativo');
+    document.getElementById('cenarioSelecionado').value = key;
+    document.getElementById('btnSimular').disabled = false;
+
+    const div = document.getElementById('parametrosDiv');
+    const info = cenarios[key];
+    if (!info) return;
+    div.innerHTML = info.params.map(p => `
+        <div class="mb-2">
+          <label class="form-label text-muted" style="font-size:.75rem">${p.label}</label>
+          <input id="param-${p.id}" type="${p.type}" class="form-control form-control-sm bg-dark border-secondary text-white"
+            value="${p.default}" min="0">
+        </div>`).join('');
+}
+
+document.getElementById('btnSimular').addEventListener('click', async () => {
+    const cenario = cenarioAtivo;
+    if (!cenario) return;
+
+    const params = {};
+    const info = cenarios[cenario];
+    if (info) {
+        info.params.forEach(p => {
+            const el = document.getElementById('param-' + p.id);
+            if (el) params[p.id] = parseFloat(el.value) || 0;
+        });
+    }
+
+    document.getElementById('resultadoArea').innerHTML = `
+        <div class="text-center py-4">
+          <div class="spinner-border text-warning" role="status"></div>
+          <div class="text-muted mt-2 small">Calculando simulação...</div>
+        </div>`;
+
+    const resp = await fetch('/api/v1/inteligencia/simulador/executar/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+        body: JSON.stringify({
+            cenario,
+            nome: document.getElementById('nomeSimulacao').value || 'Simulação ' + cenario,
+            parametros: params,
+        })
+    });
+    const data = await resp.json();
+    if (data.sucesso) {
+        mostrarSimulacaoSalva(data.dados.resultado, data.dados.narrativa_ia, data.dados.nome);
+    } else {
+        document.getElementById('resultadoArea').innerHTML = `<div class="alert alert-danger">Erro: ${data.erro}</div>`;
+    }
+});
+
+function mostrarSimulacaoSalva(resultado, narrativa, nome) {
+    const fin = resultado.impacto_financeiro_anual || 0;
+    const eng = resultado.delta_engajamento || 0;
+    const turn= resultado.delta_turnover || 0;
+    const cor = v => v >= 0 ? '#10b981' : '#ef4444';
+    const sinal = v => (v >= 0 ? '+' : '') + (typeof v === 'number' ? v.toLocaleString('pt-BR', {minimumFractionDigits:1,maximumFractionDigits:1}) : v);
+
+    document.getElementById('resultadoArea').innerHTML = `
+    <h6 class="text-uppercase text-muted small mb-3" style="letter-spacing:.1em">
+      <i class="bi bi-bar-chart me-1"></i>Resultado: ${nome}
+    </h6>
+    <div class="row g-3 mb-4">
+      <div class="col-4 text-center">
+        <div class="impacto-valor" style="color:${cor(fin)}">
+          ${fin >= 0 ? '+' : ''}R$ ${Math.abs(fin).toLocaleString('pt-BR')}
+        </div>
+        <div class="text-muted small">Impacto Financeiro/Ano</div>
+      </div>
+      <div class="col-4 text-center">
+        <div class="impacto-valor" style="color:${cor(eng)}">${sinal(eng)} pts</div>
+        <div class="text-muted small">Delta Engajamento</div>
+      </div>
+      <div class="col-4 text-center">
+        <div class="impacto-valor" style="color:${cor(-turn)}">${sinal(turn)}%</div>
+        <div class="text-muted small">Delta Turnover</div>
+      </div>
+    </div>
+    <canvas id="chartImpacto" height="200"></canvas>
+    <div class="mt-3 p-3 rounded" style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2)">
+      <div class="text-primary small fw-semibold mb-1"><i class="bi bi-lightbulb me-1"></i>Análise</div>
+      <div class="text-light" style="font-size:.83rem;white-space:pre-line">${narrativa}</div>
+    </div>`;
+
+    // Chart de impacto
+    const ctx = document.getElementById('chartImpacto');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Impacto Fin. (k)', 'Engajamento', 'Turnover (inv)'],
+                datasets: [{
+                    data: [fin/1000, eng, -turn],
+                    backgroundColor: [
+                        fin >= 0 ? '#10b981' : '#ef4444',
+                        eng >= 0 ? '#6366f1' : '#ef4444',
+                        turn <= 0 ? '#10b981' : '#ef4444',
+                    ],
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+                    y: { grid: { color: 'rgba(255,255,255,.05)' }, ticks: { color: '#94a3b8' } },
+                }
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

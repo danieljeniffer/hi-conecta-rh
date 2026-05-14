@@ -1,0 +1,105 @@
+"""treinamento — Migration inicial."""
+import uuid
+import django.db.models.deletion
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+    initial = True
+    dependencies = [('rh', '0001_initial'), ('accounts', '0001_initial')]
+
+    operations = [
+        migrations.CreateModel(
+            name='Treinamento',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('deleted_at', models.DateTimeField(blank=True, null=True)),
+                ('titulo', models.CharField(max_length=200)),
+                ('tipo', models.CharField(default='tecnico', max_length=20)),
+                ('modalidade', models.CharField(default='ead', max_length=15)),
+                ('descricao', models.TextField(blank=True)),
+                ('conteudo_programatico', models.TextField(blank=True)),
+                ('carga_horaria', models.IntegerField(default=4)),
+                ('instrutor', models.CharField(blank=True, max_length=200)),
+                ('link_conteudo', models.URLField(blank=True)),
+                ('arquivo', models.FileField(blank=True, null=True, upload_to='treinamentos/materiais/')),
+                ('ativo', models.BooleanField(default=True)),
+                ('obrigatorio', models.BooleanField(default=False)),
+                ('validade_meses', models.IntegerField(blank=True, null=True)),
+                ('departamentos_alvo', models.ManyToManyField(blank=True, related_name='treinamentos', to='rh.departamento')),
+                ('cargos_alvo', models.ManyToManyField(blank=True, related_name='treinamentos', to='rh.cargo')),
+                ('gera_certificado', models.BooleanField(default=True)),
+                ('nota_minima_aprovacao', models.DecimalField(decimal_places=1, default=7.0, max_digits=4)),
+                ('criado_por', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='accounts.usuario')),
+                ('atualizado_por', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='accounts.usuario')),
+            ],
+            options={'db_table': 'treinamento_treinamento', 'ordering': ['titulo']},
+        ),
+        migrations.CreateModel(
+            name='Trilha',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('deleted_at', models.DateTimeField(blank=True, null=True)),
+                ('nome', models.CharField(max_length=200)),
+                ('descricao', models.TextField(blank=True)),
+                ('cargo_alvo', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='trilhas', to='rh.cargo')),
+                ('nivel', models.CharField(default='todos', max_length=20)),
+                ('ativa', models.BooleanField(default=True)),
+                ('ordem_treinamentos', models.JSONField(blank=True, default=list)),
+                ('criado_por', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='accounts.usuario')),
+                ('atualizado_por', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='accounts.usuario')),
+            ],
+            options={'db_table': 'treinamento_trilha'},
+        ),
+        migrations.CreateModel(
+            name='Matricula',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('deleted_at', models.DateTimeField(blank=True, null=True)),
+                ('colaborador', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='matriculas', to='rh.colaborador')),
+                ('treinamento', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='matriculas', to='treinamento.treinamento')),
+                ('status', models.CharField(default='inscrito', max_length=15)),
+                ('data_inicio', models.DateField(blank=True, null=True)),
+                ('data_conclusao', models.DateField(blank=True, null=True)),
+                ('nota', models.DecimalField(blank=True, decimal_places=1, max_digits=4, null=True)),
+                ('progresso', models.IntegerField(default=0)),
+                ('certificado_emitido', models.BooleanField(default=False)),
+                ('certificado_arquivo', models.FileField(blank=True, null=True, upload_to='treinamentos/certificados/')),
+                ('validade_certificado', models.DateField(blank=True, null=True)),
+                ('observacoes', models.TextField(blank=True)),
+                ('criado_por', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='accounts.usuario')),
+                ('atualizado_por', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='accounts.usuario')),
+            ],
+            options={'db_table': 'treinamento_matricula', 'ordering': ['-created_at']},
+        ),
+        migrations.AlterUniqueTogether(name='matricula', unique_together={('colaborador', 'treinamento')}),
+        migrations.CreateModel(
+            name='PDI',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('deleted_at', models.DateTimeField(blank=True, null=True)),
+                ('colaborador', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pdis', to='rh.colaborador')),
+                ('gestor', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='pdis_geridos', to='accounts.usuario')),
+                ('titulo', models.CharField(max_length=200)),
+                ('objetivo', models.TextField()),
+                ('prazo', models.DateField()),
+                ('status', models.CharField(default='rascunho', max_length=15)),
+                ('gerado_por_ia', models.BooleanField(default=False)),
+                ('acoes', models.JSONField(blank=True, default=list)),
+                ('progresso', models.IntegerField(default=0)),
+                ('notas_gestor', models.TextField(blank=True)),
+                ('notas_colaborador', models.TextField(blank=True)),
+                ('criado_por', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='accounts.usuario')),
+                ('atualizado_por', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='accounts.usuario')),
+            ],
+            options={'db_table': 'treinamento_pdi', 'ordering': ['-created_at']},
+        ),
+    ]

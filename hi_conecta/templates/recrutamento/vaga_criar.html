@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Nova Vaga{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3 px-4">
+  <div class="d-flex align-items-center gap-2 mb-4">
+    <a href="{% url 'recrutamento:vagas' %}" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i>
+    </a>
+    <h1 class="h4 fw-bold text-white mb-0">Nova Vaga</h1>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-xl-7">
+      <form method="post" id="formVaga">
+        {% csrf_token %}
+        <input type="hidden" name="usar_ia" id="usarIA" value="0">
+
+        <div style="background:#0f172a;border:1px solid rgba(99,102,241,.15);border-radius:12px;padding:1.5rem">
+          <h6 class="text-uppercase text-muted small mb-3" style="letter-spacing:.1em">Dados da Vaga</h6>
+
+          <div class="mb-3">
+            <label class="form-label text-muted small">Título da Vaga *</label>
+            <input type="text" name="titulo" id="tituloVaga" class="form-control bg-dark border-secondary text-white" required placeholder="Ex: Analista de RH Sênior">
+          </div>
+
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label class="form-label text-muted small">Departamento</label>
+              <select name="departamento" class="form-select bg-dark border-secondary text-white">
+                <option value="">— Selecionar —</option>
+                {% for d in departamentos %}<option value="{{ d.id }}">{{ d.nome }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label text-muted small">Cargo</label>
+              <select name="cargo" id="cargoSelect" class="form-select bg-dark border-secondary text-white">
+                <option value="">— Selecionar —</option>
+                {% for c in cargos %}<option value="{{ c.id }}">{{ c.nome }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label text-muted small">Modalidade</label>
+              <select name="modalidade" id="modalidadeSelect" class="form-select bg-dark border-secondary text-white">
+                {% for v, l in modalidades %}<option value="{{ v }}">{{ l }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label text-muted small">Tipo de Contrato</label>
+              <select name="tipo_contrato" id="tipoSelect" class="form-select bg-dark border-secondary text-white">
+                {% for v, l in tipos_contrato %}<option value="{{ v }}">{{ l }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label text-muted small">Salário Mínimo (R$)</label>
+              <input type="number" name="salario_min" class="form-control bg-dark border-secondary text-white" placeholder="3000">
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label text-muted small">Salário Máximo (R$)</label>
+              <input type="number" name="salario_max" class="form-control bg-dark border-secondary text-white" placeholder="5000">
+            </div>
+          </div>
+
+          <div class="mt-3">
+            <label class="form-label text-muted small">Descrição</label>
+            <textarea name="descricao" id="descricaoField" class="form-control bg-dark border-secondary text-white" rows="5"></textarea>
+          </div>
+          <div class="mt-3">
+            <label class="form-label text-muted small">Requisitos</label>
+            <textarea name="requisitos" id="requisitosField" class="form-control bg-dark border-secondary text-white" rows="4"></textarea>
+          </div>
+          <div class="mt-3">
+            <label class="form-label text-muted small">Benefícios</label>
+            <textarea name="beneficios" id="beneficiosField" class="form-control bg-dark border-secondary text-white" rows="3"></textarea>
+          </div>
+
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary" onclick="document.getElementById('usarIA').value='0'">
+              <i class="bi bi-floppy me-1"></i>Salvar Vaga
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Painel IA -->
+    <div class="col-xl-5">
+      <div style="background:linear-gradient(135deg,#1e1b4b,#0f172a);border:1px solid rgba(139,92,246,.3);border-radius:12px;padding:1.5rem">
+        <h6 class="text-uppercase mb-3" style="color:#a78bfa;letter-spacing:.1em;font-size:.75rem">
+          <i class="bi bi-robot me-1"></i>Gerar com IA
+        </h6>
+        <p class="text-muted small mb-3">Preencha o título e selecione o cargo. A IA irá gerar descrição, requisitos e perguntas de entrevista automaticamente.</p>
+        <button type="button" class="btn btn-outline-primary w-100" id="btnGerarIA" onclick="gerarComIA()">
+          <i class="bi bi-magic me-1"></i>Gerar Descrição e Perguntas
+        </button>
+        <div id="iaStatus" class="mt-3 text-center text-muted small" style="display:none">
+          <div class="spinner-border spinner-border-sm me-2" role="status"></div>Gerando com IA...
+        </div>
+        <div id="iaResultado" class="mt-3" style="display:none">
+          <div class="alert alert-success py-2 px-3 small">
+            <i class="bi bi-check-circle me-1"></i>Conteúdo gerado com sucesso! Revise e salve.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+async function gerarComIA() {
+    const titulo = document.getElementById('tituloVaga').value.trim();
+    if (!titulo) { alert('Informe o título da vaga primeiro.'); return; }
+
+    document.getElementById('iaStatus').style.display = 'block';
+    document.getElementById('btnGerarIA').disabled = true;
+    document.getElementById('iaResultado').style.display = 'none';
+
+    const cargoSel = document.getElementById('cargoSelect');
+    const cargo    = cargoSel.options[cargoSel.selectedIndex]?.text || '';
+    const tipo     = document.getElementById('tipoSelect').value;
+    const modal    = document.getElementById('modalidadeSelect').value;
+
+    const resp = await fetch('{% url "recrutamento:gerar_ia" %}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+        body: JSON.stringify({ titulo, cargo, tipo_contrato: tipo, modalidade: modal }),
+    });
+    const data = await resp.json();
+
+    document.getElementById('iaStatus').style.display = 'none';
+    document.getElementById('btnGerarIA').disabled = false;
+
+    if (data.sucesso) {
+        document.getElementById('descricaoField').value  = data.descricao?.descricao  || '';
+        document.getElementById('requisitosField').value = data.descricao?.requisitos || '';
+        document.getElementById('beneficiosField').value = data.descricao?.beneficios || '';
+        document.getElementById('usarIA').value = '1';
+        document.getElementById('iaResultado').style.display = 'block';
+    }
+}
+</script>
+{% endblock %}

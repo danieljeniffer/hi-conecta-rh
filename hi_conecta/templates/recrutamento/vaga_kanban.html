@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block title %}Pipeline — {{ vaga.titulo }}{% endblock %}
+
+{% block extra_head %}
+<style>
+.kanban-board { display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem; min-height: 60vh; }
+.kanban-col {
+    min-width: 260px; max-width: 280px; flex-shrink: 0;
+    background: #0f172a; border: 1px solid rgba(99,102,241,.15);
+    border-radius: 12px; padding: 1rem; display: flex; flex-direction: column;
+}
+.kanban-col-header {
+    font-size: .75rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .1em; color: #94a3b8; margin-bottom: .75rem;
+    display: flex; justify-content: space-between;
+}
+.kanban-card {
+    background: rgba(30,41,59,.8); border: 1px solid rgba(99,102,241,.1);
+    border-radius: 10px; padding: .75rem; margin-bottom: .5rem;
+    cursor: pointer; transition: all .2s;
+}
+.kanban-card:hover { border-color: rgba(99,102,241,.4); transform: translateY(-2px); }
+.kanban-card .nome { font-weight: 600; color: #f8fafc; font-size: .85rem; }
+.kanban-card .info { color: #94a3b8; font-size: .7rem; }
+.drop-zone { min-height: 80px; border-radius: 8px; transition: background .15s; }
+.drop-zone.drag-over { background: rgba(99,102,241,.1); border: 2px dashed rgba(99,102,241,.4); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3 px-3">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <a href="{% url 'recrutamento:vagas' %}" class="text-muted text-decoration-none small">
+        <i class="bi bi-arrow-left me-1"></i>Vagas
+      </a>
+      <h1 class="h4 fw-bold text-white mb-0">{{ vaga.titulo }}</h1>
+      <span class="badge {% if vaga.status == 'aberta' %}bg-success{% else %}bg-secondary{% endif %}">
+        {{ vaga.get_status_display }}
+      </span>
+      <span class="badge bg-secondary ms-1">{{ vaga.get_modalidade_display }}</span>
+      {% if vaga.descricao_ia %}
+      <span class="badge ms-1" style="background:#7c3aed"><i class="bi bi-robot me-1"></i>Descrição por IA</span>
+      {% endif %}
+    </div>
+    <div class="d-flex gap-2">
+      {% if vaga.status == 'rascunho' %}
+      <form method="post" action="{% url 'recrutamento:publicar_vaga' vaga.pk %}">
+        {% csrf_token %}
+        <button class="btn btn-success btn-sm">
+          <i class="bi bi-send me-1"></i>Publicar Vaga
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Detalhes da vaga -->
+  {% if vaga.descricao %}
+  <div class="row g-3 mb-4">
+    <div class="col-xl-8">
+      <div style="background:#0f172a;border:1px solid rgba(99,102,241,.15);border-radius:12px;padding:1.25rem">
+        <h6 class="text-muted small text-uppercase mb-2" style="letter-spacing:.1em">Descrição</h6>
+        <div class="text-light" style="font-size:.85rem;white-space:pre-line">{{ vaga.descricao }}</div>
+        {% if vaga.requisitos %}
+        <h6 class="text-muted small text-uppercase mt-3 mb-2" style="letter-spacing:.1em">Requisitos</h6>
+        <div class="text-light" style="font-size:.85rem;white-space:pre-line">{{ vaga.requisitos }}</div>
+        {% endif %}
+      </div>
+    </div>
+    {% if vaga.perguntas_entrevista %}
+    <div class="col-xl-4">
+      <div style="background:#0f172a;border:1px solid rgba(139,92,246,.2);border-radius:12px;padding:1.25rem">
+        <h6 class="text-muted small text-uppercase mb-2" style="letter-spacing:.1em">
+          <i class="bi bi-robot me-1" style="color:#a78bfa"></i>Perguntas (IA)
+        </h6>
+        {% for p in vaga.perguntas_entrevista %}
+        <div class="mb-2 p-2 rounded" style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.15)">
+          <div class="text-muted" style="font-size:.65rem;text-transform:uppercase">{{ p.categoria|default:"Geral" }}</div>
+          <div class="text-light" style="font-size:.78rem">{{ p.pergunta }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Kanban Board -->
+  <h6 class="text-uppercase text-muted small mb-3" style="letter-spacing:.1em">Pipeline de Candidatos</h6>
+  <div class="kanban-board" id="kanbanBoard">
+    {% for etapa_key, candidaturas in pipeline.items %}
+    {% if etapa_key not in 'reprovado,desistiu' %}
+    <div class="kanban-col">
+      <div class="kanban-col-header">
+        <span>{% for e, l in etapas %}{% if e == etapa_key %}{{ l }}{% endif %}{% endfor %}</span>
+        <span class="badge bg-secondary" style="font-size:.65rem">{{ candidaturas|length }}</span>
+      </div>
+      <div class="drop-zone" id="zone-{{ etapa_key }}" data-etapa="{{ etapa_key }}">
+        {% for c in candidaturas %}
+        <div class="kanban-card" draggable="true"
+          data-id="{{ c.id }}" data-etapa="{{ etapa_key }}"
+          onclick="abrirCandidato('{{ c.candidato.nome }}', '{{ c.candidato.email }}', {{ c.score }}, '{{ c.observacoes|escapejs }}')">
+          <div class="nome">{{ c.candidato.nome }}</div>
+          <div class="info">
+            {{ c.candidato.email }}
+            {% if c.candidato.cidade %} · {{ c.candidato.cidade }}{% endif %}
+          </div>
+          <div class="d-flex justify-content-between mt-1">
+            <div style="width:80px;height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden">
+              <div style="width:{{ c.score }}%;height:100%;background:{% if c.score >= 70 %}#10b981{% elif c.score >= 40 %}#f59e0b{% else %}#6366f1{% endif %}"></div>
+            </div>
+            <span class="text-muted" style="font-size:.65rem">{{ c.score }}pts</span>
+          </div>
+        </div>
+        {% empty %}
+        <div class="text-muted text-center py-3" style="font-size:.75rem">Sem candidatos</div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Modal candidato -->
+<div class="modal fade" id="modalCandidato" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content" style="background:#1e293b;border:1px solid rgba(99,102,241,.3)">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title text-white" id="modalNome"></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted small" id="modalEmail"></p>
+        <p class="text-light small" id="modalObs"></p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Drag and drop Kanban
+let dragCard = null;
+document.querySelectorAll('.kanban-card').forEach(card => {
+    card.addEventListener('dragstart', e => {
+        dragCard = card;
+        card.style.opacity = '.5';
+    });
+    card.addEventListener('dragend', () => {
+        card.style.opacity = '1';
+        dragCard = null;
+    });
+});
+
+document.querySelectorAll('.drop-zone').forEach(zone => {
+    zone.addEventListener('dragover', e => {
+        e.preventDefault();
+        zone.classList.add('drag-over');
+    });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', async e => {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        if (!dragCard) return;
+        const novaEtapa = zone.dataset.etapa;
+        const candId   = dragCard.dataset.id;
+        const resp = await fetch('{% url "recrutamento:mover_candidatura" %}', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'},
+            body: JSON.stringify({candidatura_id: candId, etapa: novaEtapa}),
+        });
+        if ((await resp.json()).sucesso) {
+            zone.appendChild(dragCard);
+            dragCard.dataset.etapa = novaEtapa;
+        }
+    });
+});
+
+function abrirCandidato(nome, email, score, obs) {
+    document.getElementById('modalNome').textContent = nome;
+    document.getElementById('modalEmail').textContent = email + ' · Score: ' + score;
+    document.getElementById('modalObs').textContent = obs || 'Sem observações.';
+    new bootstrap.Modal(document.getElementById('modalCandidato')).show();
+}
+</script>
+{% endblock %}

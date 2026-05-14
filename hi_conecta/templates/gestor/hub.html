@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Hub do Gestor{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3 px-4">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h1 class="h4 fw-bold text-white mb-0">Meu Hub de Gestão</h1>
+      <small class="text-muted">{{ total_equipe }} colaborador(es) na minha equipe</small>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'gestor:feedback' %}" class="btn btn-sm btn-outline-primary">
+        <i class="bi bi-chat-dots me-1"></i>Dar Feedback
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <!-- Equipe -->
+    <div class="col-xl-7">
+      <div style="background:#0f172a;border:1px solid rgba(99,102,241,.15);border-radius:12px;padding:1.25rem">
+        <h6 class="text-uppercase text-muted small mb-3" style="letter-spacing:.1em">
+          <i class="bi bi-people me-1"></i>Minha Equipe
+        </h6>
+        <div class="table-responsive">
+          <table class="table table-dark table-sm mb-0" style="font-size:.82rem">
+            <thead><tr class="text-muted"><th>Colaborador</th><th>Cargo</th><th>Desde</th><th>Alertas</th></tr></thead>
+            <tbody>
+              {% for c in equipe %}
+              <tr>
+                <td>
+                  <a href="{% url 'analytics:perfil_inteligente' c.id %}" class="text-white text-decoration-none">
+                    {{ c.nome }}
+                  </a>
+                </td>
+                <td class="text-muted">{{ c.cargo.nome|default:"—" }}</td>
+                <td class="text-muted">{{ c.data_admissao|date:"m/Y" }}</td>
+                <td>
+                  {% for a in alertas %}{% if a.colaborador == c %}
+                  <span class="badge {% if a.prioridade == 'critica' %}bg-danger{% elif a.prioridade == 'alta' %}bg-warning text-dark{% else %}bg-secondary{% endif %}" style="font-size:.65rem">
+                    {{ a.get_tipo_display|truncatechars:20 }}
+                  </span>
+                  {% endif %}{% endfor %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="4" class="text-muted text-center py-3">Nenhum colaborador na equipe.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Metas + Feedbacks -->
+    <div class="col-xl-5">
+      <div style="background:#0f172a;border:1px solid rgba(99,102,241,.15);border-radius:12px;padding:1.25rem;margin-bottom:1rem">
+        <h6 class="text-uppercase text-muted small mb-3" style="letter-spacing:.1em">
+          <i class="bi bi-target me-1"></i>Metas Ativas
+        </h6>
+        {% for m in metas %}
+        <div class="mb-2">
+          <div class="d-flex justify-content-between small">
+            <span class="text-white">{{ m.titulo }}</span>
+            <span class="text-muted">{{ m.prazo|date:"d/m" }}</span>
+          </div>
+          <div style="height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin-top:.25rem">
+            <div style="width:{{ m.progresso }}%;height:100%;background:#6366f1;border-radius:3px"></div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="text-muted text-center py-2 small">Nenhuma meta ativa.</div>
+        {% endfor %}
+      </div>
+
+      <div style="background:#0f172a;border:1px solid rgba(99,102,241,.15);border-radius:12px;padding:1.25rem">
+        <h6 class="text-uppercase text-muted small mb-3" style="letter-spacing:.1em">
+          <i class="bi bi-chat-left-text me-1"></i>Feedbacks Recentes
+        </h6>
+        {% for f in feedbacks_recentes %}
+        <div class="mb-2 pb-2 border-bottom border-secondary">
+          <div class="d-flex justify-content-between">
+            <span class="text-white small fw-semibold">{{ f.colaborador.nome }}</span>
+            <span class="badge {% if f.tipo == 'positivo' %}bg-success{% elif f.tipo == 'construtivo' %}bg-primary{% else %}bg-secondary{% endif %}" style="font-size:.65rem">{{ f.get_tipo_display }}</span>
+          </div>
+          <div class="text-muted" style="font-size:.72rem">{{ f.assunto }} · {{ f.created_at|timesince }} atrás</div>
+        </div>
+        {% empty %}
+        <div class="text-muted text-center py-2 small">Nenhum feedback registrado.</div>
+        {% endfor %}
+        <a href="{% url 'gestor:feedback' %}" class="btn btn-sm btn-outline-primary w-100 mt-2">
+          <i class="bi bi-plus me-1"></i>Novo Feedback
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

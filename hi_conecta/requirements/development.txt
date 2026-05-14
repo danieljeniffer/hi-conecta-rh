@@ -1,0 +1,17 @@
+-r base.txt
+
+# Debug
+django-debug-toolbar==4.4.2
+ipython==8.25.0
+
+# Testes
+pytest==8.2.2
+pytest-django==4.8.0
+factory-boy==3.3.0
+coverage==7.5.3
+faker==25.2.0
+
+# Qualidade
+flake8==7.0.0
+black==24.4.2
+isort==5.13.2

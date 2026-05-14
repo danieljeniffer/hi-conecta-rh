@@ -1,0 +1,26 @@
+/* Dark Mode — hi Conecta RH */
+[data-bs-theme="dark"] {
+  --text:       #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-light: #64748b;
+  --border:     #1e293b;
+  --border-l:   #0f172a;
+  --bg:         #020617;
+  --bg-card:    #0f172a;
+  --bg-sidebar: #020617;
+  --primary-l:  #1e3a5f;
+  --success-l:  #14532d;
+  --warning-l:  #78350f;
+  --danger-l:   #7f1d1d;
+  --info-l:     #0c4a6e;
+}
+
+[data-bs-theme="dark"] .topbar      { background: #0f172a; border-color: #1e293b; }
+[data-bs-theme="dark"] .kpi-card    { background: #0f172a; border-color: #1e293b; }
+[data-bs-theme="dark"] .card-section { background: #0f172a; border-color: #1e293b; }
+[data-bs-theme="dark"] .user-dropdown { background: #0f172a; border-color: #1e293b; }
+[data-bs-theme="dark"] .dropdown-item { color: #f1f5f9; }
+[data-bs-theme="dark"] .dropdown-item:hover { background: #1e293b; }
+[data-bs-theme="dark"] .atalho-btn { background: #1e293b; border-color: #334155; color: #f1f5f9; }
+[data-bs-theme="dark"] .atalho-btn:hover { border-color: #2563eb; color: #60a5fa; background: #1e3a5f; }
+[data-bs-theme="dark"] .nav-item:hover { background: rgba(255,255,255,.06); }

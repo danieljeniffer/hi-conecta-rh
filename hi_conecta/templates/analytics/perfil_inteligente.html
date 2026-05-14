@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% block title %}Perfil Inteligente — {{ colab.nome }}{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<style>
+.perfil-header {
+    background: linear-gradient(135deg,#1e293b,#0f172a);
+    border: 1px solid rgba(99,102,241,.2);
+    border-radius: 16px;
+    padding: 2rem;
+}
+.avatar-ia {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: linear-gradient(135deg,#6366f1,#8b5cf6);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem; font-weight: 800; color: #fff;
+    flex-shrink: 0;
+}
+.score-dimension {
+    background: rgba(15,23,42,.8);
+    border: 1px solid rgba(99,102,241,.15);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+}
+.score-number { font-size: 1.6rem; font-weight: 800; }
+.score-label  { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: #94a3b8; }
+.fator-row {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .5rem 0;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+}
+.fator-bar { flex: 1; height: 6px; background: rgba(255,255,255,.08); border-radius: 3px; overflow: hidden; }
+.fator-fill { height: 100%; border-radius: 3px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3 px-4">
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <a href="{% url 'analytics:dashboard' %}" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i>
+    </a>
+    <h1 class="h5 fw-bold text-white mb-0">Perfil Inteligente</h1>
+  </div>
+
+  <!-- Header do colaborador -->
+  <div class="perfil-header mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <div class="avatar-ia">{{ colab.nome|slice:":1" }}</div>
+      <div class="flex-grow-1">
+        <h2 class="h4 fw-bold text-white mb-0">{{ colab.nome }}</h2>
+        <div class="text-muted small">
+          {{ colab.cargo.nome|default:"—" }} · {{ colab.departamento.nome|default:"—" }}
+          · Admitido em {{ colab.data_admissao|date:"d/m/Y" }}
+        </div>
+        <div class="mt-2 d-flex gap-2 flex-wrap">
+          <span class="badge bg-secondary">{{ colab.get_regime_contratacao_display|default:colab.regime_contratacao }}</span>
+          {% if risco.nivel == 'critico' %}
+          <span class="badge bg-danger"><i class="bi bi-exclamation-triangle me-1"></i>Risco Crítico de Saída</span>
+          {% elif risco.nivel == 'alto' %}
+          <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-circle me-1"></i>Risco Alto de Saída</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="text-end">
+        {% with g=scores.geral %}
+        {% if g %}
+        <div class="display-5 fw-bold {% if g.score >= 75 %}text-success{% elif g.score >= 55 %}text-warning{% else %}text-danger{% endif %}">
+          {{ g.score|floatformat:0 }}
+        </div>
+        <div class="text-muted small">Score Geral</div>
+        {% endif %}
+        {% endwith %}
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <!-- Scores por dimensão -->
+    <div class="col-xl-8">
+      <div style="background:#0f172a;border:1px solid rgba(99,102,241,.15);border-radius:16px;padding:1.5rem">
+        <h6 class="text-uppercase text-muted small mb-3" style="letter-spacing:.1em">Scores por Dimensão</h6>
+        <div class="row g-2 mb-3">
+          {% for key, sc in scores.items %}
+          {% if key != 'geral' %}
+          <div class="col-6 col-sm-4 col-md-3">
+            <div class="score-dimension">
+              <div class="score-number {% if sc.score >= 75 %}text-success{% elif sc.score >= 55 %}text-warning{% else %}text-danger{% endif %}">
+                {{ sc.score|floatformat:0 }}
+              </div>
+              <div class="score-label">{{ sc.get_dimensao_display }}</div>
+              {% if sc.tendencia == 'subindo' %}
+              <i class="bi bi-arrow-up-short text-success"></i>
+              {% elif sc.tendencia == 'caindo' %}
+              <i class="bi bi-arrow-down-short text-danger"></i>
+              {% else %}
+              <i class="bi bi-dash text-secondary"></i>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+          {% endfor %}
+        </div>
+        <canvas id="radarScore" height="260"></canvas>
+      </div>
+    </div>
+
+    <!-- Risco de Desligamento -->
+    <div class="col-xl-4">
+      <div style="background:#0f172a;border:1px solid rgba(99,102,241,.15);border-radius:16px;padding:1.5rem;height:100%">
+        <h6 class="text-uppercase text-muted small mb-3" style="letter-spacing:.1em">
+          <i class="bi bi-shield-exclamation me-1"></i>Risco de Desligamento
+        </h6>
+        <div class="text-center mb-3">
+          <div class="display-4 fw-bold
+            {% if risco.nivel == 'critico' %}text-danger
+            {% elif risco.nivel == 'alto' %}text-warning
+            {% elif risco.nivel == 'medio' %}text-primary
+            {% else %}text-success{% endif %}">
+            {{ risco.score_combinado }}
+          </div>
+          <div class="text-muted small mb-2">Score de Risco (0-100)</div>
+          <span class="badge {% if risco.nivel == 'critico' %}bg-danger{% elif risco.nivel == 'alto' %}bg-warning text-dark{% elif risco.nivel == 'medio' %}bg-primary{% else %}bg-success{% endif %} px-3 py-2">
+            {{ risco.nivel|upper }}
+          </span>
+        </div>
+
+        {% if risco.recomendacoes %}
+        <div class="mt-3">
+          <div class="text-muted small fw-semibold mb-2">Recomendações</div>
+          {% for rec in risco.recomendacoes %}
+          <div class="d-flex gap-2 align-items-start mb-2" style="font-size:.78rem">
+            <i class="bi bi-lightbulb-fill text-warning flex-shrink-0 mt-1"></i>
+            <span class="text-light">{{ rec }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Fatores de risco -->
+        {% if risco.risco_turnover.fatores %}
+        <div class="mt-3">
+          <div class="text-muted small fw-semibold mb-2">Fatores de Risco</div>
+          {% for f in risco.risco_turnover.fatores %}
+          <div class="fator-row">
+            <span class="text-muted" style="font-size:.72rem;width:130px">{{ f.fator }}</span>
+            <div class="fator-bar">
+              <div class="fator-fill" style="width:{{ f.contribuicao|floatformat:0 }}%;background:{% if f.contribuicao >= 15 %}#ef4444{% elif f.contribuicao >= 8 %}#f59e0b{% else %}#6366f1{% endif %}"></div>
+            </div>
+            <span class="text-white fw-semibold" style="font-size:.72rem;width:30px;text-align:right">{{ f.valor }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Alertas ativos + Análise salarial -->
+  <div class="row g-3">
+    <div class="col-xl-6">
+      <div style="background:#0f172a;border:1px solid rgba(99,102,241,.15);border-radius:12px;padding:1.25rem">
+        <h6 class="text-uppercase text-muted small mb-3" style="letter-spacing:.1em">
+          <i class="bi bi-bell me-1"></i>Alertas Ativos
+        </h6>
+        {% for alerta in alertas %}
+        <div class="d-flex gap-2 align-items-start p-2 rounded mb-2"
+          style="background:rgba(30,41,59,.5);border-left:3px solid {% if alerta.prioridade == 'critica' %}#ef4444{% elif alerta.prioridade == 'alta' %}#f59e0b{% else %}#6366f1{% endif %}">
+          <div class="flex-grow-1">
+            <div class="fw-semibold text-white" style="font-size:.82rem">{{ alerta.titulo }}</div>
+            <div class="text-muted" style="font-size:.7rem">{{ alerta.descricao|truncatechars:80 }}</div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="text-muted text-center py-3 small">
+          <i class="bi bi-check-circle text-success me-1"></i>Nenhum alerta ativo.
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% if justica %}
+    <div class="col-xl-6">
+      <div style="background:#0f172a;border:1px solid rgba(99,102,241,.15);border-radius:12px;padding:1.25rem">
+        <h6 class="text-uppercase text-muted small mb-3" style="letter-spacing:.1em">
+          <i class="bi bi-currency-dollar me-1"></i>Equidade Salarial no Cargo
+        </h6>
+        <div class="row g-2 text-center">
+          <div class="col-4">
+            <div class="text-muted small">Mínimo</div>
+            <div class="fw-bold text-white">R$ {{ justica.minimo|floatformat:0 }}</div>
+          </div>
+          <div class="col-4">
+            <div class="text-muted small">Média</div>
+            <div class="fw-bold text-primary">R$ {{ justica.media_salarial|floatformat:0 }}</div>
+          </div>
+          <div class="col-4">
+            <div class="text-muted small">Máximo</div>
+            <div class="fw-bold text-white">R$ {{ justica.maximo|floatformat:0 }}</div>
+          </div>
+        </div>
+        {% if justica.alertas %}
+        <div class="mt-3">
+          {% for a in justica.alertas %}
+          <div class="alert alert-warning py-2 px-3 small mb-2">
+            <i class="bi bi-exclamation-triangle me-1"></i>{{ a }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% if colab.salario_base %}
+        <div class="mt-2 text-center">
+          <div class="text-muted small">Salário atual</div>
+          <div class="fw-bold text-success h5">R$ {{ colab.salario_base }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const radarData = {
+    labels: [{% for key, sc in scores.items %}{% if key != 'geral' %}'{{ sc.get_dimensao_display }}',{% endif %}{% endfor %}],
+    datasets: [{
+        label: '{{ colab.nome|slice:":20" }}',
+        data: [{% for key, sc in scores.items %}{% if key != 'geral' %}{{ sc.score }},{% endif %}{% endfor %}],
+        backgroundColor: 'rgba(99,102,241,.15)',
+        borderColor: '#6366f1',
+        borderWidth: 2,
+        pointBackgroundColor: '#6366f1',
+        pointRadius: 4,
+    }]
+};
+const ctxR = document.getElementById('radarScore');
+if (ctxR && radarData.labels.length) {
+    new Chart(ctxR, {
+        type: 'radar',
+        data: radarData,
+        options: {
+            scales: {
+                r: {
+                    min: 0, max: 100,
+                    ticks: { color: '#64748b', stepSize: 25 },
+                    grid: { color: 'rgba(255,255,255,.07)' },
+                    pointLabels: { color: '#94a3b8', font: { size: 11 } },
+                    angleLines: { color: 'rgba(255,255,255,.07)' },
+                }
+            },
+            plugins: { legend: { display: false } },
+            animation: { duration: 800 },
+        }
+    });
+}
+</script>
+{% endblock %}
