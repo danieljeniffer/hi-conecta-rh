@@ -103,18 +103,27 @@ hi-conecta-rh/
 │   ├── docker-compose.yml       ← PostgreSQL + Redis + API
 │   └── .env.example
 │
-└── django_app/                  ← Backend Django (versão enterprise)
-    ├── apps/ (16 apps)
-    │   ├── core/                ← BaseModel UUID+SoftDelete, Audit, RBAC
-    │   ├── accounts/            ← Usuário customizado + JWT + Admin
-    │   ├── rh/                  ← Colaborador, Cargo, Depto, Avaliações
-    │   ├── dp/                  ← Folha, Férias, Rescisão + Services CLT
-    │   ├── colaborador/         ← Portal do colaborador
-    │   ├── analytics/           ← Score risco, engajamento, burnout
-    │   └── inteligencia/        ← IA: PDI, feedback, análise org.
-    ├── templates/               ← Templates Django (base + módulos)
-    ├── static/                  ← CSS + JS enterprise
-    └── config/                  ← Settings base/dev/prod
+├── hi_conecta/                  ← Backend Django enterprise (versão principal)
+│   ├── accounts/                ← Usuário customizado + JWT + Argon2 + RBAC
+│   ├── rh/                      ← Colaborador (50+ campos), Cargo, Depto, Avaliações
+│   ├── dp/                      ← Folha CLT 2024, Férias, Rescisão 7 tipos, Wizard
+│   ├── analytics/               ← People Analytics: Score, Turnover, Burnout, Alertas
+│   ├── inteligencia/            ← IA: DNA Corporativo, Modo Fantasma, IA Executiva
+│   ├── recrutamento/            ← ATS: Vagas + IA, Pipeline Kanban, Candidatos
+│   ├── treinamento/             ← T&D: Catálogo, Trilhas, PDI por IA, Certificados
+│   ├── comunicacao/             ← Mural, Comunicados, Reconhecimentos
+│   ├── ouvidoria/               ← Canal anônimo, Investigação, Logs restritos
+│   ├── gamificacao/             ← Pontos, Medalhas, Níveis, Ranking
+│   ├── gestor/                  ← Hub do Gestor: Equipe, Metas, Feedbacks
+│   ├── colaborador/             ← Portal: Holerites, Férias, Benefícios
+│   ├── integracoes/             ← Adapters: Bitrix24, eSocial, Caju, Wellhub
+│   ├── templates/               ← 50+ templates Django dark mode
+│   ├── fixtures/seed_demo.py    ← Seed com dados realistas
+│   ├── setup.py                 ← Script de instalação automática
+│   └── .env.example             ← 35 variáveis documentadas
+│
+└── django_app/                  ← Backend Django (versão legada — substituída por hi_conecta/)
+    └── apps/ (16 apps legados)
 ```
 
 ---
@@ -291,22 +300,37 @@ npm run db:seed
 npm run dev
 ```
 
-### Backend Django
+### Backend Django (hi_conecta — versão enterprise)
 
 ```bash
-cd django_app
+cd hi_conecta
+
+# Criar ambiente virtual
 python -m venv .venv
 .venv\Scripts\activate           # Windows
 source .venv/bin/activate        # Linux/Mac
 
-pip install -r requirements/development.txt
-cp .env.example .env             # Editar DATABASE_URL e SECRET_KEY
+# Setup automático (instala deps + roda migrations + seed)
+cp .env.example .env             # Editar DATABASE_URL, SECRET_KEY, API Keys de IA
+python setup.py                  # Setup completo em um comando
 
-python manage.py makemigrations
+# Ou manualmente:
+pip install -r requirements/base.txt
 python manage.py migrate
-python manage.py createsuperuser
+python manage.py shell -c "exec(open('fixtures/seed_demo.py').read()); run()"
 python manage.py runserver       # http://localhost:8000
 ```
+
+**Credenciais Django (após seed):**
+
+| E-mail | Senha | Perfil |
+|---|---|---|
+| `admin@empresa.com.br` | `Admin@2026` | Administrador |
+| `rh@empresa.com.br` | `RH@2026` | Gestor de RH |
+| `analista@empresa.com.br` | `Analista@2026` | Analista de RH |
+| `gestor@empresa.com.br` | `Gestor@2026` | Gestor de Equipe |
+| `colab@empresa.com.br` | `Colab@2026` | Colaborador |
+| `juridico@empresa.com.br` | `Juridico@2026` | Jurídico |
 
 ---
 
@@ -434,4 +458,4 @@ Este sistema é de **uso interno corporativo exclusivo**:
 
 ---
 
-**Versão:** 1.0.0 · **Stack:** Vanilla JS + Node.js + PostgreSQL | Django 4.2 · **Atualizado:** Junho/2025
+**Versão:** 2.0.0 · **Stack:** Vanilla JS + Node.js + PostgreSQL | Django 4.2 + Redis + IA · **Atualizado:** Maio/2026
