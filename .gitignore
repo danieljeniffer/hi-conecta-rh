@@ -1,0 +1,131 @@
+# =============================================
+# hi Conecta RH — .gitignore
+# =============================================
+
+# ── Segredos e variáveis de ambiente ─────────
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+
+# Manter apenas exemplos
+!.env.example
+!.env.example.*
+
+# ── Node.js ──────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# ── Logs ─────────────────────────────────────
+logs/
+*.log
+backend/logs/
+dp-backend/logs/
+
+# ── Build / dist ─────────────────────────────
+dist/
+build/
+out/
+.next/
+.nuxt/
+.output/
+.cache/
+
+# ── Python / Django ───────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+ENV/
+.env.bak
+*.egg-info/
+dist/
+*.egg
+.eggs/
+pip-wheel-metadata/
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Django específico
+hi_conecta/staticfiles/
+hi_conecta/media/
+hi_conecta/logs/
+hi_conecta/.env
+django_app/.env
+
+# ── Prisma / Banco de dados ───────────────────
+# Manter schema.prisma mas ignorar migrations geradas localmente
+# (descomente se preferir não versionar migrations)
+# backend/prisma/migrations/
+
+# SQLite local
+*.sqlite3
+*.db
+
+# ── Uploads e arquivos gerados ────────────────
+uploads/
+backend/uploads/
+hi_conecta/media/
+hi_conecta/treinamentos/
+*.pdf
+!*.pdf.example
+
+# ── Editores e IDEs ──────────────────────────
+.vscode/settings.json
+.vscode/.ropeproject
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Manter configs de editor compartilháveis
+!.vscode/extensions.json
+!.vscode/launch.json
+
+# ── Sistema operacional ───────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ── Docker ────────────────────────────────────
+# Manter docker-compose e Dockerfile, ignorar volumes
+docker-volumes/
+.docker/
+
+# ── Testes / Cobertura ────────────────────────
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+
+# ── Misc ─────────────────────────────────────
+*.bak
+*.tmp
+*.temp
+package-lock.json
