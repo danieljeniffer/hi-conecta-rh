@@ -14,8 +14,10 @@
     "db:studio":   "npx prisma studio",
     "db:reset":    "npx prisma migrate reset --force && node prisma/seed.js",
     "lint":        "eslint src/ --fix",
-    "test":        "jest --coverage",
-    "test:watch":  "jest --watchAll",
+    "test":             "jest --runInBand --forceExit",
+    "test:coverage":    "jest --coverage --runInBand --forceExit",
+    "test:integration": "jest tests/integration.test.js --runInBand --verbose --forceExit",
+    "test:watch":       "jest --watchAll",
     "docker:up":   "docker-compose up -d",
     "docker:down": "docker-compose down",
     "logs":        "pm2 logs hi-conecta-rh",
@@ -59,6 +61,12 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "testMatch":       ["**/__tests__/**/*.test.js"]
+    "testMatch": [
+      "**/__tests__/**/*.test.js",
+      "**/tests/**/*.test.js"
+    ],
+    "setupFiles": ["dotenv/config"],
+    "testTimeout": 30000,
+    "verbose": true
   }
 }

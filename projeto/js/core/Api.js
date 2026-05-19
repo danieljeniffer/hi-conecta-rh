@@ -8,7 +8,10 @@ const Api = (() => {
   'use strict';
 
   // ── Configuração ────────────────────────────
-  const BASE_URL      = (window.AppConfig?.api?.baseUrl) || 'http://localhost:3001/api/v1';
+  // Prioridade: window.ENV.API_URL > window.AppConfig.api.baseUrl > fallback local
+  const BASE_URL = window.ENV?.API_URL
+    || window.AppConfig?.api?.baseUrl
+    || 'http://localhost:3001/api/v1';
   const TIMEOUT_MS    = 15_000;
   const MAX_RETRIES   = 1;
 
@@ -212,5 +215,116 @@ const Api = (() => {
   };
 })();
 
+// ── Namespaces de domínio ─────────────────────────────────────────
+// Usados pelos módulos SPA: import { Colaboradores } from '../core/Api.js'
+
+const Auth = {
+  login:   (email, senha) => Api.post('/auth/login', { email, senha }),
+  refresh: (refresh_token) => Api.post('/auth/refresh', { refresh_token }),
+  logout:  (refresh_token) => Api.post('/auth/logout', { refresh_token }),
+  me:      () => Api.get('/auth/me'),
+};
+
+const Colaboradores = {
+  listar:   (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return Api.get(`/colaboradores${qs ? '?' + qs : ''}`);
+  },
+  kpis:     () => Api.get('/colaboradores/kpis'),
+  buscar:   (id) => Api.get(`/colaboradores/${id}`),
+  criar:    (dados) => Api.post('/colaboradores', dados),
+  atualizar:(id, dados) => Api.put(`/colaboradores/${id}`, dados),
+  desligar: (id, dados) => Api.patch(`/colaboradores/${id}/desligar`, dados),
+  remover:  (id) => Api.delete(`/colaboradores/${id}`),
+  dependentes:    (id) => Api.get(`/colaboradores/${id}/dependentes`),
+  addDependente:  (id, dep) => Api.post(`/colaboradores/${id}/dependentes`, dep),
+  historicoSal:   (id) => Api.get(`/colaboradores/${id}/historico-salarial`),
+};
+
+const Departamentos = {
+  listar: () => Api.get('/departamentos'),
+  buscar: (id) => Api.get(`/departamentos/${id}`),
+};
+
+const Cargos = {
+  listar: () => Api.get('/cargos'),
+};
+
+const DP = {
+  calcular:     (dados) => Api.post('/dp/calcular', dados),
+  calcularLote: (dados) => Api.post('/dp/calcular-lote', dados),
+  dashboardOps: () => Api.get('/dp/dashboard-ops'),
+};
+
+const Folha = {
+  listar:    (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return Api.get(`/folha${qs ? '?' + qs : ''}`);
+  },
+  abrir:     (dados) => Api.post('/folha', dados),
+  calcular:  (id) => Api.post(`/folha/${id}/calcular`),
+  aprovar:   (id) => Api.post(`/folha/${id}/aprovar`),
+  pagar:     (id) => Api.post(`/folha/${id}/pagar`),
+  holerite:  (id) => Api.get(`/folha/holerite/${id}`),
+  itens:     (id) => Api.get(`/folha/${id}/itens`),
+};
+
+const Ferias = {
+  listar:   (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return Api.get(`/ferias${qs ? '?' + qs : ''}`);
+  },
+  solicitar:(dados) => Api.post('/ferias', dados),
+  simular:  (dados) => Api.post('/ferias/simulacao', dados),
+  aprovar:  (id) => Api.patch(`/ferias/${id}/aprovar`),
+  rejeitar: (id, motivo) => Api.patch(`/ferias/${id}/rejeitar`, { motivo }),
+};
+
+const Rescisao = {
+  simular:  (dados) => Api.post('/rescisao/simular', dados),
+  processar:(dados) => Api.post('/rescisao', dados),
+  buscar:   (id) => Api.get(`/rescisao/${id}`),
+};
+
+const Analytics = {
+  riscos:  () => Api.get('/colaboradores/riscos'),
+  turnover:() => Api.get('/dashboard/turnover'),
+  clima:   () => Api.get('/dashboard/clima'),
+};
+
+const Portal = {
+  holerite:    () => Api.get('/folha/holerite'),
+  ferias:      () => Api.get('/ferias/minhas'),
+  beneficios:  () => Api.get('/colaboradores/beneficios'),
+  ponto:       () => Api.get('/ponto/espelho'),
+  baterPonto:  (tipo) => Api.post('/ponto', { tipo }),
+  notificacoes:() => Api.get('/notificacoes'),
+};
+
+const conectarSocket = (io) => {
+  if (!io) return null;
+  const at = sessionStorage.getItem('_at');
+  if (!at) return null;
+  const BASE = window.ENV?.API_URL?.replace('/api/v1', '')
+    || window.AppConfig?.api?.baseUrl?.replace('/api/v1', '')
+    || 'http://localhost:3001';
+  return io(BASE, {
+    auth: { token: at },
+    transports: ['websocket', 'polling'],
+    reconnectionAttempts: 5,
+  });
+};
+
 // Disponível globalmente
-window.Api = Api;
+window.Api         = Api;
+window.Auth        = Auth;
+window.Colaboradores = Colaboradores;
+window.Departamentos = Departamentos;
+window.Cargos      = Cargos;
+window.DP          = DP;
+window.Folha       = Folha;
+window.Ferias      = Ferias;
+window.Rescisao    = Rescisao;
+window.Analytics   = Analytics;
+window.Portal      = Portal;
+window.conectarSocket = conectarSocket;

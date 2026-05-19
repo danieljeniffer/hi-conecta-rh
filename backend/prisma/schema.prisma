@@ -180,6 +180,8 @@ model Empresa {
   created_at       DateTime      @default(now())
   updated_at       DateTime      @updatedAt
   deleted_at       DateTime?
+   
+}
 
   // Relacionamentos
   usuarios         Usuario[]
@@ -197,6 +199,7 @@ model Empresa {
   beneficios_cat   BeneficioCategoria[]
   audit_logs       AuditLog[]
   registros_ponto  RegistroPonto[]
+   rescisoes       Rescisao[]
 
   @@map("empresas")
   @@index([cnpj])

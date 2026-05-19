@@ -39,6 +39,15 @@
   <!-- DP Inteligente Enterprise -->
   <link rel="stylesheet" href="css/dp-central.css" />
   <script>
+  // ── Configuração de ambiente ───────────────────────────────────
+  // Em produção/staging, substitua o valor de API_URL pelo servidor real.
+  // Esta variável tem prioridade sobre window.AppConfig.api.baseUrl.
+  window.ENV = {
+    API_URL: 'http://localhost:3001/api/v1',
+    // API_URL: 'https://api.suaempresa.com.br/api/v1',  // staging/produção
+  };
+</script>
+  <script>
   // Proteção de rota
   const _user = sessionStorage.getItem('hiRH_user');
   if (!_user) window.location.href = 'login.html';
