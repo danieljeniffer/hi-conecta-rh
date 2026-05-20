@@ -182,17 +182,16 @@ async function main() {
         cargo_id:          c.cargo,
         salario_base:      c.sal,
         data_admissao:     new Date(c.admissao),
-        data_nascimento:   new Date('1990-01-01'),  // Simplificado para seed
-        genero:            c.gen,
+        data_nascimento:   new Date('1990-01-01'),
+        sexo:              c.gen,
         status:            'ativo',
         regime:            'clt',
-        matricula:         `EMP${c.id.replace('tc', '')}`,
         telefone:          `(11) 9${Math.floor(10000000 + Math.random() * 90000000)}`,
         cep:               '01310-100',
-        endereco:          'Av. Paulista',
+        logradouro:        'Av. Paulista',
         numero:            `${100 + parseInt(c.id.replace('tc', ''), 10)}`,
         cidade:            'São Paulo',
-        uf:                'SP',
+        estado:            'SP',
         banco:             '341',
         agencia:           '0001',
         conta:             `${10000 + parseInt(c.id.replace('tc', ''), 10)}-0`,
@@ -207,13 +206,13 @@ async function main() {
 
   for (const u of USUARIOS) {
     await prisma.usuario.upsert({
-      where:  { email: u.email },
+      where:  { empresa_id_email: { empresa_id: EMPRESA_ID, email: u.email } },
       update: { nome: u.nome },
       create: {
         id:            u.id,
         empresa_id:    EMPRESA_ID,
         email:         u.email,
-        senha:         u.id === 'tu-admin' ? hashAdmin : hashSenha,
+        senha_hash:    u.id === 'tu-admin' ? hashAdmin : hashSenha,
         nome:          u.nome,
         perfil:        u.perfil,
         colaborador_id:u.colab_id || null,
@@ -253,33 +252,33 @@ async function main() {
     totalIRRF  += calc.irrf;
     totalFGTS  += calc.fgts;
 
-    await prisma.folhaItem.upsert({
-      where: { folha_id_colaborador_id: { folha_id: folha.id, colaborador_id: c.id } },
-      update: { liquido: calc.liquido },
-      create: {
-        folha_id:       folha.id,
-        colaborador_id: c.id,
-        empresa_id:     EMPRESA_ID,
-        salario_base:   c.sal,
-        bruto:          calc.bruto,
-        inss:           calc.inss,
-        irrf:           calc.irrf,
-        fgts:           calc.fgts,
-        vt:             c.sal * 0.06,
-        plano_saude:    0,
-        liquido:        calc.liquido,
-        dias_trabalhados: 30,
-        faltas:         0,
-        horas_extras_50: 0,
-        horas_extras_100:0,
-        memoria_calculo: {
-          INSS:    `R$ ${calc.inss.toFixed(2)}`,
-          IRRF:    `R$ ${calc.irrf.toFixed(2)}`,
-          FGTS:    `R$ ${calc.fgts.toFixed(2)}`,
-          Líquido: `R$ ${calc.liquido.toFixed(2)}`,
+    await prisma.folhaItem.create({
+      data: {
+        folha_id:        folha.id,
+        colaborador_id:  c.id,
+        salario_base:    c.sal,
+        total_bruto:     calc.bruto,
+        total_liquido:   calc.liquido,
+        inss:            calc.inss,
+        irrf:            calc.irrf,
+        fgts:            calc.fgts,
+        vale_transporte: parseFloat((c.sal * 0.06).toFixed(2)),
+        plano_saude:     0,
+        dias_trabalhados:30,
+        faltas:          0,
+        horas_extras:    0,
+        valor_he:        0,
+        desconto_faltas: 0,
+        outros_proventos:0,
+        outros_descontos:0,
+        proventos_json: {
+          inss:    calc.inss,
+          irrf:    calc.irrf,
+          fgts:    calc.fgts,
+          liquido: calc.liquido,
         },
       },
-    });
+    }).catch(() => {}); // ignora duplicatas em re-runs
   }
 
   // Atualizar totais da folha
@@ -308,16 +307,18 @@ async function main() {
     const valorFerias = colab.sal / 30 * f.dias * (1 + 1/3);
     await prisma.ferias.create({
       data: {
-        empresa_id:     EMPRESA_ID,
-        colaborador_id: f.colab,
-        gozo_inicio:    new Date(f.inicio),
-        gozo_fim:       new Date(f.fim),
-        dias_gozo:      f.dias,
-        dias_abono:     f.abono,
-        valor_ferias:   parseFloat(valorFerias.toFixed(2)),
-        valor_tercio:   parseFloat((valorFerias / 3).toFixed(2)),
-        status:         'aprovada',
-        aprovado_por_id: 'tu-rh',
+        empresa_id:      EMPRESA_ID,
+        colaborador_id:  f.colab,
+        periodo_inicio:  new Date('2024-01-01'),  // período aquisitivo (obrigatório)
+        periodo_fim:     new Date('2024-12-31'),
+        gozo_inicio:     new Date(f.inicio),
+        gozo_fim:        new Date(f.fim),
+        dias_solicitados:f.dias,
+        dias_abono:      f.abono,
+        valor_ferias:    parseFloat(valorFerias.toFixed(2)),
+        valor_terco:     parseFloat((valorFerias / 3).toFixed(2)),
+        status:          'aprovada',
+        aprovado_por:    'tu-rh',
       },
     }).catch(() => {}); // Ignora duplicatas
   }
