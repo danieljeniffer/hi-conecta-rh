@@ -1,0 +1,461 @@
+/**
+ * sidebar-enterprise.css
+ * hi Conecta RH — Sidebar Enterprise Recolhível
+ * Design corporativo moderno · Compatível dark/light
+ */
+
+/* ── Variáveis de setor ────────────────────────────────────── */
+:root {
+  --dp-color:      #6366f1;   /* Departamento Pessoal — índigo */
+  --rh-color:      #10b981;   /* RH — verde-esmeralda          */
+  --gestao-color:  #f59e0b;   /* Gestão — âmbar                */
+  --colab-color:   #06b6d4;   /* Colaborador — ciano           */
+  --cultura-color: #ec4899;   /* Cultura — rosa                */
+  --admin-color:   #94a3b8;   /* Admin — cinza-frio            */
+
+  --sb-width:       260px;
+  --sb-bg:          #0d1117;
+  --sb-border:      rgba(255,255,255,.06);
+  --sb-sector-bg:   rgba(255,255,255,.025);
+  --sb-item-hover:  rgba(255,255,255,.06);
+  --sb-item-active-bg:   rgba(99,102,241,.15);
+  --sb-item-active-text: #a5b4fc;
+  --sb-text:        #94a3b8;
+  --sb-text-strong: #e2e8f0;
+  --sb-radius:      8px;
+  --sb-transition:  .18s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── Sidebar container ─────────────────────────────────────── */
+.sidebar {
+  width: var(--sb-width);
+  min-height: 100vh;
+  background: var(--sb-bg);
+  border-right: 1px solid var(--sb-border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  transition: width var(--sb-transition);
+  z-index: 200;
+}
+
+.sidebar.collapsed {
+  width: 60px;
+}
+
+.sidebar.collapsed .sidebar-item-label,
+.sidebar.collapsed .sector-label,
+.sidebar.collapsed .sector-arrow,
+.sidebar.collapsed .sidebar-search-wrapper,
+.sidebar.collapsed .sidebar-badge,
+.sidebar.collapsed .sidebar-pinned .sidebar-item-label {
+  display: none !important;
+}
+
+.sidebar.collapsed .sidebar-sector-header {
+  justify-content: center;
+  padding: .5rem;
+}
+
+.sidebar.collapsed .sidebar-item {
+  justify-content: center;
+  padding: .6rem;
+}
+
+/* ── Logo ──────────────────────────────────────────────────── */
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: 1.1rem 1.25rem;
+  border-bottom: 1px solid var(--sb-border);
+  flex-shrink: 0;
+}
+
+.logo-icon {
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: .9rem;
+  color: #fff;
+  flex-shrink: 0;
+  letter-spacing: -.5px;
+}
+
+.logo-text {
+  font-size: .88rem;
+  font-weight: 700;
+  color: var(--sb-text-strong);
+  line-height: 1.2;
+}
+
+.logo-text small {
+  display: block;
+  font-size: .68rem;
+  font-weight: 400;
+  color: var(--sb-text);
+  margin-top: .1rem;
+}
+
+.logo-hi { color: #a5b4fc; }
+
+/* ── Busca rápida ──────────────────────────────────────────── */
+#sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: .5rem 0 4rem; }
+#sidebar-nav::-webkit-scrollbar { width: 3px; }
+#sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 999px; }
+
+.sidebar-search-wrapper {
+  position: relative;
+  margin: .6rem .75rem .75rem;
+}
+
+.sidebar-search {
+  width: 100%;
+  padding: .5rem .75rem .5rem 2rem;
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--sb-border);
+  border-radius: 8px;
+  color: var(--sb-text-strong);
+  font-size: .8rem;
+  outline: none;
+  font-family: inherit;
+  transition: border-color var(--sb-transition);
+}
+
+.sidebar-search:focus {
+  border-color: rgba(99,102,241,.4);
+  background: rgba(99,102,241,.06);
+}
+
+.sidebar-search::placeholder { color: var(--sb-text); }
+
+.sidebar-search-icon {
+  position: absolute;
+  left: .6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: .75rem;
+  opacity: .5;
+  pointer-events: none;
+}
+
+/* ── Itens fixos (Dashboard) ───────────────────────────────── */
+.sidebar-pinned {
+  padding: 0 .5rem .25rem;
+  margin-bottom: .25rem;
+  border-bottom: 1px solid var(--sb-border);
+}
+
+/* ── Setor (acordeão) ──────────────────────────────────────── */
+.sidebar-sector {
+  margin: 2px 0;
+}
+
+.sidebar-sector-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .6rem .85rem .6rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--sb-text);
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  transition: color var(--sb-transition), background var(--sb-transition);
+  text-align: left;
+  font-family: inherit;
+  border-left: 2px solid transparent;
+  border-left-color: color-mix(in srgb, var(--sector-color, #6366f1) 0%, transparent);
+}
+
+.sidebar-sector-header:hover {
+  color: var(--sb-text-strong);
+  background: var(--sb-item-hover);
+}
+
+.sidebar-sector.has-active > .sidebar-sector-header {
+  color: var(--sb-text-strong);
+  border-left-color: var(--sector-color, #6366f1);
+}
+
+.sector-icon {
+  font-size: .95rem;
+  flex-shrink: 0;
+  filter: grayscale(.3);
+}
+
+.sector-label { flex: 1; }
+
+.sector-arrow {
+  font-size: 1rem;
+  line-height: 1;
+  transition: transform var(--sb-transition);
+  opacity: .5;
+}
+
+/* ── Itens do setor ────────────────────────────────────────── */
+.sidebar-sector-items {
+  padding: .15rem .4rem .4rem .4rem;
+}
+
+/* ── Item de navegação ─────────────────────────────────────── */
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .5rem .85rem .5rem .75rem;
+  border-radius: var(--sb-radius);
+  color: var(--sb-text);
+  font-size: .825rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--sb-transition), color var(--sb-transition);
+  position: relative;
+  margin: 1px 0;
+  border: 1px solid transparent;
+}
+
+.sidebar-item:hover {
+  background: var(--sb-item-hover);
+  color: var(--sb-text-strong);
+  text-decoration: none;
+}
+
+.sidebar-item--active {
+  background: var(--sb-item-active-bg) !important;
+  color: var(--sb-item-active-text) !important;
+  font-weight: 600;
+  border-color: rgba(99,102,241,.2);
+}
+
+.sidebar-item--active .sidebar-item-icon {
+  filter: none;
+}
+
+.sidebar-item-icon {
+  font-size: .95rem;
+  flex-shrink: 0;
+  filter: grayscale(.3);
+  width: 20px;
+  text-align: center;
+}
+
+.sidebar-item-label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-ext-icon {
+  font-size: .65rem;
+  opacity: .5;
+  flex-shrink: 0;
+}
+
+/* ── Separador ─────────────────────────────────────────────── */
+.sidebar-divider {
+  height: 1px;
+  background: var(--sb-border);
+  margin: .45rem .5rem;
+}
+
+/* ── Badges ────────────────────────────────────────────────── */
+.sidebar-badge {
+  padding: .1rem .4rem;
+  border-radius: 999px;
+  font-size: .58rem;
+  font-weight: 800;
+  letter-spacing: .03em;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.badge-novo  { background: rgba(99,102,241,.2); color: #a5b4fc; }
+.badge-ia    { background: rgba(16,185,129,.2); color: #6ee7b7; }
+.badge-beta  { background: rgba(245,158,11,.2); color: #fcd34d; }
+.badge-soon  { background: rgba(148,163,184,.15); color: #94a3b8; }
+
+/* ── Usuário na base ───────────────────────────────────────── */
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: .9rem 1rem;
+  border-top: 1px solid var(--sb-border);
+  background: rgba(0,0,0,.2);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.sidebar-user:hover { background: rgba(255,255,255,.03); }
+
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .75rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.user-avatar-img {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-info strong {
+  display: block;
+  font-size: .8rem;
+  color: var(--sb-text-strong);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-info small {
+  display: block;
+  font-size: .68rem;
+  color: var(--sb-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Toggle collapse sidebar ───────────────────────────────── */
+.sidebar-collapse-btn {
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  background: var(--sb-bg);
+  border: 1px solid var(--sb-border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: .7rem;
+  color: var(--sb-text);
+  z-index: 10;
+  transition: all var(--sb-transition);
+}
+
+.sidebar-collapse-btn:hover {
+  background: rgba(99,102,241,.2);
+  color: #a5b4fc;
+}
+
+/* ── Breadcrumb na topbar ──────────────────────────────────── */
+.topbar-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .82rem;
+  color: var(--muted, #94a3b8);
+}
+
+.breadcrumb-setor {
+  color: var(--muted, #94a3b8);
+}
+
+.breadcrumb-sep {
+  opacity: .4;
+  font-size: .7rem;
+}
+
+.breadcrumb-page {
+  color: var(--text, #e2e8f0);
+  font-weight: 600;
+}
+
+/* ── Responsivo ────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: -100%;
+    transition: left var(--sb-transition);
+    z-index: 500;
+    height: 100vh;
+    box-shadow: 4px 0 24px rgba(0,0,0,.6);
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.6);
+    z-index: 499;
+    backdrop-filter: blur(2px);
+  }
+
+  .sidebar.open ~ .sidebar-overlay {
+    display: block;
+  }
+}
+
+/* ── Highlight do setor ativo ──────────────────────────────── */
+.sidebar-sector[data-sector="dp"]        { --sector-color: var(--dp-color); }
+.sidebar-sector[data-sector="rh"]        { --sector-color: var(--rh-color); }
+.sidebar-sector[data-sector="gestao"]    { --sector-color: var(--gestao-color); }
+.sidebar-sector[data-sector="colaborador"]{ --sector-color: var(--colab-color); }
+.sidebar-sector[data-sector="cultura"]   { --sector-color: var(--cultura-color); }
+.sidebar-sector[data-sector="admin"]     { --sector-color: var(--admin-color); }
+
+/* ── Tooltip no modo colapsado ─────────────────────────────── */
+.sidebar.collapsed .sidebar-item {
+  position: relative;
+}
+
+.sidebar.collapsed .sidebar-item:hover::after {
+  content: attr(title);
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(15,23,42,.95);
+  color: #e2e8f0;
+  padding: .35rem .75rem;
+  border-radius: 6px;
+  font-size: .78rem;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 9999;
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 4px 16px rgba(0,0,0,.4);
+}

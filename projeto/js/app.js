@@ -68,8 +68,65 @@ function navigateTo(pageKey) {
   Router.navigateTo(pageKey);
 }
 
+/**
+ * Atualiza o breadcrumb na topbar com setor + módulo atual.
+ * @param {string} pageKey
+ */
+function _atualizarBreadcrumb(pageKey) {
+  const el = document.getElementById('pageTitle');
+  if (!el || typeof window.MODULES_CONFIG === 'undefined') return;
+
+  let setorLabel = '';
+  let moduloLabel = pageTitles[pageKey] || pageKey;
+
+  // Busca o setor que contém este módulo
+  for (const setor of window.MODULES_CONFIG) {
+    const mod = setor.modulos.find(m => !m.divider && m.id === pageKey);
+    if (mod) {
+      setorLabel   = setor.label;
+      moduloLabel  = mod.label;
+      break;
+    }
+  }
+
+  if (setorLabel && setorLabel !== moduloLabel) {
+    el.innerHTML = `
+      <span class="topbar-breadcrumb">
+        <span class="breadcrumb-setor">${setorLabel}</span>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-page">${moduloLabel}</span>
+      </span>`;
+  } else {
+    el.textContent = moduloLabel || 'Dashboard';
+  }
+}
+
+// ── Toggle sidebar mobile ─────────────────────────────────────
 function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
+  const sb = document.getElementById('sidebar');
+  if (!sb) return;
+  const isMobile = window.innerWidth <= 768;
+  if (isMobile) {
+    sb.classList.toggle('open');
+  } else {
+    toggleSidebarCollapse();
+  }
+}
+
+// ── Colapso lateral (desktop) ─────────────────────────────────
+function toggleSidebarCollapse() {
+  const sb  = document.getElementById('sidebar');
+  const btn = document.getElementById('btn-collapse-sidebar');
+  if (!sb) return;
+  const collapsed = sb.classList.toggle('collapsed');
+  sessionStorage.setItem('sidebar_collapsed', collapsed ? '1' : '0');
+  if (btn) btn.textContent = collapsed ? '›' : '‹';
+  if (btn) btn.title = collapsed ? 'Expandir menu' : 'Colapsar menu';
+}
+
+// ── Fechar sidebar mobile (overlay) ──────────────────────────
+function closeSidebarMobile() {
+  document.getElementById('sidebar')?.classList.remove('open');
 }
 
 function menuUsuario() {
@@ -118,26 +175,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ── Filtrar sidebar por perfil (Auth.js) ──────────────────
-  if (window.Auth) {
+  // ── Sidebar Enterprise dinâmica ───────────────────────────
+  if (window.Sidebar && window.MODULES_CONFIG) {
+    const perfil   = userData.perfil || 'colab';
+    const hashInicial = window.location.hash.replace('#','') || 'dashboard';
+    Sidebar.render(perfil, hashInicial);
+
+    // Hooka a função navigateTo do Router para atualizar sidebar
+    const _origNavigateTo = window.navigateTo;
+    window.navigateTo = function(pageKey) {
+      Sidebar.setActive(pageKey);
+      _atualizarBreadcrumb(pageKey);
+      _origNavigateTo(pageKey);
+    };
+  } else if (window.Auth) {
+    // Fallback: sidebar estática legada
     Auth.applySidebar();
-    // Guard: se o hash atual não for permitido, redireciona para dashboard
+  }
+
+  // Guard de permissão no hash inicial
+  if (window.Auth) {
     const hashAtual = window.location.hash.replace('#','') || 'dashboard';
     if (!Auth.canView(hashAtual)) window.location.hash = 'dashboard';
   }
 
-  // Navegação (com guard de permissão por clique)
-  document.querySelectorAll('.nav-item[data-page]').forEach(item => {
-    item.addEventListener('click', e => {
-      e.preventDefault();
-      const page = item.dataset.page;
-      if (window.Auth && !Auth.canView(page)) {
-        if (window.Toast) Toast.aviso('Você não tem permissão para acessar este módulo.');
-        return;
-      }
-      navigateTo(page);
-    });
-  });
+  // Restaura estado de colapso
+  if (sessionStorage.getItem('sidebar_collapsed') === '1') {
+    document.getElementById('sidebar')?.classList.add('collapsed');
+    const btn = document.getElementById('btn-collapse-sidebar');
+    if (btn) { btn.textContent = '›'; btn.title = 'Expandir menu'; }
+  }
 
   // Fecha dropdown ao clicar fora
   document.addEventListener('click', e => {

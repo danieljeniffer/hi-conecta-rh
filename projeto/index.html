@@ -7,6 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/variaveis.css" />
+  <!-- Sidebar Enterprise (deve vir antes de base.css para sobrescrita correta) -->
+  <link rel="stylesheet" href="css/sidebar-enterprise.css" />
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/base-legado.css" />
   <link rel="stylesheet" href="css/layout.css" />
@@ -56,61 +58,41 @@
 </head>
 <body>
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
+  <!-- SIDEBAR ENTERPRISE — gerada dinamicamente por Sidebar.js -->
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Menu principal">
+
+    <!-- Logo -->
     <div class="sidebar-logo">
-      <div class="logo-icon">hi</div>
+      <div class="logo-icon" aria-hidden="true">hi</div>
       <div class="logo-text">
         <span class="logo-hi">hi</span> Conecta RH
-        <small>Meu RH Digital</small>
+        <small id="sidebar-empresa-label">Sistema Corporativo</small>
       </div>
+      <!-- Botão de colapso -->
+      <button
+        class="sidebar-collapse-btn"
+        id="btn-collapse-sidebar"
+        onclick="toggleSidebarCollapse()"
+        title="Colapsar menu"
+        aria-label="Colapsar menu lateral"
+      >‹</button>
     </div>
 
-    <nav class="sidebar-nav">
-  <div class="nav-section-label">Principal</div>
-  <a href="#" class="nav-item active" data-page="dashboard"><span class="nav-icon">⊞</span> Início</a>
-  <a href="#" class="nav-item" data-page="portal"><span class="nav-icon">🏠</span> Portal do Colaborador</a>
-  <a href="#" class="nav-item" data-page="pessoas"><span class="nav-icon">👥</span> Gestão de Pessoas</a>
-  <a href="#" class="nav-item" data-page="indicadores"><span class="nav-icon">📊</span> Indicadores</a>
-  <a href="#" class="nav-item" data-page="servicos"><span class="nav-icon">🛠</span> Serviços RH</a>
-  <a href="#" class="nav-item" data-page="comunicacao"><span class="nav-icon">📣</span> Comunicação</a>
-  <a href="#" class="nav-item" data-page="experiencia"><span class="nav-icon">✨</span> Experiência</a>
-  <a href="#" class="nav-item" data-page="endomarketing"><span class="nav-icon">📺</span> Endomarketing.tv</a>
+    <!-- Nav dinâmico — preenchido pelo Sidebar.js -->
+    <nav id="sidebar-nav" aria-label="Módulos do sistema"></nav>
 
-  <div class="nav-section-label" style="margin-top:16px">Gestão de Pessoas</div>
-  <a href="#" class="nav-item" data-page="gestor"><span class="nav-icon">👥</span> Gestor de Equipes</a>
-  <a href="#" class="nav-item" data-page="recrutamento"><span class="nav-icon">🔍</span> Recrutamento</a>
-  <a href="#" class="nav-item" data-page="departamento"><span class="nav-icon">📋</span> Depto. Pessoal</a>
-  <a href="#" class="nav-item" data-page="dpc"><span class="nav-icon">⚡</span> Central Trabalhista</a>
-  <a href="#" class="nav-item" data-page="dpdashboard"><span class="nav-icon">🏢</span> DP — Operacional</a>
-  <a href="#" class="nav-item" data-page="cargos"><span class="nav-icon">🏗</span> Cargos & Estrutura</a>
-  <a href="#" class="nav-item" data-page="bonificacoes"><span class="nav-icon">🎯</span> Bonificações</a>
-  <a href="#" class="nav-item" data-page="desenvolvimento"><span class="nav-icon">🎓</span> T&D</a>
-
-  <div class="nav-section-label" style="margin-top:12px">Operações</div>
-  <a href="#" class="nav-item" data-page="clima"><span class="nav-icon">😊</span> Clima & Engajamento</a>
-  <a href="#" class="nav-item" data-page="documentos"><span class="nav-icon">📄</span> Documentos</a>
-  <a href="#" class="nav-item" data-page="nr01"><span class="nav-icon">⚖️</span> NR-01 Segurança</a>
-  <a href="#" class="nav-item" data-page="ouvidoria"><span class="nav-icon">📢</span> Ouvidoria</a>
-  <a href="#" class="nav-item" data-page="integracoes"><span class="nav-icon">🔌</span> Integrações</a>
-
-  <div class="nav-section-label" style="margin-top:12px">Inteligência</div>
-  <a href="#" class="nav-item" data-page="analytics"><span class="nav-icon">📊</span> People Analytics</a>
-  <a href="#" class="nav-item" data-page="timeline"><span class="nav-icon">⏱️</span> Timeline Colaborador</a>
-  <a href="#" class="nav-item" data-page="automacao"><span class="nav-icon">⚡</span> Automações</a>
-
-  <div class="nav-section-label" style="margin-top:12px">Sistema</div>
-  <a href="#" class="nav-item" data-page="usuarios"><span class="nav-icon">🔐</span> Usuários & Permissões</a>
-</nav>
-
-    <div class="sidebar-user">
-  <div class="user-avatar" id="sidebar-avatar">MR</div>
-  <div class="user-info">
-    <strong id="sidebar-nome">Carregando...</strong>
-    <small id="sidebar-cargo">—</small>
-  </div>
-</div>
+    <!-- Usuário logado na base -->
+    <div class="sidebar-user" onclick="menuUsuario()" role="button" tabindex="0" aria-label="Menu do usuário">
+      <div class="user-avatar" id="sidebar-avatar" aria-hidden="true">MR</div>
+      <div class="user-info">
+        <strong id="sidebar-nome">Carregando...</strong>
+        <small id="sidebar-cargo">—</small>
+      </div>
+    </div>
   </aside>
+
+  <!-- Overlay mobile -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebarMobile()" aria-hidden="true"></div>
 
   <!-- MAIN CONTENT -->
   <main class="main-content" id="mainContent">
@@ -165,8 +147,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
-  <!-- 2. Configuração (deve ser o primeiro JS interno) -->
+  <!-- 2. Configuração e Módulos (deve ser o primeiro JS interno) -->
   <script src="js/config.js"></script>
+  <!-- Config de módulos hierárquicos (ANTES do Auth e Sidebar) -->
+  <script src="js/config/modules.js"></script>
 
   <!-- 3. Core — infraestrutura base (Toast antes de tudo) -->
   <script src="js/core/Toast.js"></script>
@@ -174,6 +158,8 @@
   <script src="js/core/Store.js"></script>
   <script src="js/core/Router.js"></script>
   <script src="js/core/Auth.js"></script>
+  <!-- Sidebar Enterprise — deve vir APÓS Auth e MODULES_CONFIG -->
+  <script src="js/core/Sidebar.js"></script>
 
   <!-- 4. Utils — helpers reutilizáveis (dependem só do core) -->
   <script src="js/utils/formatters.js"></script>
