@@ -1,0 +1,304 @@
+/**
+ * cinema.css — Experiência Cinematográfica Premium
+ * hi Conecta RH · Human Experience Operating System
+ *
+ * Inspirado em: Linear · Notion · Apple · Stripe · Vercel · Framer
+ *
+ * Aplica:
+ *  - Glassmorphism sofisticado
+ *  - Motion design com transições cúbicas
+ *  - Micro animações de entrada
+ *  - Glow effects contextuais
+ *  - Tipografia premium
+ *  - Dark mode aprimorado
+ *  - Partículas de fundo
+ *  - Gradientes orgânicos
+ */
+
+/* ── Variáveis cinematográficas ────────────────────────────── */
+:root {
+  /* Espaçamento e movimento */
+  --ease-out-expo:   cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out:     cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast:   120ms;
+  --duration-base:   220ms;
+  --duration-slow:   380ms;
+  --duration-xslow:  600ms;
+
+  /* Glow palette */
+  --glow-primary:  0 0 40px rgba(99,102,241,.18), 0 0 80px rgba(99,102,241,.08);
+  --glow-success:  0 0 40px rgba(16,185,129,.18), 0 0 80px rgba(16,185,129,.06);
+  --glow-warning:  0 0 40px rgba(245,158,11,.18),  0 0 80px rgba(245,158,11,.06);
+  --glow-danger:   0 0 40px rgba(239,68,68,.18),   0 0 80px rgba(239,68,68,.06);
+
+  /* Glass */
+  --glass-bg:      rgba(15,23,42,.7);
+  --glass-border:  rgba(255,255,255,.07);
+  --glass-blur:    saturate(180%) blur(20px);
+
+  /* Noise texture SVG inline */
+  --noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+/* ── Background cinematográfico ────────────────────────────── */
+body {
+  background-color: #050810;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(99,102,241,.12), transparent),
+    radial-gradient(ellipse 40% 30% at 80% 80%, rgba(139,92,246,.06), transparent),
+    radial-gradient(ellipse 30% 25% at 20% 60%, rgba(6,182,212,.05), transparent);
+  background-attachment: fixed;
+}
+
+/* ── Noise layer sobre toda a UI ───────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: var(--noise);
+  pointer-events: none;
+  z-index: 0;
+  opacity: .6;
+}
+
+/* ── Tipografia aprimorada ─────────────────────────────────── */
+h1, h2, h3 {
+  font-feature-settings: 'ss01','cv01';
+  letter-spacing: -.025em;
+}
+
+/* ── Animações de entrada ───────────────────────────────────── */
+
+/* Fade + slide suave */
+@keyframes cinemaFadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Scale suave */
+@keyframes cinemaScaleIn {
+  from { opacity: 0; transform: scale(.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Slide da esquerda */
+@keyframes cinemaSlideLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Brilho pulsante */
+@keyframes cinemaGlow {
+  0%, 100% { box-shadow: var(--glow-primary); }
+  50%       { box-shadow: 0 0 60px rgba(99,102,241,.3), 0 0 120px rgba(99,102,241,.12); }
+}
+
+/* Flutuação suave */
+@keyframes cinemaFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+/* Shimmer (loading skeleton) */
+@keyframes cinemaShimmer {
+  from { background-position: -200% 0; }
+  to   { background-position: 200% 0; }
+}
+
+/* ── page-container: animação de entrada suave ─────────────── */
+#pageContainer {
+  animation: cinemaFadeIn var(--duration-slow) var(--ease-out-expo);
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Cards com glassmorphism ───────────────────────────────── */
+.card,
+.ic-card,
+.hs-card,
+.da-kpi,
+.coi-card,
+.me-card,
+.pd-card,
+.org-insights {
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  transition:
+    transform var(--duration-base) var(--ease-out-expo),
+    box-shadow var(--duration-base) var(--ease-out-expo),
+    border-color var(--duration-base) var(--ease-out-expo) !important;
+}
+
+/* ── Hover cinematográfico nos cards ───────────────────────── */
+.ic-kpi:hover,
+.da-kpi:hover,
+.coi-kpi:hover,
+.me-vital:hover,
+.org-insight-card:hover {
+  box-shadow: var(--glow-primary) !important;
+}
+
+/* ── Sidebar: glassmorphism ────────────────────────────────── */
+.sidebar {
+  backdrop-filter: saturate(180%) blur(24px);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  background: rgba(8, 12, 22, 0.88) !important;
+}
+
+/* ── Topbar: vidro fosco ───────────────────────────────────── */
+.topbar {
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  background: rgba(8, 12, 22, 0.82) !important;
+  border-bottom: 1px solid rgba(255,255,255,.05) !important;
+}
+
+/* ── Buttons: melhorados ───────────────────────────────────── */
+.btn, button:not([class*="sidebar"]):not([class*="nav"]):not([class*="disc"]):not([class*="me-"]) {
+  transition:
+    transform var(--duration-fast) var(--ease-out-expo),
+    box-shadow var(--duration-fast) var(--ease-out-expo),
+    background var(--duration-fast) var(--ease-in-out),
+    opacity var(--duration-fast) var(--ease-in-out) !important;
+}
+
+/* ── Inputs: foco cinematográfico ──────────────────────────── */
+input:focus, textarea:focus, select:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.18), 0 0 20px rgba(99,102,241,.08) !important;
+}
+
+/* ── Scrollbar estilizada ──────────────────────────────────── */
+::-webkit-scrollbar       { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(99,102,241,.35);
+  border-radius: 999px;
+  transition: background .2s;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,.6); }
+
+/* ── Badges pulsantes para IA ──────────────────────────────── */
+.badge-ia {
+  animation: cinemaGlow 3s ease-in-out infinite !important;
+}
+
+/* ── Seções do IC: entrada escalonada ──────────────────────── */
+.ic-hero     { animation: cinemaFadeIn  .5s .0s var(--ease-out-expo) both; }
+.ic-kpis     { animation: cinemaFadeIn  .5s .1s var(--ease-out-expo) both; }
+.ic-alertas  { animation: cinemaFadeIn  .5s .15s var(--ease-out-expo) both; }
+.ic-grid     { animation: cinemaFadeIn  .5s .2s var(--ease-out-expo) both; }
+.ic-card--copilot{ animation: cinemaFadeIn .5s .3s var(--ease-out-expo) both; }
+
+/* ── Perfil DNA: entradas escalonadas ──────────────────────── */
+.pd-hero     { animation: cinemaScaleIn .5s .0s var(--ease-out-expo) both; }
+.pd-col:first-child { animation: cinemaSlideLeft .5s .15s var(--ease-out-expo) both; }
+.pd-col:last-child  { animation: cinemaFadeIn    .5s .2s  var(--ease-out-expo) both; }
+
+/* ── Mapa de energia: pulse dots vivos ─────────────────────── */
+.me-pulse-dot { filter: drop-shadow(0 0 6px #10b981); }
+.me-live-dot  { filter: drop-shadow(0 0 4px #10b981); }
+
+/* ── Organograma: background espacial ──────────────────────── */
+.org-canvas-wrap {
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 50%, rgba(99,102,241,.04), transparent),
+    rgba(4, 8, 18, .98) !important;
+}
+
+/* ── Health Score: gauge brilhante ────────────────────────── */
+.hs-gauge-svg path:last-child {
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+/* ── DISC hero: borda iluminada ────────────────────────────── */
+.da-hero {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+/* ── Copiloto: chat bubble com glow ────────────────────────── */
+.coi-msg--ai .coi-msg-bubble {
+  box-shadow: 0 0 20px rgba(99,102,241,.08);
+}
+
+/* ── Links de navegação: hover suave ──────────────────────── */
+.sidebar-item {
+  transition:
+    background var(--duration-fast) var(--ease-in-out),
+    color var(--duration-fast) var(--ease-in-out),
+    border-color var(--duration-fast) var(--ease-in-out),
+    transform var(--duration-fast) var(--ease-out-expo) !important;
+}
+
+.sidebar-item:hover { transform: translateX(2px); }
+.sidebar-item--active { transform: none !important; }
+
+/* ── Notificações: entrada com spring ─────────────────────── */
+.toast-item,
+.notif-item {
+  animation: cinemaSlideLeft var(--duration-slow) var(--ease-spring);
+}
+
+/* ── Loading skeleton cinematográfico ──────────────────────── */
+.cinema-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,.04) 25%,
+    rgba(255,255,255,.08) 50%,
+    rgba(255,255,255,.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: cinemaShimmer 1.8s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* ── Ícones flutuantes na Inteligência Central ─────────────── */
+.ic-hero::after {
+  content: '';
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(139,92,246,.08), transparent);
+  right: 10%;
+  top: -30%;
+  animation: cinemaFloat 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ── Transição de página ────────────────────────────────────── */
+.page-transitioning #pageContainer {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity var(--duration-fast) var(--ease-in-out), transform var(--duration-fast) var(--ease-in-out);
+}
+
+/* ── Grid de KPIs: entrada escalonada ──────────────────────── */
+.ic-kpis .ic-kpi:nth-child(1) { animation-delay: .1s; }
+.ic-kpis .ic-kpi:nth-child(2) { animation-delay: .15s; }
+.ic-kpis .ic-kpi:nth-child(3) { animation-delay: .2s; }
+.ic-kpis .ic-kpi:nth-child(4) { animation-delay: .25s; }
+.ic-kpis .ic-kpi:nth-child(5) { animation-delay: .3s; }
+.ic-kpis .ic-kpi:nth-child(6) { animation-delay: .35s; }
+.ic-kpis .ic-kpi:nth-child(7) { animation-delay: .4s; }
+.ic-kpis .ic-kpi:nth-child(8) { animation-delay: .45s; }
+
+/* ── Focus mode: destaque do elemento ativo ────────────────── */
+.focus-glow {
+  animation: cinemaGlow 2s ease-in-out infinite;
+  border-color: rgba(99,102,241,.4) !important;
+}
+
+/* ── Responsive refinamentos cinematográficos ──────────────── */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* ── Selection */
+::selection {
+  background: rgba(99,102,241,.3);
+  color: #f8fafc;
+}

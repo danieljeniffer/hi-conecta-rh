@@ -86,6 +86,11 @@ window.MODULES_CONFIG = [
       { id: 'analytics',            label: 'People Analytics',      icon: '📊', perfis: ['admin','rh','gestor'] },
       { id: 'timeline',             label: 'Timeline Colaborador',  icon: '⏱️', perfis: ['admin','rh','gestor'] },
       { id: 'automacao',            label: 'Automation Engine',     icon: '⚙️', perfis: ['admin','rh'],         badge: 'ia'  },
+      { divider: true },
+      // ── HXOS — Human Experience OS ──────────────────────
+      { id: 'dashboard-adaptativo', label: 'Dashboard Adaptativo',   icon: '🎯', perfis: ['admin','rh','gestor','analista','colab'], badge: 'ia' },
+      { id: 'mapa-energia',         label: 'Mapa de Energia',        icon: '⚡', perfis: ['admin','rh','gestor'],  badge: 'novo' },
+      { id: 'perfil-dna',           label: 'Meu Perfil DNA',         icon: '🧬', perfis: ['admin','rh','gestor','analista','colab'] },
     ],
   },
 
