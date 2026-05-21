@@ -23,10 +23,15 @@ const pages = {
   gestor:          () => renderGestor(),
   bonificacoes:    () => renderBonificacoes(),
   portal:          () => renderPortal(),
-  // ── Enterprise ────────────────────────────────────────────
-  analytics:       () => renderAnalytics(),
-  timeline:        () => renderTimeline('demo', 'Timeline do Colaborador'),
-  automacao:       () => renderAutomacao(),
+  // ── Enterprise Analytics ─────────────────────────────────
+  analytics:              () => renderAnalytics(),
+  timeline:               () => renderTimeline('demo', 'Timeline do Colaborador'),
+  automacao:              () => renderAutomacao(),
+  // ── Sistema Nervoso Corporativo (camada IA) ───────────────
+  'inteligencia-central': () => renderInteligenciaCentral(),
+  'organograma-vivo':     () => renderOrganogramaVivo(),
+  'health-score':         () => renderHealthScore(),
+  'copiloto-ia':          () => renderCopilotoIA(),
   // ── DP Inteligente ────────────────────────────────────────
   dpc:             () => renderDPCentral(),
   dpdashboard:     () => renderDPDashboardOps(),
@@ -55,13 +60,17 @@ const pageTitles = {
   gestor:          'Gestão de Equipes',
   bonificacoes:    'Bonificações & Formulários',
   portal:          'Portal do Colaborador',
-  analytics:       'People Analytics',
-  timeline:        'Timeline do Colaborador',
-  automacao:       'Automation Engine',
-  dpc:             'Central Trabalhista Inteligente',
-  dpdashboard:     'DP — Dashboard Operacional',
-  'dp-massa':      'DP — Cálculo em Massa',
-  usuarios:        'Usuários & Permissões',
+  analytics:              'People Analytics',
+  timeline:               'Timeline do Colaborador',
+  automacao:              'Automation Engine',
+  'inteligencia-central': '🧠 Inteligência Central',
+  'organograma-vivo':     '🕸️ Organograma Vivo',
+  'health-score':         '❤️ Health Score Organizacional',
+  'copiloto-ia':          '🤖 Copiloto IA do Gestor',
+  dpc:                    'Central Trabalhista Inteligente',
+  dpdashboard:            'DP — Dashboard Operacional',
+  'dp-massa':             'DP — Cálculo em Massa',
+  usuarios:               'Usuários & Permissões',
 };
 
 function navigateTo(pageKey) {

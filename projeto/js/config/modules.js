@@ -69,6 +69,27 @@ window.MODULES_CONFIG = [
   },
 
   // ══════════════════════════════════════════════════════════════
+  // INTELIGÊNCIA CORPORATIVA (Sistema Nervoso)
+  // ══════════════════════════════════════════════════════════════
+  {
+    id:     'inteligencia',
+    label:  'Inteligência Corporativa',
+    icon:   '🧠',
+    color:  '#8b5cf6',
+    perfis: ['admin','rh','gestor'],
+    modulos: [
+      { id: 'inteligencia-central', label: 'Sistema Nervoso',       icon: '⚡', perfis: ['admin','rh'],         badge: 'ia'  },
+      { id: 'organograma-vivo',     label: 'Organograma Vivo',      icon: '🕸️', perfis: ['admin','rh','gestor'], badge: 'novo'},
+      { id: 'health-score',         label: 'Health Score 360°',     icon: '❤️', perfis: ['admin','rh'],          badge: 'ia'  },
+      { id: 'copiloto-ia',          label: 'Copiloto IA Gestor',    icon: '🤖', perfis: ['admin','rh','gestor'], badge: 'ia'  },
+      { divider: true },
+      { id: 'analytics',            label: 'People Analytics',      icon: '📊', perfis: ['admin','rh','gestor'] },
+      { id: 'timeline',             label: 'Timeline Colaborador',  icon: '⏱️', perfis: ['admin','rh','gestor'] },
+      { id: 'automacao',            label: 'Automation Engine',     icon: '⚙️', perfis: ['admin','rh'],         badge: 'ia'  },
+    ],
+  },
+
+  // ══════════════════════════════════════════════════════════════
   // GESTÃO DE EQUIPES
   // ══════════════════════════════════════════════════════════════
   {
@@ -80,10 +101,6 @@ window.MODULES_CONFIG = [
     modulos: [
       { id: 'gestor',         label: 'Hub do Gestor',        icon: '🎯', perfis: ['admin','rh','gestor'] },
       { id: 'indicadores',    label: 'Indicadores',          icon: '📊', perfis: ['admin','rh','gestor'] },
-      { divider: true },
-      { id: 'analytics',      label: 'People Analytics',     icon: '🧠', perfis: ['admin','rh','gestor'], badge: 'ia' },
-      { id: 'timeline',       label: 'Timeline do Colaborador', icon: '⏱️', perfis: ['admin','rh','gestor'] },
-      { id: 'automacao',      label: 'Automation Engine',    icon: '⚡', perfis: ['admin','rh'], badge: 'ia' },
     ],
   },
 
