@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vagas — hi Conecta RH</title>
+  <meta name="description" content="Portal de carreiras — encontre sua oportunidade." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ─────────────────────────────────── */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0a0f1e;--surface:#111827;--surface2:#1a2235;
+      --border:rgba(99,102,241,.15);--primary:#6366f1;--primary-dark:#4f46e5;
+      --secondary:#8b5cf6;--accent:#06b6d4;--success:#10b981;
+      --warning:#f59e0b;--danger:#ef4444;
+      --text:#f8fafc;--muted:#94a3b8;--muted2:#64748b;
+      --radius:12px;--radius-lg:20px;--shadow:0 4px 24px rgba(0,0,0,.4);
+      --font:'Plus Jakarta Sans',sans-serif;
+    }
+    body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;line-height:1.6}
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%}
+
+    /* ── Header ───────────────────────────────────────── */
+    .portal-header{
+      background:rgba(10,15,30,.95);
+      backdrop-filter:blur(16px);
+      border-bottom:1px solid var(--border);
+      position:sticky;top:0;z-index:100;
+      padding:.875rem 2rem;
+      display:flex;align-items:center;justify-content:space-between;gap:1rem;
+    }
+    .portal-logo{display:flex;align-items:center;gap:.6rem;font-weight:800;font-size:1.1rem}
+    .logo-badge{background:linear-gradient(135deg,var(--primary),var(--secondary));
+      padding:.25rem .55rem;border-radius:8px;font-size:.85rem;letter-spacing:-.5px}
+    .header-actions{display:flex;gap:.75rem;align-items:center}
+    .btn{padding:.55rem 1.25rem;border-radius:8px;font-size:.875rem;font-weight:600;
+      cursor:pointer;border:none;transition:.2s;display:inline-flex;align-items:center;gap:.4rem}
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px)}
+    .btn-outline{background:transparent;color:var(--text);border:1.5px solid var(--border)}
+    .btn-outline:hover{border-color:var(--primary);color:var(--primary)}
+    .btn-sm{padding:.4rem .9rem;font-size:.8rem}
+
+    /* ── Hero ─────────────────────────────────────────── */
+    .hero{
+      background:linear-gradient(135deg,#0a0f1e 0%,#111827 50%,#0a1628 100%);
+      padding:4rem 2rem 3rem;
+      text-align:center;
+      position:relative;overflow:hidden;
+    }
+    .hero::before{
+      content:'';position:absolute;inset:0;
+      background:radial-gradient(ellipse 60% 50% at 50% -20%,rgba(99,102,241,.25),transparent);
+    }
+    .hero-content{position:relative;max-width:700px;margin:0 auto}
+    .hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;margin-bottom:1rem;
+      background:linear-gradient(135deg,#fff,rgba(255,255,255,.7));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .hero p{color:var(--muted);font-size:1.1rem;margin-bottom:2rem}
+    .search-bar{
+      display:flex;gap:.75rem;max-width:560px;margin:0 auto;
+      background:var(--surface2);border:1.5px solid var(--border);
+      border-radius:12px;padding:.5rem .5rem .5rem 1.25rem;
+    }
+    .search-bar input{flex:1;background:none;border:none;outline:none;
+      color:var(--text);font-family:var(--font);font-size:.95rem}
+    .search-bar input::placeholder{color:var(--muted2)}
+
+    /* ── Filtros ──────────────────────────────────────── */
+    .filters-bar{
+      background:var(--surface);border-bottom:1px solid var(--border);
+      padding:.875rem 2rem;
+      display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;
+    }
+    .filter-chip{
+      padding:.4rem .9rem;border-radius:999px;font-size:.8rem;font-weight:600;
+      background:var(--surface2);border:1.5px solid var(--border);
+      color:var(--muted);cursor:pointer;transition:.15s;
+    }
+    .filter-chip:hover,.filter-chip.ativo{
+      border-color:var(--primary);color:var(--primary);background:rgba(99,102,241,.1);}
+    .filter-select{
+      padding:.4rem .8rem;border-radius:8px;border:1.5px solid var(--border);
+      background:var(--surface2);color:var(--text);font-size:.82rem;cursor:pointer;outline:none;
+    }
+
+    /* ── Layout principal ─────────────────────────────── */
+    .main-layout{display:flex;min-height:calc(100vh - 180px)}
+    .sidebar{
+      width:280px;flex-shrink:0;padding:1.5rem 1.25rem;
+      border-right:1px solid var(--border);background:var(--surface);
+    }
+    .sidebar-section{margin-bottom:1.75rem}
+    .sidebar-title{font-size:.72rem;font-weight:700;text-transform:uppercase;
+      letter-spacing:.08em;color:var(--muted);margin-bottom:.75rem}
+    .sidebar-option{
+      display:flex;align-items:center;gap:.6rem;padding:.45rem .6rem;
+      border-radius:8px;cursor:pointer;font-size:.875rem;transition:.15s;
+    }
+    .sidebar-option:hover{background:var(--surface2)}
+    .sidebar-option input{accent-color:var(--primary)}
+
+    /* ── Lista de vagas ───────────────────────────────── */
+    .vagas-area{flex:1;padding:1.5rem;overflow-y:auto}
+    .vagas-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem}
+    .vagas-count{color:var(--muted);font-size:.875rem}
+    .vagas-grid{display:flex;flex-direction:column;gap:1rem}
+
+    /* ── Card de vaga ─────────────────────────────────── */
+    .vaga-card{
+      background:var(--surface);border:1.5px solid var(--border);
+      border-radius:var(--radius);padding:1.5rem;
+      cursor:pointer;transition:.2s;
+      display:grid;grid-template-columns:auto 1fr auto;gap:1rem;align-items:start;
+    }
+    .vaga-card:hover{border-color:rgba(99,102,241,.4);transform:translateY(-2px);box-shadow:var(--shadow)}
+    .vaga-logo{
+      width:52px;height:52px;border-radius:12px;
+      background:linear-gradient(135deg,var(--primary),var(--secondary));
+      display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+      font-weight:800;color:#fff;flex-shrink:0;
+    }
+    .vaga-info{min-width:0}
+    .vaga-titulo{font-size:1rem;font-weight:700;margin-bottom:.3rem}
+    .vaga-empresa{color:var(--muted);font-size:.82rem;margin-bottom:.6rem}
+    .vaga-tags{display:flex;gap:.4rem;flex-wrap:wrap}
+    .tag{
+      padding:.2rem .6rem;border-radius:999px;font-size:.72rem;font-weight:600;
+      background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);color:#a5b4fc;
+    }
+    .tag.tag-green{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.2);color:#6ee7b7}
+    .tag.tag-yellow{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.2);color:#fcd34d}
+    .vaga-meta{text-align:right;flex-shrink:0}
+    .vaga-salario{font-size:.875rem;font-weight:700;color:var(--success);margin-bottom:.3rem}
+    .vaga-data{color:var(--muted2);font-size:.75rem}
+    .vaga-actions{margin-top:.75rem;display:flex;gap:.5rem}
+    .badge-novo{
+      padding:.15rem .5rem;border-radius:999px;font-size:.68rem;font-weight:700;
+      background:rgba(6,182,212,.15);border:1px solid rgba(6,182,212,.3);color:var(--accent);
+    }
+
+    /* ── Detalhe da vaga (modal/page) ─────────────────── */
+    #vaga-detalhe{display:none;position:fixed;inset:0;z-index:200;overflow-y:auto;
+      background:rgba(0,0,0,.7);backdrop-filter:blur(6px);padding:2rem 1rem}
+    .detalhe-card{
+      max-width:800px;margin:0 auto;
+      background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);
+      overflow:hidden;
+    }
+    .detalhe-banner{
+      height:160px;background:linear-gradient(135deg,var(--primary),var(--secondary));
+      display:flex;align-items:flex-end;padding:1.5rem;position:relative;
+    }
+    .detalhe-logo{
+      width:64px;height:64px;border-radius:14px;
+      background:#fff;display:flex;align-items:center;justify-content:center;
+      font-size:1.8rem;font-weight:800;border:3px solid rgba(255,255,255,.3);
+    }
+    .detalhe-fechar{
+      position:absolute;top:1rem;right:1rem;width:36px;height:36px;
+      border-radius:50%;background:rgba(0,0,0,.4);border:none;
+      color:#fff;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;
+    }
+    .detalhe-body{padding:1.75rem}
+    .detalhe-titulo{font-size:1.6rem;font-weight:800;margin:.75rem 0 .25rem}
+    .detalhe-empresa{color:var(--muted);font-size:.9rem;margin-bottom:1.25rem}
+    .detalhe-tags{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem}
+    .detalhe-section{margin-bottom:1.5rem}
+    .detalhe-section h3{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;
+      color:var(--muted);margin-bottom:.75rem;font-weight:700}
+    .detalhe-section p,.detalhe-section ul{color:rgba(255,255,255,.8);font-size:.9rem;line-height:1.7}
+    .detalhe-section ul{padding-left:1.25rem}
+    .etapas-list{display:flex;gap:.5rem;flex-wrap:wrap}
+    .etapa-badge{
+      padding:.35rem .75rem;border-radius:999px;font-size:.78rem;font-weight:600;
+      background:var(--surface2);border:1px solid var(--border);color:var(--muted);
+      display:flex;align-items:center;gap:.35rem;
+    }
+    .etapa-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--primary)}
+    .candidatar-box{
+      background:var(--surface2);border-radius:12px;padding:1.25rem;
+      display:flex;align-items:center;justify-content:space-between;gap:1rem;
+      border:1px solid var(--border);margin-top:1.5rem;
+    }
+    .share-btns{display:flex;gap:.4rem}
+    .share-btn{
+      width:36px;height:36px;border-radius:8px;border:1.5px solid var(--border);
+      background:none;color:var(--muted);cursor:pointer;
+      display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:.15s;
+    }
+    .share-btn:hover{border-color:var(--primary);color:var(--primary)}
+
+    /* ── Modal de candidatura ─────────────────────────── */
+    #modal-candidatura{display:none;position:fixed;inset:0;z-index:300;
+      background:rgba(0,0,0,.8);backdrop-filter:blur(8px);
+      padding:1rem;display:none;align-items:center;justify-content:center}
+    .modal-box{
+      background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);
+      width:100%;max-width:560px;padding:2rem;position:relative;
+    }
+    .modal-close{position:absolute;top:1rem;right:1rem;width:32px;height:32px;border-radius:50%;
+      background:var(--surface2);border:none;color:var(--muted);cursor:pointer;font-size:1rem;
+      display:flex;align-items:center;justify-content:center;}
+    .form-group{margin-bottom:1.1rem}
+    .form-label{display:block;font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:.4rem}
+    .form-input{width:100%;padding:.6rem .9rem;border-radius:8px;
+      border:1.5px solid var(--border);background:var(--surface2);
+      color:var(--text);font-family:var(--font);font-size:.9rem;outline:none;transition:.2s}
+    .form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+    .step-indicator{display:flex;gap:.4rem;margin-bottom:1.5rem}
+    .step{flex:1;height:3px;border-radius:999px;background:var(--surface2)}
+    .step.ativo{background:var(--primary)}
+    .step.concluido{background:var(--success)}
+    .progress-text{font-size:.78rem;color:var(--muted);margin-bottom:1rem}
+
+    /* ── Painel do candidato ──────────────────────────── */
+    #painel-candidato{display:none}
+    .painel-header{background:var(--surface);border-bottom:1px solid var(--border);padding:1.25rem 2rem;
+      display:flex;align-items:center;justify-content:space-between}
+    .painel-processos{padding:1.5rem 2rem;max-width:900px;margin:0 auto}
+    .processo-card{
+      background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);
+      padding:1.25rem;margin-bottom:.875rem;
+    }
+    .processo-header{display:flex;align-items:center;gap:.75rem;margin-bottom:.875rem}
+    .pipeline-track{display:flex;align-items:center;gap:0;margin-bottom:.5rem;overflow-x:auto}
+    .pipeline-step{
+      display:flex;flex-direction:column;align-items:center;position:relative;min-width:90px;
+    }
+    .pipeline-dot{
+      width:28px;height:28px;border-radius:50%;border:2.5px solid var(--border);
+      background:var(--surface2);display:flex;align-items:center;justify-content:center;
+      font-size:.7rem;font-weight:700;z-index:1;transition:.3s;
+    }
+    .pipeline-dot.ativo{border-color:var(--primary);background:rgba(99,102,241,.15);color:var(--primary)}
+    .pipeline-dot.concluido{border-color:var(--success);background:rgba(16,185,129,.1);color:var(--success)}
+    .pipeline-dot.reprovado{border-color:var(--danger);background:rgba(239,68,68,.1);color:var(--danger)}
+    .pipeline-label{font-size:.65rem;color:var(--muted);margin-top:.3rem;text-align:center}
+    .pipeline-line{flex:1;height:2px;background:var(--border);margin-top:-14px}
+    .pipeline-line.ativo{background:var(--primary)}
+
+    /* ── Toasts ───────────────────────────────────────── */
+    #toast-container{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem}
+    .toast{
+      padding:.75rem 1.25rem;border-radius:10px;font-size:.875rem;font-weight:600;
+      background:var(--surface);border:1px solid var(--border);
+      animation:slideIn .3s ease;min-width:200px;max-width:320px;
+    }
+    .toast.success{border-color:var(--success);color:var(--success)}
+    .toast.error  {border-color:var(--danger);color:var(--danger)}
+    @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+    /* ── Responsivo ───────────────────────────────────── */
+    @media(max-width:768px){
+      .sidebar{display:none}
+      .hero{padding:2.5rem 1rem}
+      .vaga-card{grid-template-columns:auto 1fr;grid-template-rows:auto auto}
+      .vaga-meta{grid-column:2;text-align:left}
+      .form-row{grid-template-columns:1fr}
+    }
+
+    .spinner{display:inline-block;width:20px;height:20px;border:2px solid rgba(255,255,255,.2);
+      border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .empty-state{text-align:center;padding:3rem 1rem;color:var(--muted)}
+    .empty-icon{font-size:3rem;margin-bottom:1rem;opacity:.4}
+  </style>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────── -->
+<header class="portal-header">
+  <div class="portal-logo">
+    <span class="logo-badge">hi</span>
+    <span>Portal de Carreiras</span>
+  </div>
+  <div class="header-actions">
+    <a href="#vagas" class="btn btn-outline btn-sm" onclick="mostrarVagas()">Ver Vagas</a>
+    <button class="btn btn-outline btn-sm" id="btn-login" onclick="abrirLogin()">Entrar</button>
+    <button class="btn btn-primary btn-sm" id="btn-cadastro" onclick="abrirCadastro()">Criar conta</button>
+    <button class="btn btn-outline btn-sm" id="btn-painel" style="display:none" onclick="mostrarPainel()">Meu Painel</button>
+    <button class="btn btn-outline btn-sm" id="btn-sair" style="display:none" onclick="sair()">Sair</button>
+  </div>
+</header>
+
+<!-- ── Hero ────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-content">
+    <h1>Encontre sua próxima oportunidade</h1>
+    <p>Vagas abertas na empresa. Candidate-se em minutos.</p>
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Buscar por título, habilidade ou departamento..." />
+      <button class="btn btn-primary" onclick="buscarVagas()">🔍 Buscar</button>
+    </div>
+  </div>
+</section>
+
+<!-- ── Filtros ──────────────────────────────────────────── -->
+<div class="filters-bar">
+  <span style="font-size:.82rem;color:var(--muted);font-weight:600">Filtrar:</span>
+  <span class="filter-chip ativo" onclick="filtrar(this,'')">Todas</span>
+  <span class="filter-chip" onclick="filtrar(this,'clt')">CLT</span>
+  <span class="filter-chip" onclick="filtrar(this,'pj')">PJ</span>
+  <span class="filter-chip" onclick="filtrar(this,'estagio')">Estágio</span>
+  <select class="filter-select" id="filtro-remoto" onchange="buscarVagas()">
+    <option value="">Modalidade</option>
+    <option value="remoto">Remoto</option>
+    <option value="presencial">Presencial</option>
+    <option value="hibrido">Híbrido</option>
+  </select>
+  <select class="filter-select" id="filtro-senioridade" onchange="buscarVagas()">
+    <option value="">Senioridade</option>
+    <option value="junior">Júnior</option>
+    <option value="pleno">Pleno</option>
+    <option value="senior">Sênior</option>
+    <option value="especialista">Especialista</option>
+  </select>
+</div>
+
+<!-- ── Layout principal ─────────────────────────────────── -->
+<div class="main-layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Departamento</div>
+      <label class="sidebar-option"><input type="checkbox" value="ti" onchange="buscarVagas()"> Tecnologia</label>
+      <label class="sidebar-option"><input type="checkbox" value="rh" onchange="buscarVagas()"> Recursos Humanos</label>
+      <label class="sidebar-option"><input type="checkbox" value="comercial" onchange="buscarVagas()"> Comercial</label>
+      <label class="sidebar-option"><input type="checkbox" value="financeiro" onchange="buscarVagas()"> Financeiro</label>
+      <label class="sidebar-option"><input type="checkbox" value="operacoes" onchange="buscarVagas()"> Operações</label>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Localização</div>
+      <label class="sidebar-option"><input type="checkbox" onchange="buscarVagas()"> João Pessoa - PB</label>
+      <label class="sidebar-option"><input type="checkbox" onchange="buscarVagas()"> Remoto</label>
+      <label class="sidebar-option"><input type="checkbox" onchange="buscarVagas()"> Híbrido</label>
+    </div>
+  </aside>
+
+  <!-- Vagas -->
+  <main class="vagas-area" id="vagas-area">
+    <div class="vagas-header">
+      <span class="vagas-count" id="vagas-count">Carregando vagas...</span>
+      <select class="filter-select" onchange="buscarVagas()">
+        <option>Mais recentes</option>
+        <option>Maior salário</option>
+      </select>
+    </div>
+    <div class="vagas-grid" id="vagas-grid">
+      <div class="empty-state"><div class="spinner"></div></div>
+    </div>
+  </main>
+
+  <!-- Painel candidato (oculto por padrão) -->
+  <main id="painel-candidato" style="display:none;flex:1;padding:1.5rem 2rem;max-width:900px;margin:0 auto">
+    <h2 style="margin-bottom:1.5rem;font-size:1.3rem">Meus Processos Seletivos</h2>
+    <div id="meus-processos"></div>
+  </main>
+</div>
+
+<!-- ── Detalhe da Vaga ──────────────────────────────────── -->
+<div id="vaga-detalhe">
+  <div class="detalhe-card">
+    <div class="detalhe-banner" id="detalhe-banner">
+      <div class="detalhe-logo" id="detalhe-logo">🏢</div>
+      <button class="detalhe-fechar" onclick="fecharDetalhe()">✕</button>
+    </div>
+    <div class="detalhe-body">
+      <div style="display:flex;align-items:start;justify-content:space-between;gap:1rem">
+        <div>
+          <h1 class="detalhe-titulo" id="detalhe-titulo"></h1>
+          <p class="detalhe-empresa" id="detalhe-empresa"></p>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div id="detalhe-salario" style="font-size:1.1rem;font-weight:700;color:var(--success)"></div>
+          <div id="detalhe-candidatos" style="font-size:.78rem;color:var(--muted)"></div>
+        </div>
+      </div>
+      <div class="detalhe-tags" id="detalhe-tags"></div>
+      <div class="detalhe-section" id="detalhe-descricao-sec">
+        <h3>Sobre a vaga</h3>
+        <p id="detalhe-descricao"></p>
+      </div>
+      <div class="detalhe-section" id="detalhe-req-sec">
+        <h3>Requisitos</h3>
+        <p id="detalhe-requisitos"></p>
+      </div>
+      <div class="detalhe-section" id="detalhe-beneficios-sec">
+        <h3>Benefícios</h3>
+        <p id="detalhe-beneficios"></p>
+      </div>
+      <div class="detalhe-section" id="detalhe-etapas-sec">
+        <h3>Etapas do processo seletivo</h3>
+        <div class="etapas-list" id="detalhe-etapas"></div>
+      </div>
+      <div class="candidatar-box">
+        <div>
+          <div style="font-weight:700;margin-bottom:.25rem">Pronto para se candidatar?</div>
+          <div style="font-size:.82rem;color:var(--muted)">Cadastre-se e envie seu perfil em minutos.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.5rem;align-items:flex-end">
+          <button class="btn btn-primary" id="btn-candidatar" onclick="candidatar()">🚀 Candidatar-se</button>
+          <div class="share-btns">
+            <button class="share-btn" title="WhatsApp" onclick="compartilharWhatsApp()">💬</button>
+            <button class="share-btn" title="LinkedIn" onclick="compartilharLinkedIn()">🔗</button>
+            <button class="share-btn" title="Copiar link" onclick="copiarLink()">📋</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal de Candidatura (cadastro + aplicação) ───────── -->
+<div id="modal-candidatura" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);padding:1rem;align-items:center;justify-content:center">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal()">✕</button>
+    <h2 style="font-size:1.2rem;margin-bottom:.25rem" id="modal-titulo">Criar conta e candidatar-se</h2>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:1.25rem" id="modal-subtitulo">Preencha seus dados para se candidatar à vaga</p>
+    <div class="step-indicator" id="step-indicator">
+      <div class="step ativo" id="step1"></div>
+      <div class="step" id="step2"></div>
+      <div class="step" id="step3"></div>
+    </div>
+    <div class="progress-text" id="progress-text">Passo 1 de 3 — Dados básicos</div>
+    <!-- Step 1: Dados básicos -->
+    <div id="passo-1">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nome completo *</label>
+          <input class="form-input" id="c-nome" placeholder="Seu nome" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">CPF</label>
+          <input class="form-input" id="c-cpf" placeholder="000.000.000-00" maxlength="14" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">E-mail *</label>
+          <input class="form-input" id="c-email" type="email" placeholder="seu@email.com" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Telefone</label>
+          <input class="form-input" id="c-telefone" placeholder="(83) 99999-9999" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Senha * (mín. 8 caracteres)</label>
+          <input class="form-input" id="c-senha" type="password" placeholder="••••••••" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cidade</label>
+          <input class="form-input" id="c-cidade" placeholder="João Pessoa" />
+        </div>
+      </div>
+      <label style="display:flex;gap:.5rem;align-items:start;font-size:.82rem;color:var(--muted);cursor:pointer;margin-bottom:1rem">
+        <input type="checkbox" id="c-lgpd" style="margin-top:2px;accent-color:var(--primary)" />
+        Concordo com a <a href="#" style="color:var(--primary)">Política de Privacidade</a> e aceite de tratamento de dados pessoais.
+      </label>
+      <button class="btn btn-primary" style="width:100%" onclick="proximoPasso()">Próximo →</button>
+    </div>
+    <!-- Step 2: Experiência e perfil -->
+    <div id="passo-2" style="display:none">
+      <div class="form-group">
+        <label class="form-label">LinkedIn</label>
+        <input class="form-input" id="c-linkedin" placeholder="https://linkedin.com/in/seu-perfil" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Área de atuação</label>
+          <input class="form-input" id="c-area" placeholder="Ex: Tecnologia, RH, Financeiro" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Senioridade</label>
+          <select class="form-input" id="c-senioridade">
+            <option value="">Selecionar</option>
+            <option>junior</option><option>pleno</option><option>senior</option><option>especialista</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Pretensão salarial (R$)</label>
+        <div class="form-row">
+          <input class="form-input" id="c-salmin" type="number" placeholder="Mínimo" />
+          <input class="form-input" id="c-salmax" type="number" placeholder="Máximo" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Disponibilidade</label>
+        <select class="form-input" id="c-disponibilidade">
+          <option value="imediata">Imediata</option>
+          <option value="15_dias">Em 15 dias</option>
+          <option value="30_dias">Em 30 dias</option>
+          <option value="combinado">A combinar</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:.75rem">
+        <button class="btn btn-outline" style="flex:1" onclick="voltarPasso()">← Voltar</button>
+        <button class="btn btn-primary" style="flex:2" onclick="proximoPasso()">Próximo →</button>
+      </div>
+    </div>
+    <!-- Step 3: Upload e finalização -->
+    <div id="passo-3" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Currículo (PDF ou DOCX)</label>
+        <input type="file" id="c-curriculo" accept=".pdf,.docx,.doc" class="form-input" style="padding:.5rem" />
+        <div style="font-size:.75rem;color:var(--muted);margin-top:.3rem">Máx. 10 MB</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Carta de apresentação (opcional)</label>
+        <textarea class="form-input" id="c-carta" rows="3" placeholder="Conte um pouco sobre você e por que se interessa pela vaga..."></textarea>
+      </div>
+      <div id="modal-status" style="display:none;padding:.75rem;border-radius:8px;font-size:.85rem;margin-bottom:1rem"></div>
+      <div style="display:flex;gap:.75rem">
+        <button class="btn btn-outline" style="flex:1" onclick="voltarPasso()">← Voltar</button>
+        <button class="btn btn-primary" style="flex:2" id="btn-enviar" onclick="enviarCandidatura()">🚀 Candidatar-se!</button>
+      </div>
+    </div>
+    <!-- Login (alternativo ao cadastro) -->
+    <div id="passo-login" style="display:none">
+      <div class="form-group">
+        <label class="form-label">E-mail</label>
+        <input class="form-input" id="l-email" type="email" placeholder="seu@email.com" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <input class="form-input" id="l-senha" type="password" placeholder="••••••••" />
+      </div>
+      <div id="login-status" style="display:none;margin-bottom:1rem;font-size:.85rem;color:var(--danger)"></div>
+      <button class="btn btn-primary" style="width:100%;margin-bottom:.75rem" onclick="fazerLogin()">Entrar</button>
+      <div style="text-align:center;font-size:.82rem;color:var(--muted)">
+        Não tem conta? <a href="#" onclick="mostrarCadastro()" style="color:var(--primary)">Criar agora</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast container ──────────────────────────────────── -->
+<div id="toast-container"></div>
+
+<script>
+// ── Configuração ──────────────────────────────────────────
+const API = window.ENV?.API_URL || 'http://localhost:3001/api/v1';
+const EMPRESA_ID = 'emp-teste-001'; // Em produção, pegar do DNS/subdomínio
+
+let estado = {
+  vagas: [], vagaAtual: null,
+  candidato: null, token: null,
+  passoAtual: 1, totalPassos: 3, filtroContrato: '',
+  modoModal: 'candidatura', // candidatura | login
+};
+
+// Carregar sessão salva
+const sessao = sessionStorage.getItem('candidato_session');
+if (sessao) {
+  const s = JSON.parse(sessao);
+  estado.candidato = s.candidato;
+  estado.token     = s.token;
+  atualizarHeader();
+}
+
+// ── Vagas ─────────────────────────────────────────────────
+async function buscarVagas() {
+  const busca    = document.getElementById('search-input').value;
+  const remoto   = document.getElementById('filtro-remoto').value;
+  const senior   = document.getElementById('filtro-senioridade').value;
+  const contrato = estado.filtroContrato;
+
+  const params = new URLSearchParams();
+  if (busca)    params.set('busca', busca);
+  if (remoto === 'remoto')   params.set('remoto', 'true');
+  if (senior)   params.set('senioridade', senior);
+  if (contrato) params.set('contrato', contrato);
+
+  const grid  = document.getElementById('vagas-grid');
+  const count = document.getElementById('vagas-count');
+  grid.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+
+  try {
+    const resp = await fetch(`${API}/candidatos/portal/${EMPRESA_ID}/vagas?${params}`);
+    const data = await resp.json();
+    const vagas= data.data || [];
+    estado.vagas = vagas;
+
+    count.textContent = `${vagas.length} vaga${vagas.length !== 1 ? 's' : ''} encontrada${vagas.length !== 1 ? 's' : ''}`;
+
+    if (!vagas.length) {
+      grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><p>Nenhuma vaga encontrada com esses filtros.</p></div>';
+      return;
+    }
+
+    grid.innerHTML = vagas.map(v => `
+      <div class="vaga-card" onclick="abrirVaga('${v.id}')">
+        <div class="vaga-logo">${v.titulo[0]}</div>
+        <div class="vaga-info">
+          <div class="vaga-titulo">${v.titulo}</div>
+          <div class="vaga-empresa">${v.empresa?.nome || 'Empresa'} · ${v.cidade || ''} ${v.uf || ''} ${v.remoto ? '· 🌎 Remoto' : ''}</div>
+          <div class="vaga-tags">
+            ${v.tipo_contrato ? `<span class="tag">${v.tipo_contrato.toUpperCase()}</span>` : ''}
+            ${v.senioridade   ? `<span class="tag">${v.senioridade}</span>` : ''}
+            ${v.hibrido       ? `<span class="tag tag-green">Híbrido</span>` : ''}
+            ${_isRecente(v.publicada_em) ? `<span class="badge-novo">Nova!</span>` : ''}
+          </div>
+        </div>
+        <div class="vaga-meta">
+          ${!v.salario_oculto && v.salario_min ? `<div class="vaga-salario">R$ ${_fmtSal(v.salario_min)} – ${_fmtSal(v.salario_max)}</div>` : '<div class="vaga-salario" style="color:var(--muted)">A combinar</div>'}
+          <div class="vaga-data">${_fmtData(v.publicada_em)}</div>
+          <div style="font-size:.72rem;color:var(--muted2);margin-top:.25rem">${v._count?.applications || 0} candidatos</div>
+        </div>
+      </div>
+    `).join('');
+
+  } catch (err) {
+    grid.innerHTML = '<div class="empty-state"><p>Erro ao carregar vagas. Tente novamente.</p></div>';
+    console.error(err);
+  }
+}
+
+function abrirVaga(id) {
+  const vaga = estado.vagas.find(v => v.id === id);
+  if (!vaga) return;
+  estado.vagaAtual = vaga;
+
+  const etapasPadrao = ['Inscrição','Triagem de currículos','Entrevista RH','Entrevista técnica','Proposta'];
+  const etapas = vaga.etapas_processo ? vaga.etapas_processo.split('\n') : etapasPadrao;
+
+  document.getElementById('detalhe-titulo').textContent      = vaga.titulo;
+  document.getElementById('detalhe-empresa').textContent     = `${vaga.empresa?.nome || 'Empresa'} · ${vaga.cidade || ''} ${vaga.uf || ''}`;
+  document.getElementById('detalhe-descricao').textContent   = vaga.descricao || '';
+  document.getElementById('detalhe-requisitos').textContent  = vaga.requisitos || '';
+  document.getElementById('detalhe-beneficios').textContent  = vaga.beneficios || 'A informar';
+  document.getElementById('detalhe-candidatos').textContent  = `${vaga._count?.applications || 0} candidatos`;
+  document.getElementById('detalhe-salario').textContent     = vaga.salario_oculto || !vaga.salario_min
+    ? 'A combinar' : `R$ ${_fmtSal(vaga.salario_min)}`;
+  document.getElementById('detalhe-etapas').innerHTML        = etapas.map(e => `<div class="etapa-badge">${e}</div>`).join('');
+  document.getElementById('detalhe-tags').innerHTML = [
+    vaga.tipo_contrato ? `<span class="tag">${vaga.tipo_contrato.toUpperCase()}</span>` : '',
+    vaga.senioridade   ? `<span class="tag">${vaga.senioridade}</span>` : '',
+    vaga.remoto        ? `<span class="tag tag-green">🌎 Remoto</span>` : '',
+    vaga.hibrido       ? `<span class="tag tag-green">Híbrido</span>` : '',
+  ].join('');
+
+  document.getElementById('vaga-detalhe').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function fecharDetalhe() {
+  document.getElementById('vaga-detalhe').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+// ── Candidatura ───────────────────────────────────────────
+function candidatar() {
+  fecharDetalhe();
+  if (estado.candidato) {
+    // Já logado: aplicar direto
+    aplicarDireto();
+  } else {
+    estado.modoModal = 'candidatura';
+    document.getElementById('modal-titulo').textContent   = 'Candidatar-se à vaga';
+    document.getElementById('modal-subtitulo').textContent= estado.vagaAtual?.titulo || '';
+    irParaPasso(1);
+    document.getElementById('modal-candidatura').style.display = 'flex';
+  }
+}
+
+async function aplicarDireto() {
+  if (!estado.vagaAtual || !estado.token) return;
+  try {
+    const resp = await fetch(`${API}/candidatos/aplicar/${estado.vagaAtual.id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${estado.token}` },
+      body: JSON.stringify({ origem: 'portal' }),
+    });
+    const data = await resp.json();
+    if (data.success) toast('✅ Candidatura enviada!', 'success');
+    else toast(data.message || 'Erro ao candidatar', 'error');
+  } catch { toast('Erro de conexão.', 'error'); }
+}
+
+function abrirLogin() {
+  estado.modoModal = 'login';
+  document.getElementById('modal-titulo').textContent   = 'Entrar no portal';
+  document.getElementById('modal-subtitulo').textContent= 'Acesse seu painel de candidaturas';
+  mostrarPasso('passo-login');
+  document.getElementById('modal-candidatura').style.display = 'flex';
+}
+
+function abrirCadastro() {
+  estado.modoModal = 'candidatura';
+  document.getElementById('modal-titulo').textContent   = 'Criar conta';
+  document.getElementById('modal-subtitulo').textContent= 'Rápido e gratuito';
+  irParaPasso(1);
+  document.getElementById('modal-candidatura').style.display = 'flex';
+}
+
+function mostrarCadastro() { estado.modoModal='candidatura'; irParaPasso(1); }
+
+function fecharModal() {
+  document.getElementById('modal-candidatura').style.display = 'none';
+  document.getElementById('modal-status').style.display = 'none';
+  document.getElementById('login-status').style.display = 'none';
+}
+
+function irParaPasso(n) {
+  estado.passoAtual = n;
+  ['passo-1','passo-2','passo-3','passo-login'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById(`passo-${n}`).style.display = 'block';
+  document.getElementById('step-indicator').style.display = n <= 3 ? 'flex' : 'none';
+  document.getElementById('progress-text').style.display  = n <= 3 ? 'block' : 'none';
+  ['step1','step2','step3'].forEach((s,i) => {
+    const el = document.getElementById(s);
+    el.className = 'step' + (i+1 < n ? ' concluido' : i+1 === n ? ' ativo' : '');
+  });
+  const labels = ['Passo 1 de 3 — Dados básicos','Passo 2 de 3 — Perfil profissional','Passo 3 de 3 — Currículo'];
+  if (n <= 3) document.getElementById('progress-text').textContent = labels[n-1];
+}
+
+function mostrarPasso(id) {
+  ['passo-1','passo-2','passo-3','passo-login'].forEach(i => document.getElementById(i).style.display = 'none');
+  document.getElementById(id).style.display = 'block';
+  document.getElementById('step-indicator').style.display = 'none';
+  document.getElementById('progress-text').style.display  = 'none';
+}
+
+function proximoPasso() {
+  if (estado.passoAtual === 1) {
+    const nome  = document.getElementById('c-nome').value.trim();
+    const email = document.getElementById('c-email').value.trim();
+    const senha = document.getElementById('c-senha').value;
+    const lgpd  = document.getElementById('c-lgpd').checked;
+    if (!nome || !email || !senha) return toast('Preencha nome, e-mail e senha.','error');
+    if (senha.length < 8) return toast('Senha deve ter ao menos 8 caracteres.','error');
+    if (!lgpd) return toast('Aceite a política de privacidade para continuar.','error');
+  }
+  if (estado.passoAtual < 3) irParaPasso(estado.passoAtual + 1);
+}
+
+function voltarPasso() {
+  if (estado.passoAtual > 1) irParaPasso(estado.passoAtual - 1);
+}
+
+async function enviarCandidatura() {
+  const btn    = document.getElementById('btn-enviar');
+  const status = document.getElementById('modal-status');
+  btn.disabled = true;
+  btn.innerHTML= '<span class="spinner"></span> Enviando...';
+  status.style.display = 'none';
+
+  try {
+    // 1. Registrar candidato
+    const regResp = await fetch(`${API}/candidatos/auth/register`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nome:             document.getElementById('c-nome').value.trim(),
+        email:            document.getElementById('c-email').value.trim(),
+        senha:            document.getElementById('c-senha').value,
+        telefone:         document.getElementById('c-telefone').value,
+        cidade:           document.getElementById('c-cidade').value,
+        aceite_lgpd:      true,
+        aceite_marketing: false,
+        pretensao_min:    parseFloat(document.getElementById('c-salmin')?.value) || null,
+        pretensao_max:    parseFloat(document.getElementById('c-salmax')?.value) || null,
+        linkedin:         document.getElementById('c-linkedin')?.value || null,
+        senioridade:      document.getElementById('c-senioridade')?.value || null,
+        area_atuacao:     document.getElementById('c-area')?.value || null,
+        disponibilidade:  document.getElementById('c-disponibilidade')?.value || null,
+        origem:           'portal_carreiras',
+      }),
+    });
+    const regData = await regResp.json();
+
+    if (!regData.success) {
+      if (regData.message?.includes('E-mail já cadastrado')) {
+        // Já existe — fazer login e continuar
+        mostrarPasso('passo-login');
+        document.getElementById('login-status').textContent = 'Esse e-mail já tem conta. Faça login:';
+        document.getElementById('login-status').style.display = 'block';
+        document.getElementById('l-email').value = document.getElementById('c-email').value;
+        btn.disabled = false; btn.innerHTML = '🚀 Candidatar-se!';
+        return;
+      }
+      throw new Error(regData.message);
+    }
+
+    estado.candidato = regData.data.candidato;
+    estado.token     = regData.data.token;
+    salvarSessao();
+
+    // 2. Upload currículo (se tiver)
+    const curriculo = document.getElementById('c-curriculo').files[0];
+    if (curriculo) {
+      const form = new FormData(); form.append('curriculo', curriculo);
+      await fetch(`${API}/candidatos/curriculo`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${estado.token}` },
+        body: form,
+      });
+    }
+
+    // 3. Candidatar-se à vaga
+    if (estado.vagaAtual) {
+      const applyResp = await fetch(`${API}/candidatos/aplicar/${estado.vagaAtual.id}`, {
+        method: 'POST', headers: { 'Content-Type':'application/json', Authorization:`Bearer ${estado.token}` },
+        body: JSON.stringify({
+          carta_apresentacao: document.getElementById('c-carta').value || null,
+          origem: 'portal',
+        }),
+      });
+      const applyData = await applyResp.json();
+      if (!applyData.success && !applyData.message?.includes('já se candidatou')) {
+        throw new Error(applyData.message);
+      }
+    }
+
+    fecharModal();
+    atualizarHeader();
+    toast('🎉 Candidatura enviada com sucesso! Boa sorte!', 'success');
+
+  } catch (err) {
+    status.style.display = 'block';
+    status.style.cssText  = 'display:block;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:.75rem;font-size:.85rem;color:#f87171;margin-bottom:1rem';
+    status.textContent   = err.message || 'Erro ao enviar. Tente novamente.';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML= '🚀 Candidatar-se!';
+  }
+}
+
+async function fazerLogin() {
+  const email = document.getElementById('l-email').value.trim();
+  const senha = document.getElementById('l-senha').value;
+  const errEl = document.getElementById('login-status');
+  errEl.style.display = 'none';
+
+  if (!email || !senha) return;
+
+  try {
+    const resp = await fetch(`${API}/candidatos/auth/login`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, senha }),
+    });
+    const data = await resp.json();
+    if (!data.success) throw new Error(data.message);
+
+    estado.candidato = data.data.candidato;
+    estado.token     = data.data.token;
+    salvarSessao();
+    fecharModal();
+    atualizarHeader();
+
+    // Se tinha vaga selecionada, candidata direto
+    if (estado.vagaAtual) await aplicarDireto();
+    else mostrarPainel();
+
+  } catch (err) {
+    errEl.style.display = 'block';
+    errEl.textContent   = err.message || 'E-mail ou senha incorretos.';
+  }
+}
+
+// ── Painel do candidato ───────────────────────────────────
+async function mostrarPainel() {
+  if (!estado.token) return abrirLogin();
+  document.getElementById('vagas-area').style.display      = 'none';
+  document.getElementById('painel-candidato').style.display= 'block';
+
+  const cont = document.getElementById('meus-processos');
+  cont.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+
+  try {
+    const resp = await fetch(`${API}/candidatos/minhas-candidaturas`, {
+      headers: { Authorization: `Bearer ${estado.token}` },
+    });
+    const data = await resp.json();
+    const apps = data.data || [];
+
+    if (!apps.length) {
+      cont.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>Você ainda não se candidatou a nenhuma vaga.</p></div>';
+      return;
+    }
+
+    const etapasLabel = {
+      inscrito:'Inscrito', triagem:'Triagem', entrevista_rh:'Entrevista RH',
+      entrevista_gestor:'Entrevista Gestor', teste_tecnico:'Teste Técnico',
+      aprovado:'Aprovado ✅', contratado:'Contratado 🎉', reprovado:'Não seguiu ❌',
+    };
+    const etapasOrdem = ['inscrito','triagem','entrevista_rh','entrevista_gestor','teste_tecnico','aprovado','contratado'];
+
+    cont.innerHTML = apps.map(app => {
+      const idx = etapasOrdem.indexOf(app.etapa);
+      const pipelineHtml = etapasOrdem.map((e, i) => `
+        <div class="pipeline-step">
+          <div class="pipeline-dot ${i < idx ? 'concluido' : i === idx ? 'ativo' : ''}">${i < idx ? '✓' : i+1}</div>
+          <div class="pipeline-label">${etapasLabel[e]?.split(' ')[0] || e}</div>
+        </div>
+        ${i < etapasOrdem.length-1 ? `<div class="pipeline-line ${i < idx ? 'ativo' : ''}"></div>` : ''}
+      `).join('');
+
+      return `
+        <div class="processo-card">
+          <div class="processo-header">
+            <div class="vaga-logo" style="width:40px;height:40px;font-size:.9rem;border-radius:10px">${app.vaga?.titulo[0]||'V'}</div>
+            <div>
+              <div style="font-weight:700">${app.vaga?.titulo || 'Vaga'}</div>
+              <div style="font-size:.78rem;color:var(--muted)">${app.vaga?.empresa?.nome || ''} · Candidatura em ${_fmtData(app.inscrito_em)}</div>
+            </div>
+            <span style="margin-left:auto;padding:.2rem .7rem;border-radius:999px;font-size:.75rem;font-weight:700;background:${app.etapa==='reprovado'?'rgba(239,68,68,.1)':app.etapa==='contratado'?'rgba(16,185,129,.1)':'rgba(99,102,241,.1)'};color:${app.etapa==='reprovado'?'#f87171':app.etapa==='contratado'?'#6ee7b7':'#a5b4fc'}">
+              ${etapasLabel[app.etapa] || app.etapa}
+            </span>
+          </div>
+          <div class="pipeline-track">${pipelineHtml}</div>
+          ${app.timeline?.length ? `<div style="margin-top:.75rem;padding:.75rem;background:var(--surface2);border-radius:8px;font-size:.82rem;color:var(--muted)">${app.timeline[0]?.descricao || ''}</div>` : ''}
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    cont.innerHTML = '<div class="empty-state"><p>Erro ao carregar candidaturas.</p></div>';
+  }
+}
+
+function mostrarVagas() {
+  document.getElementById('vagas-area').style.display      = 'block';
+  document.getElementById('painel-candidato').style.display= 'none';
+}
+
+// ── Share / Compartilhar ──────────────────────────────────
+function compartilharWhatsApp() {
+  const url  = window.location.href;
+  const text = `Confira essa vaga: ${estado.vagaAtual?.titulo} - ${url}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+}
+function compartilharLinkedIn() {
+  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`);
+}
+function copiarLink() {
+  navigator.clipboard.writeText(window.location.href).then(() => toast('Link copiado!','success'));
+}
+
+// ── Helpers ───────────────────────────────────────────────
+function filtrar(el, contrato) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('ativo'));
+  el.classList.add('ativo');
+  estado.filtroContrato = contrato;
+  buscarVagas();
+}
+
+function sair() {
+  sessionStorage.removeItem('candidato_session');
+  estado.candidato = null; estado.token = null;
+  atualizarHeader();
+  mostrarVagas();
+}
+
+function salvarSessao() {
+  sessionStorage.setItem('candidato_session', JSON.stringify({ candidato: estado.candidato, token: estado.token }));
+}
+
+function atualizarHeader() {
+  const logado = !!estado.candidato;
+  document.getElementById('btn-login').style.display    = logado ? 'none' : '';
+  document.getElementById('btn-cadastro').style.display = logado ? 'none' : '';
+  document.getElementById('btn-painel').style.display   = logado ? '' : 'none';
+  document.getElementById('btn-sair').style.display     = logado ? '' : 'none';
+}
+
+function toast(msg, tipo='success') {
+  const el = document.createElement('div');
+  el.className = `toast ${tipo}`;
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+const _fmtSal  = v => new Intl.NumberFormat('pt-BR').format(v);
+const _fmtData = d => d ? new Date(d).toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}) : '';
+const _isRecente = d => d && (Date.now() - new Date(d)) < 7 * 86400_000;
+
+// ── Init ──────────────────────────────────────────────────
+buscarVagas();
+</script>
+</body>
+</html>

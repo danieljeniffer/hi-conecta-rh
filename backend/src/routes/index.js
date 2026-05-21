@@ -22,4 +22,7 @@ router.use('/dp',            require('../modules/dp/dp-central.routes'));
 // ── Integração Bitrix24 ───────────────────────────────────────
 router.use('/integracoes/bitrix', require('../modules/bitrix24/routes/bitrix.routes'));
 
+// ── ATS / Portal de Carreiras ─────────────────────────────────
+router.use('/candidatos', require('../modules/candidatos/routes/candidatos.routes'));
+
 module.exports = router;

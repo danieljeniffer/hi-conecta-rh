@@ -17,7 +17,15 @@ const startJobs = () => {
     logger.warn('[Jobs] Workers Bitrix24 não iniciados (módulo opcional):', err.message);
   }
 
-  // 2. Job diário às 8h — alertas de férias e aniversários
+  // 3. Worker ATS — matching candidatos ↔ vagas
+  try {
+    const { startAtsMatcherWorker } = require('../modules/candidatos/workers/atsMatcher');
+    startAtsMatcherWorker();
+  } catch (err) {
+    logger.warn('[Jobs] Worker ATS não iniciado:', err.message);
+  }
+
+  // 4. Job diário às 8h — alertas de férias e aniversários
   const agendarCron = (nomeFn, intervalMs, fn) => {
     fn(); // executa na inicialização
     setInterval(fn, intervalMs);
@@ -26,6 +34,9 @@ const startJobs = () => {
 
   // A cada 6h — verifica férias vencendo
   agendarCron('ferias_alerta', 6 * 3600 * 1000, verificarFeriasVencendo);
+
+  // A cada 24h — encerramento automático de vagas vencidas no ATS
+  agendarCron('vagas_vencidas', 24 * 3600 * 1000, encerrarVagasVencidas);
 
   // A cada 24h — aniversariantes
   agendarCron('aniversariantes', 24 * 3600 * 1000, alertarAniversariantes);
@@ -143,6 +154,22 @@ const recalcularEngagamento = async () => {
   } catch (err) {
     logger.error('[Jobs] Erro em recalcularEngagamento:', err.message);
   }
+};
+
+/** Encerra vagas com prazo vencido e notifica RH. */
+const encerrarVagasVencidas = async () => {
+  try {
+    const { prisma } = require('../config/database');
+    const vencidas   = await prisma.vaga.findMany({
+      where: { status: 'aberta', encerra_em: { lte: new Date() }, deleted_at: null },
+      select: { id: true, titulo: true, empresa_id: true },
+    });
+    for (const v of vencidas) {
+      await prisma.vaga.update({ where: { id: v.id }, data: { status: 'fechada' } });
+      logger.info(`[Jobs/ATS] Vaga encerrada automaticamente: "${v.titulo}"`);
+    }
+    if (vencidas.length > 0) logger.info(`[Jobs/ATS] ${vencidas.length} vagas encerradas.`);
+  } catch (err) { logger.error('[Jobs/ATS] Erro em encerrarVagasVencidas:', err.message); }
 };
 
 module.exports = { startJobs };

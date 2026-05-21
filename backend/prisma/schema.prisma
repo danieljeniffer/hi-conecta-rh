@@ -929,45 +929,111 @@ model Vaga {
   departamento_id String?
   cargo_id        String?
   titulo          String
+  slug            String?     // URL amigável: analista-rh-pleno
   descricao       String?
   requisitos      String?
   beneficios      String?
+  cultura         String?     // cultura organizacional para página pública
+  etapas_processo String?     // etapas descritas para o candidato
   salario_min     Decimal?    @db.Decimal(12,2)
   salario_max     Decimal?    @db.Decimal(12,2)
+  salario_oculto  Boolean     @default(false)
   local           String?
+  cidade          String?
+  uf              String?
   remoto          Boolean     @default(false)
+  hibrido         Boolean     @default(false)
+  tipo_contrato   String?     @default("clt") // clt | pj | estagio | temporario
+  senioridade     String?     // junior | pleno | senior | especialista
   status          StatusVaga  @default(rascunho)
   vagas_qtd       Int         @default(1)
   publicada_em    DateTime?
   encerra_em      DateTime?
+  token_publico   String?     @unique // token para link seguro
+  banner_url      String?     // banner da empresa na página da vaga
+  ativa_candidatos Boolean    @default(true)
+  views_count     Int         @default(0)
   created_at      DateTime    @default(now())
   updated_at      DateTime    @updatedAt
   deleted_at      DateTime?
 
   empresa         Empresa      @relation(fields: [empresa_id], references: [id])
   candidaturas    Candidatura[]
+  applications    CandidateApplication[]
 
   @@map("vagas")
   @@index([empresa_id])
   @@index([status])
+  @@index([slug])
+  @@index([token_publico])
 }
 
 model Candidato {
   id              String   @id @default(uuid())
+  // Dados básicos (conta pública)
   nome            String
   email           String
+  senha_hash      String?  // candidatos têm conta própria
   telefone        String?
   cpf             String?
+  rg              String?
+  data_nascimento DateTime?
+  genero          String?
   linkedin        String?
-  curriculo_url   String?
-  origem          String?  // linkedin | site | indicacao | plataforma
+  portfolio_url   String?
+  foto_url        String?
+  // Endereço
+  cep             String?
+  logradouro      String?
+  numero          String?
+  bairro          String?
+  cidade          String?
+  estado          String?
+  // Profissional
+  curriculo_url   String?  // caminho do último PDF enviado
+  pretensao_min   Decimal? @db.Decimal(12,2)
+  pretensao_max   Decimal? @db.Decimal(12,2)
+  disponibilidade String?  // imediata | 15_dias | 30_dias | combinado
+  modalidade_pref String?  // remoto | presencial | hibrido | indiferente
+  senioridade     String?
+  area_atuacao    String?
+  // IA e scoring
+  skills_detectadas Json? // array de strings detectado por IA do currículo
+  ai_parsed_at    DateTime?
+  // Banco de talentos
+  no_talent_pool  Boolean  @default(true)
+  talent_score    Int?     @default(0) // 0-100
+  origem          String?  // linkedin | site | indicacao | portal_carreiras
+  // LGPD
+  aceite_lgpd     Boolean  @default(false)
+  aceite_lgpd_em  DateTime?
+  aceite_marketing Boolean @default(false)
+  ativo           Boolean  @default(true)
+  excluir_em      DateTime? // data programada para exclusão (LGPD)
+  // Reset de senha
+  reset_token     String?
+  reset_expira    DateTime?
+  // Auth
+  ultimo_acesso   DateTime?
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
   candidaturas    Candidatura[]
+  applications    CandidateApplication[]
+  experiencias    CandidateExperience[]
+  formacoes       CandidateEducation[]
+  habilidades     CandidateSkill[]
+  anexos          CandidateAttachment[]
+  timeline        CandidateTimeline[]
+  assessments     CandidateAssessment[]
+  entrevistas     CandidateInterview[]
+  talent_pool     TalentPool?
 
   @@unique([email])
   @@map("candidatos")
+  @@index([cpf])
+  @@index([no_talent_pool])
+  @@index([talent_score])
 }
 
 model Candidatura {
@@ -990,6 +1056,243 @@ model Candidatura {
   @@map("candidaturas")
   @@index([vaga_id])
   @@index([candidato_id])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────
+// ATS ENTERPRISE — Portal de Carreiras
+// ─────────────────────────────────────────────
+
+/// Candidatura enterprise via portal público (substitui Candidatura simples para o portal)
+model CandidateApplication {
+  id              String   @id @default(uuid())
+  candidato_id    String
+  vaga_id         String
+  empresa_id      String
+  // Pipeline ATS
+  etapa           String   @default("inscrito")
+  // inscrito | triagem | entrevista_rh | entrevista_gestor | teste_tecnico | aprovado | contratado | banco_talentos | reprovado
+  etapa_ordem     Int      @default(1)
+  // Scoring
+  score_ia        Int?     @default(0)    // 0-100, calculado por IA de aderência
+  score_manual    Decimal? @db.Decimal(5,2) // nota manual do RH
+  aderencia_pct   Int?     // % aderência à vaga
+  // Status
+  ativo           Boolean  @default(true)
+  motivo_reprovacao String?
+  feedback_candidato String? // feedback visível ao candidato
+  // Metadados
+  origem          String?  @default("portal") // portal | indicacao | linkedin | importado
+  curriculo_url   String?  // cópia do currículo no momento da candidatura
+  carta_apresentacao String?
+  // Datas
+  inscrito_em     DateTime @default(now())
+  atualizado_em   DateTime @updatedAt
+  convertido_em   DateTime? // quando virou colaborador
+  colaborador_id  String?   // após conversão
+  // Responsável RH
+  recrutador_id   String?   // usuário RH responsável
+  // Rejeição
+  reprovado_em    DateTime?
+  reprovado_por   String?
+
+  candidato   Candidato   @relation(fields: [candidato_id], references: [id])
+  vaga        Vaga        @relation(fields: [vaga_id], references: [id])
+  timeline    CandidateTimeline[]
+  entrevistas CandidateInterview[]
+  assessments CandidateAssessment[]
+
+  @@unique([candidato_id, vaga_id])
+  @@map("candidate_applications")
+  @@index([empresa_id])
+  @@index([vaga_id])
+  @@index([candidato_id])
+  @@index([etapa])
+  @@index([score_ia])
+}
+
+/// Experiências profissionais do candidato
+model CandidateExperience {
+  id              String   @id @default(uuid())
+  candidato_id    String
+  empresa         String
+  cargo           String
+  descricao       String?
+  inicio          DateTime
+  fim             DateTime?
+  atual           Boolean  @default(false)
+  nivel           String?  // junior | pleno | senior
+  tipo_contrato   String?  // clt | pj | estagio | autonomo
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  candidato       Candidato @relation(fields: [candidato_id], references: [id], onDelete: Cascade)
+
+  @@map("candidate_experiences")
+  @@index([candidato_id])
+}
+
+/// Formação acadêmica do candidato
+model CandidateEducation {
+  id              String   @id @default(uuid())
+  candidato_id    String
+  instituicao     String
+  curso           String
+  grau            String   // tecnico | graduacao | pos | mestrado | doutorado | curso_livre
+  area            String?
+  status          String   @default("completo") // completo | cursando | incompleto | pausado
+  inicio          DateTime?
+  fim             DateTime?
+  created_at      DateTime @default(now())
+
+  candidato       Candidato @relation(fields: [candidato_id], references: [id], onDelete: Cascade)
+
+  @@map("candidate_educations")
+  @@index([candidato_id])
+}
+
+/// Habilidades técnicas e comportamentais do candidato
+model CandidateSkill {
+  id              String   @id @default(uuid())
+  candidato_id    String
+  nome            String
+  nivel           String   @default("intermediario") // basico | intermediario | avancado | especialista
+  tipo            String   @default("tecnica") // tecnica | comportamental | idioma | ferramenta
+  detectado_ia    Boolean  @default(false) // extraído automaticamente do currículo
+
+  candidato       Candidato @relation(fields: [candidato_id], references: [id], onDelete: Cascade)
+
+  @@map("candidate_skills")
+  @@index([candidato_id])
+  @@index([nome])
+}
+
+/// Anexos do candidato (currículo, certificados, portfólio, etc.)
+model CandidateAttachment {
+  id              String   @id @default(uuid())
+  candidato_id    String
+  tipo            String   // curriculo | certificado | portfolio | carta | outro
+  nome_original   String
+  nome_salvo      String   // nome seguro no servidor
+  caminho         String   // path relativo
+  tamanho         Int      // bytes
+  mime_type       String
+  url             String?  // URL pública se S3
+  principal       Boolean  @default(false) // currículo principal
+  created_at      DateTime @default(now())
+
+  candidato       Candidato @relation(fields: [candidato_id], references: [id], onDelete: Cascade)
+
+  @@map("candidate_attachments")
+  @@index([candidato_id])
+  @@index([tipo])
+}
+
+/// Timeline de eventos do processo seletivo (visível ao candidato e ao RH)
+model CandidateTimeline {
+  id              String   @id @default(uuid())
+  candidato_id    String?
+  application_id  String?
+  tipo            String
+  // etapa_mudada | comentario_rh | entrevista_agendada | documento_solicitado
+  // contratado | reprovado | inscricao | avaliacao
+  titulo          String
+  descricao       String?
+  visivel_candidato Boolean @default(true) // LGPD: controla o que o candidato vê
+  icone           String?
+  cor             String?
+  criado_por      String?  // usuário RH ou 'sistema'
+  dados_extras    Json?
+  created_at      DateTime @default(now())
+
+  candidato       Candidato?            @relation(fields: [candidato_id], references: [id])
+  application     CandidateApplication? @relation(fields: [application_id], references: [id])
+
+  @@map("candidate_timelines")
+  @@index([candidato_id])
+  @@index([application_id])
+  @@index([created_at])
+}
+
+/// Banco de talentos — perfil de candidatos não ativos em processo
+model TalentPool {
+  id              String   @id @default(uuid())
+  candidato_id    String   @unique
+  empresa_id      String
+  score           Int      @default(0)   // 0-100
+  tags            Json?    @default("[]") // tags manuais do RH
+  areas           Json?    @default("[]") // áreas de interesse
+  notas_rh        String?
+  ultimo_contato  DateTime?
+  proximo_contato DateTime?
+  status          String   @default("disponivel") // disponivel | em_contato | em_processo | indisponivel
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  candidato       Candidato @relation(fields: [candidato_id], references: [id])
+
+  @@map("talent_pool")
+  @@index([empresa_id])
+  @@index([score])
+  @@index([status])
+}
+
+/// Avaliações e testes do candidato durante o processo
+model CandidateAssessment {
+  id              String   @id @default(uuid())
+  candidato_id    String
+  application_id  String?
+  tipo            String   // tecnico | comportamental | cultural | case | mapeamento
+  titulo          String
+  descricao       String?
+  status          String   @default("pendente") // pendente | enviado | respondido | avaliado
+  link_externo    String?  // link para plataforma de testes externa
+  resposta_url    String?  // arquivo ou link de resposta
+  nota            Decimal? @db.Decimal(5,2)
+  feedback        String?
+  prazo           DateTime?
+  respondido_em   DateTime?
+  avaliado_por    String?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  candidato       Candidato            @relation(fields: [candidato_id], references: [id])
+  application     CandidateApplication? @relation(fields: [application_id], references: [id])
+
+  @@map("candidate_assessments")
+  @@index([candidato_id])
+  @@index([application_id])
+}
+
+/// Entrevistas agendadas com o candidato
+model CandidateInterview {
+  id              String   @id @default(uuid())
+  candidato_id    String
+  application_id  String?
+  tipo            String   // online | presencial | telefone | painel
+  titulo          String
+  data_hora       DateTime
+  duracao_min     Int      @default(60)
+  link_video      String?
+  local           String?
+  entrevistadores Json?    @default("[]") // IDs ou nomes dos entrevistadores
+  status          String   @default("agendada") // agendada | confirmada | realizada | cancelada | no_show
+  notas_pre       String?  // preparação/pauta
+  notas_pos       String?  // feedback pós-entrevista
+  nota_final      Decimal? @db.Decimal(5,2)
+  recomendacao    String?  // aprovar | reprovar | segunda_fase
+  confirmado_candidato Boolean @default(false)
+  lembrete_enviado    Boolean @default(false)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  candidato       Candidato            @relation(fields: [candidato_id], references: [id])
+  application     CandidateApplication? @relation(fields: [application_id], references: [id])
+
+  @@map("candidate_interviews")
+  @@index([candidato_id])
+  @@index([application_id])
+  @@index([data_hora])
   @@index([status])
 }
 
