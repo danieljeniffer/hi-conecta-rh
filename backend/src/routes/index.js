@@ -19,5 +19,7 @@ router.use('/ponto',         require('../modules/ponto/ponto.routes'));
 router.use('/notificacoes',  require('../modules/notificacoes/notificacao.routes'));
 router.use('/comunicacao',   require('../modules/comunicacao/comunicacao.routes'));
 router.use('/dp',            require('../modules/dp/dp-central.routes'));
+// ── Integração Bitrix24 ───────────────────────────────────────
+router.use('/integracoes/bitrix', require('../modules/bitrix24/routes/bitrix.routes'));
 
 module.exports = router;

@@ -35,7 +35,17 @@ app.use(cors({
 
 // ── Compressão + Body parsing ─────────────────
 app.use(compression());
-app.use(express.json({ limit: '5mb' }));
+
+// Raw body para verificação de assinatura HMAC (webhooks Bitrix24)
+// Capturado via verify antes do parse — não consome o stream duas vezes
+app.use(express.json({
+  limit: '5mb',
+  verify: (req, _res, buf) => {
+    if (req.path && req.path.includes('/webhook/')) {
+      req.rawBody = buf.toString('utf8');
+    }
+  },
+}));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
 // ── Logging HTTP ──────────────────────────────

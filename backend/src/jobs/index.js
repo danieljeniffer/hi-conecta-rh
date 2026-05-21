@@ -7,6 +7,16 @@ const startJobs = () => {
   // 1. Worker de emails
   startEmailWorker();
 
+  // 2. Workers de integração Bitrix24
+  try {
+    const { startBitrixEventWorker } = require('../modules/bitrix24/workers/bitrixEventWorker');
+    const { startEngagementWorker }  = require('../modules/bitrix24/workers/engagementWorker');
+    startBitrixEventWorker();
+    startEngagementWorker();
+  } catch (err) {
+    logger.warn('[Jobs] Workers Bitrix24 não iniciados (módulo opcional):', err.message);
+  }
+
   // 2. Job diário às 8h — alertas de férias e aniversários
   const agendarCron = (nomeFn, intervalMs, fn) => {
     fn(); // executa na inicialização
@@ -19,6 +29,9 @@ const startJobs = () => {
 
   // A cada 24h — aniversariantes
   agendarCron('aniversariantes', 24 * 3600 * 1000, alertarAniversariantes);
+
+  // A cada 6h — recalcula scores de engajamento de todas as empresas
+  agendarCron('engagement_recalculo', 6 * 3600 * 1000, recalcularEngagamento);
 
   logger.info('[Jobs] Todos os jobs iniciados.');
 };
@@ -95,6 +108,40 @@ const alertarAniversariantes = async () => {
     if (hoje_anivs.length > 0) logger.info(`[Jobs] ${hoje_anivs.length} aniversariantes hoje.`);
   } catch (err) {
     logger.error('[Jobs] Erro em alertarAniversariantes:', err.message);
+  }
+};
+
+/**
+ * Recalcula scores de engajamento Bitrix24 para todas as empresas ativas.
+ * Executa a cada 6 horas.
+ */
+const recalcularEngagamento = async () => {
+  try {
+    const EngagementEngine = require('../analytics/engagementEngine');
+    const { prisma }       = require('../config/database');
+    const { emitToEmpresa } = require('../sockets');
+
+    const empresas = await prisma.empresa.findMany({
+      where:  { status: { in: ['ativa', 'trial'] }, deleted_at: null },
+      select: { id: true },
+    });
+
+    for (const { id } of empresas) {
+      const resultado = await EngagementEngine.recalcularEmpresa(id);
+
+      // Emite evento Socket.io para atualizar dashboards em tempo real
+      if (resultado.processados > 0) {
+        emitToEmpresa(id, 'engagement:batch_updated', {
+          empresa_id: id,
+          processados: resultado.processados,
+          timestamp:   new Date().toISOString(),
+        });
+      }
+
+      logger.info(`[Jobs] Engagement recalculado: empresa ${id} — ${resultado.processados} colaboradores`);
+    }
+  } catch (err) {
+    logger.error('[Jobs] Erro em recalcularEngagamento:', err.message);
   }
 };
 

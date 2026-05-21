@@ -401,6 +401,11 @@ model Colaborador {
   onboarding_tasks OnboardingTask[]
   registros_ponto  RegistroPonto[]
   candidaturas     Candidatura[]
+  // Bitrix24 / Engagement
+  bitrix_events        BitrixEvent[]
+  social_events        EmployeeSocialEvent[]
+  engagement_score     EmployeeEngagementScore?
+  behavior_metrics     EmployeeBehaviorMetrics[]
 
   @@unique([empresa_id, cpf])
   @@map("colaboradores")
@@ -1013,4 +1018,139 @@ model AuditLog {
   @@index([usuario_id])
   @@index([recurso])
   @@index([created_at])
+}
+
+// ─────────────────────────────────────────────
+// BITRIX24 — Integração Enterprise
+// ─────────────────────────────────────────────
+
+/// Todos os eventos brutos recebidos via webhook do Bitrix24.
+/// Serve como ledger imutável para reprocessamento e auditoria.
+model BitrixEvent {
+  id              String   @id @default(uuid())
+  empresa_id      String
+  event_type      String   // ONUSERADD | IM_MESSAGE_ADD | ARTICLE_VIEWED | etc
+  bitrix_user_id  String?  // ID do usuário no Bitrix24
+  colaborador_id  String?  // FK para colaborador (após deduplicação)
+  payload         Json     // payload bruto do webhook
+  processed       Boolean  @default(false)
+  processed_at    DateTime?
+  error           String?  // erro de processamento (se houver)
+  retry_count     Int      @default(0)
+  source_ip       String?
+  webhook_secret  String?  // hash para verificação
+  created_at      DateTime @default(now())
+
+  colaborador     Colaborador? @relation(fields: [colaborador_id], references: [id])
+
+  @@map("bitrix_events")
+  @@index([empresa_id])
+  @@index([event_type])
+  @@index([colaborador_id])
+  @@index([created_at])
+  @@index([processed])
+  @@index([bitrix_user_id])
+}
+
+/// Eventos sociais individuais normalizados e mapeados por colaborador.
+/// Cada linha = uma interação rastreável com peso de engajamento.
+model EmployeeSocialEvent {
+  id              String   @id @default(uuid())
+  empresa_id      String
+  colaborador_id  String
+  bitrix_event_id String?  // FK para BitrixEvent de origem
+  event_type      String   // MESSAGE | LIKE | COMMENT | REPLY | REACTION | VIEW | ARTICLE_READ | etc
+  source          String   @default("bitrix24") // bitrix24 | interno | rh
+  channel         String?  // chat | feed | knowledge | rh_event
+  engagement_weight Int    @default(0) // pontos de engajamento desta interação
+  metadata        Json?    // dados adicionais (post_id, message_id, etc)
+  // LGPD: dados pessoais nunca armazenados aqui
+  anonymized      Boolean  @default(false)
+  created_at      DateTime @default(now())
+
+  colaborador     Colaborador  @relation(fields: [colaborador_id], references: [id])
+
+  @@map("employee_social_events")
+  @@index([empresa_id])
+  @@index([colaborador_id])
+  @@index([event_type])
+  @@index([created_at])
+  @@index([source])
+}
+
+/// Score de engajamento calculado por colaborador por período.
+/// Atualizado assincronamente pelo Engagement Engine.
+model EmployeeEngagementScore {
+  id                String   @id @default(uuid())
+  empresa_id        String
+  colaborador_id    String   @unique
+  score_atual       Int      @default(0)   // 0-100
+  score_anterior    Int      @default(0)
+  classificacao     String   @default("baixo") // baixo | medio | alto | muito_engajado
+  delta_7d          Int      @default(0)   // variação 7 dias
+  delta_30d         Int      @default(0)   // variação 30 dias
+  // Componentes do score
+  score_mensagens   Int      @default(0)
+  score_interacoes  Int      @default(0)
+  score_conhecimento Int     @default(0)
+  score_participacao Int     @default(0)
+  // Métricas de comportamento
+  dias_sem_interacao Int     @default(0)
+  ultimo_evento_em  DateTime?
+  total_eventos_30d Int      @default(0)
+  // Risco calculado
+  risco_desengajamento String @default("baixo") // baixo | medio | alto | critico
+  risco_saida_impacto  Decimal? @db.Decimal(5,2)  // influência no score de risco de saída
+  // LGPD
+  dados_anonimizados Boolean  @default(false)
+  retencao_ate       DateTime? // data limite conforme política de retenção
+  computed_at        DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  colaborador        Colaborador @relation(fields: [colaborador_id], references: [id])
+
+  @@map("employee_engagement_scores")
+  @@index([empresa_id])
+  @@index([colaborador_id])
+  @@index([classificacao])
+  @@index([risco_desengajamento])
+  @@index([computed_at])
+}
+
+/// Métricas comportamentais agregadas mensalmente por colaborador.
+/// Usadas nos dashboards de People Analytics.
+model EmployeeBehaviorMetrics {
+  id                    String   @id @default(uuid())
+  empresa_id            String
+  colaborador_id        String
+  periodo               String   // YYYY-MM
+  // Métricas brutas do período
+  total_mensagens       Int      @default(0)
+  total_comentarios     Int      @default(0)
+  total_curtidas        Int      @default(0)
+  total_reacoes         Int      @default(0)
+  total_respostas       Int      @default(0)
+  total_visualizacoes   Int      @default(0)
+  total_artigos_lidos   Int      @default(0)
+  total_artigos_completos Int    @default(0)
+  total_politicas_acessadas Int  @default(0)
+  dias_ativos           Int      @default(0)   // dias com pelo menos 1 evento
+  dias_sem_atividade    Int      @default(0)
+  // Influência organizacional
+  influencia_score      Int      @default(0)   // 0-100
+  centralidade_rede     Decimal? @db.Decimal(5,4) // betweenness centrality simplificada
+  // Scores calculados no período
+  engagement_score_inicio Int    @default(0)
+  engagement_score_fim    Int    @default(0)
+  // Metadados
+  computed_at           DateTime @default(now())
+
+  colaborador           Colaborador @relation(fields: [colaborador_id], references: [id])
+
+  @@unique([colaborador_id, periodo])
+  @@map("employee_behavior_metrics")
+  @@index([empresa_id])
+  @@index([colaborador_id])
+  @@index([periodo])
+  @@index([computed_at])
 }
